@@ -12,7 +12,7 @@ node {
 			try {
 				echo "Gerrit change ID: ${GERRIT_CHANGE_NUMBER}"
 				GERRIT_BUILD = true
-			} catch(MissingPropertyException ignored) {
+			} catch (MissingPropertyException ignored) {
 				GERRIT_BUILD = false
 			}
 
@@ -30,7 +30,7 @@ node {
 				sh "mvn clean test"
 			}
 		}
-	} catch(Exception e) {
+	} catch (Exception e) {
 		post_error_build_action()
 		throw e
 	} finally {
@@ -38,7 +38,7 @@ node {
 	}
 
 	// Some Jenkins steps fail a build without raising (e.g. archiveArtifacts)
-	if(currentBuild.currentResult != "SUCCESS") {
+	if (currentBuild.currentResult != "SUCCESS") {
 		post_error_build_action()
 	}
 }
@@ -53,7 +53,7 @@ void post_all_build_action() {
 }
 
 void post_error_build_action() {
-	if(!GERRIT_BUILD) {
+	if (!GERRIT_BUILD) {
 		mattermostSend(channel: "#softies",
 				text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
 				message: "${env.BUILD_URL}",

@@ -1,0 +1,16 @@
+<p>
+State an assertion on the influence of some code on the current pipeline's result.
+</p>
+
+<p>
+Intended usage:
+<pre>
+	assertBuildResult("FAILURE") {
+		sh "exit 1"
+	}
+</pre>
+</p>
+
+<p>
+Exceptions within the closure are dropped if "FAILURE" is the expected build result.
+</p>

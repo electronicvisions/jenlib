@@ -1,0 +1,19 @@
+<p>
+Add a stage within which a single python library is checked.
+The hashmap <b>options</b> has to contain a key 'package' with value type String that represents the path to checked library.
+The package is assumed to be importable at the given path, i.e. <pre>package_path/__init__.py</pre> exists.
+</p>
+
+<p>
+Two checks are executed, a PEP8 check using <a href="https://github.com/PyCQA/pycodestyle">pycodestyle</a> and linting using <a href="https://github.com/PyCQA/pylint">pylint</a>.
+Both make use of the code style defined in <a href="https://brainscales-r.kip.uni-heidelberg.de/projects/code-format">code-format</a>.
+Additionally, python3 compatibility is checked with <pre>pylint --py3k</pre>.
+</p>
+
+<p>
+The build is marked unstable if there is at least one warning.
+</p>
+
+<p>
+<pre>Depends-On: </pre> statements are respected.
+</p>

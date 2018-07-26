@@ -80,7 +80,7 @@ class SingularityInstance implements Serializable, Closeable {
 	 *
 	 */
 	void start() throws IllegalStateException {
-		if(running) {
+		if (running) {
 			throw new IllegalStateException("Container is already running.")
 		}
 		steps.sh "singularity instance.start ${singularity_args} ${image} ${instance_id}"
@@ -91,7 +91,7 @@ class SingularityInstance implements Serializable, Closeable {
 	 * Stop the singularity container.
 	 */
 	void stop() throws IllegalStateException {
-		if(!running) {
+		if (!running) {
 			throw new IllegalStateException("Container is not running.")
 		}
 		steps.sh "singularity instance.stop -f ${instance_id}"
@@ -104,7 +104,7 @@ class SingularityInstance implements Serializable, Closeable {
 	 * @param command: Command to be executed
 	 */
 	void exec(String command) {
-		if(!running) {
+		if (!running) {
 			start()
 		}
 		steps.sh "singularity exec --app ${app} instance://${instance_id} ${command}"
@@ -121,7 +121,7 @@ class SingularityInstance implements Serializable, Closeable {
 	 * Stop the instance if it is still running when the resource is closed.
 	 */
 	void close() {
-		if(running) {
+		if (running) {
 			stop()
 		}
 	}
