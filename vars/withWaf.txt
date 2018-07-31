@@ -1,0 +1,16 @@
+<p>
+Provide the waf build tool.
+</p>
+
+<p>
+Intended usage:
+<pre>
+	withWaf(gerrit_changes: 'x') {
+		sh "waf setup --project some_project"
+	}
+</pre>
+</p>
+
+<p>
+The (customized) waf build tool is available within the closure in shell scripts as 'waf'. Specific gerrit optionsfor waf can be specified.
+</p>

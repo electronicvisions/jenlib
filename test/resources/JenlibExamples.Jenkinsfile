@@ -51,6 +51,14 @@ pipeline {
 				}
 			}
 		}
+
+		stage("withWaf") {
+			steps {
+				withWaf() {
+					sh "waf --help"
+				}
+			}
+		}
 	}
 
 	post {

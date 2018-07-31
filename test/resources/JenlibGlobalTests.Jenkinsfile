@@ -115,6 +115,17 @@ node {
 			}
 		}
 
+		stage('withWafTest') {
+			withWaf() {
+				stdout = sh(returnStdout: true, script: "waf --help")
+				assert (stdout.contains("waf [commands] [options]"))
+			}
+
+			withWaf(gerrit_changes: "3981") {
+				stdout = sh(returnStdout: true, script: "waf --help")
+				assert (stdout.contains("waf [commands] [options]"))
+			}
+		}
 	} catch (Exception e) {
 		post_error_build_action()
 		throw e
