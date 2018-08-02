@@ -68,7 +68,7 @@ class SingularityInstanceTest extends GroovyTestCase {
 
 		new SingularityInstance(pipeline,
 				"/containers/jenkins/softies_darling",
-				"visionary-defaults").withCloseable {SingularityInstance container ->
+				"visionary-defaults").withCloseable { SingularityInstance container ->
 			container.exec("env")
 			assertTrue(pipeline.stdout_lastrun.contains("SINGULARITY_CONTAINER"))
 
