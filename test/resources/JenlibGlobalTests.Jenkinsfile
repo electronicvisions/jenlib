@@ -86,6 +86,35 @@ node {
 			}
 		}
 
+		stage("runOnSlaveTest") {
+			// Raise for bad user options
+			bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
+						  [name: "hel", label: "frontend"],
+						  [naame: "hel", label: "frontend"],
+						  [name: "hel", laabel: "frontend"],
+						  [name: "hel", label: "frontend", foo: "bar"]]
+
+			for (input in bad_inputs) {
+				assertBuildResult("FAILURE") {
+					runOnSlave(input) {}
+				}
+			}
+
+			// Pipeline runs on a node => switching to master should be possible
+			runOnSlave(name: "master") {
+				assert (env.NODE_NAME == "master")
+			}
+			runOnSlave(label: "master") {
+				assert (env.NODE_NAME == "master")
+			}
+
+			// Make sure we stay on the same executor
+			pipeline_executor = env.EXECUTOR_NUMBER
+			runOnSlave(name: env.NODE_NAME) {
+				assert (env.EXECUTOR_NUMBER == pipeline_executor)
+			}
+		}
+
 	} catch (Exception e) {
 		post_error_build_action()
 		throw e

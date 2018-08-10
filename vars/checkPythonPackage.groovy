@@ -17,13 +17,15 @@ def call(LinkedHashMap options) {
 	stage("Python Checking: ${package_name}") {
 
 		// Get most recent code formatting guidelines
-		dir("code-format") {
-			try {
-				sh "module load waf && waf setup --project code-format " +
-						"--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
-						"--gerrit-url=ssh://hudson@$GERRIT_HOST:$GERRIT_PORT"
-			} catch (MissingPropertyException ignored) {
-				sh "module load waf && waf setup --project code-format"
+		runOnSlave(label: "frontend") {
+			dir("code-format") {
+				try {
+					sh "module load waf && waf setup --project code-format " +
+							"--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
+							"--gerrit-url=ssh://hudson@$GERRIT_HOST:$GERRIT_PORT"
+				} catch (MissingPropertyException ignored) {
+					sh "module load waf && waf setup --project code-format"
+				}
 			}
 		}
 

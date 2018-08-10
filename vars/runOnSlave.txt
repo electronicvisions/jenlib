@@ -1,0 +1,20 @@
+<p>
+Ensure that some code runs on the specified slave.
+</p>
+
+<p>
+In contrast to using </pre>node ( )</pre> directly, no new executor is allocated in case we are already on the given node.
+</p>
+
+<p>
+The parameter <b>target_node</b> takes the target node definition: one of 'name'|'label'
+</p>
+
+<p>
+Intended usage:
+<pre>
+	runOnSlave(label: "frontend") {
+		sh "hostname"
+	}
+</pre>
+</p>

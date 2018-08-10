@@ -34,6 +34,14 @@ pipeline {
 			}
 		}
 
+		stage("runOnSlave") {
+			steps {
+				runOnSlave(label: "frontend") {
+					sh "hostname"
+				}
+			}
+		}
+
 		stage("SingularityInstance") {
 			steps {
 				script {
