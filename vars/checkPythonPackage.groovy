@@ -3,14 +3,14 @@ import org.electronicvisions.SingularityInstance
 /**
  * Default static code analyses for python packages.
  *
- * @param options: Hashmap of supplied options, at least 'package: "something"' has to be present.
+ * @param options : Hashmap of supplied options, at least 'pkg: "something"' has to be present.
  */
 def call(LinkedHashMap options) {
-	if (!options.containsKey("package")) {
+	if (!options.containsKey("pkg")) {
 		throw new IllegalArgumentException("No package given.")
 	}
 
-	File package_dir = new File(options.get("package") as String)
+	File package_dir = new File(options.get("pkg") as String)
 	String package_name = package_dir.getName()
 	String package_parentdir = package_dir.getParent()
 

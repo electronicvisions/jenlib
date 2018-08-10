@@ -1,6 +1,6 @@
 <p>
 Add a stage within which a single python library is checked.
-The hashmap <b>options</b> has to contain a key 'package' with value type String that represents the path to checked library.
+The hashmap <b>options</b> has to contain a key 'pkg' with value type String that represents the path to checked library.
 The package is assumed to be importable at the given path, i.e. <pre>package_path/__init__.py</pre> exists.
 </p>
 

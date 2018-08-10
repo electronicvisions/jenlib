@@ -30,7 +30,7 @@ pipeline {
 				sh "echo 'class NiceClass(object):\n    pass' > lib/my_python_lib/__init__.py"
 
 				// Check it
-				checkPythonPackage(package: "lib/my_python_lib")
+				checkPythonPackage(pkg: "lib/my_python_lib")
 			}
 		}
 

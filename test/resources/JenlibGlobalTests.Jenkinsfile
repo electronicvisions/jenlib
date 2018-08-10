@@ -75,14 +75,14 @@ node {
 			// Good package
 			sh "mkdir lib/good_package"
 			sh "echo 'class NiceClass(object):\n    pass' > lib/good_package/__init__.py"
-			checkPythonPackage(package: "lib/good_package")
+			checkPythonPackage(pkg: "lib/good_package")
 			assert (currentBuild.currentResult == "SUCCESS")
 
 			// Bad package
 			sh "mkdir lib/bad_package"
 			sh "echo 'class uglyclass(): pass' > lib/bad_package/__init__.py"
 			assertBuildResult("UNSTABLE") {
-				checkPythonPackage(package: "lib/bad_package")
+				checkPythonPackage(pkg: "lib/bad_package")
 			}
 		}
 
