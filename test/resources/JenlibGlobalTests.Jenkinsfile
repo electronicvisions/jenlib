@@ -25,7 +25,7 @@ node {
 					git url: "ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib.git"
 					sh "git fetch ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib ${GERRIT_REFSPEC} && git checkout FETCH_HEAD"
 					sh "git checkout -b ${tmp_branch_name}"
-					sh "git push -u origin ${tmp_branch_name}"
+					sh "git push --no-thin -u origin ${tmp_branch_name}"
 				}
 
 				library "jenlib@${tmp_branch_name}"
