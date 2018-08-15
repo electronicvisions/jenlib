@@ -1,0 +1,24 @@
+<p>
+Run a block of commands on a machine allocated via slurm.
+</p>
+
+<p>
+This function spawns a jenkins slave on the allocated node and runs all given commands on that slave.
+</p>
+
+<p>
+Only slurm allocations for single hosts are supported.
+</p>
+
+<p>
+For most efficient resource usage, make sure that this command is not run within an execution slot.
+</p>
+
+<p>
+Intended usage:
+<pre>
+	onSlurmResource(partition: "jenkins") {
+		sh "hostname"
+	}
+</pre>
+</p>

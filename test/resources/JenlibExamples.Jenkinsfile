@@ -34,6 +34,14 @@ pipeline {
 			}
 		}
 
+		stage("onSlurmResource") {
+			steps {
+				onSlurmResource(partition: "jenkins") {
+					sh "hostname"
+				}
+			}
+		}
+
 		stage("runOnSlave") {
 			steps {
 				runOnSlave(label: "frontend") {

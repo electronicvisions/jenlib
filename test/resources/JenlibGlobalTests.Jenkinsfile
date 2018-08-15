@@ -86,6 +86,18 @@ node {
 			}
 		}
 
+		stage("onSlurmResourceTest") {
+			onSlurmResource(partition: "jenkins") {
+				assert (env.NODE_LABELS.contains("swarm"))
+			}
+
+			assertBuildResult("FAILURE") {
+				onSlurmResource(partition: "jenkins", nodes: 2) {
+					sh "hostname"
+				}
+			}
+		}
+
 		stage("runOnSlaveTest") {
 			// Raise for bad user options
 			bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
