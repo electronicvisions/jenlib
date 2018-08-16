@@ -89,10 +89,10 @@ node {
 		stage("runOnSlaveTest") {
 			// Raise for bad user options
 			bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
-						  [name: "hel", label: "frontend"],
-						  [naame: "hel", label: "frontend"],
-						  [name: "hel", laabel: "frontend"],
-						  [name: "hel", label: "frontend", foo: "bar"]]
+			              [name: "hel", label: "frontend"],
+			              [naame: "hel", label: "frontend"],
+			              [name: "hel", laabel: "frontend"],
+			              [name: "hel", label: "frontend", foo: "bar"]]
 
 			for (input in bad_inputs) {
 				assertBuildResult("FAILURE") {
@@ -151,8 +151,8 @@ void post_all_build_action() {
 void post_error_build_action() {
 	if (!GERRIT_BUILD) {
 		mattermostSend(channel: "#softies",
-				text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
-				message: "${env.BUILD_URL}",
-				endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
+		               text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
+		               message: "${env.BUILD_URL}",
+		               endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
 	}
 }

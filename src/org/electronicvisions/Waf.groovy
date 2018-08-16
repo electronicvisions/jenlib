@@ -1,6 +1,7 @@
 package org.electronicvisions
 
 import java.nio.file.Paths
+
 import static java.util.UUID.randomUUID
 
 /**
@@ -100,20 +101,20 @@ class Waf implements Serializable {
 		steps.sh "mkdir ${waf_dir}"
 		steps.sh "mkdir ${path}"
 		steps.sh "cd ${waf_dir} && " +
-			"git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
+		         "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
 		steps.sh "cd ${waf_dir}/symwaf2ic && " +
-			"make"
+		         "make"
 		if (gerrit_changes != null && gerrit_host != null && gerrit_port != null) {
 			steps.sh "cd ${waf_dir} && " +
-				"./symwaf2ic/waf setup --directory symwaf2ic " +
-				"--clone-depth 1 " +
-				"--gerrit-changes=${gerrit_changes} " +
-				"--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
+			         "./symwaf2ic/waf setup --directory symwaf2ic " +
+			         "--clone-depth 1 " +
+			         "--gerrit-changes=${gerrit_changes} " +
+			         "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
 		}
 		steps.sh "cd ${waf_dir}/symwaf2ic && " +
-			"make"
+		         "make"
 		steps.sh "cd ${waf_dir} && " +
-			"cp symwaf2ic/waf bin/"
+		         "cp symwaf2ic/waf bin/"
 		built = true
 	}
 

@@ -57,10 +57,10 @@ class SingularityInstance implements Serializable, Closeable {
 	/**
 	 * Constructor for {@link SingularityInstance}
 	 *
-	 * @param steps: Pipeline steps, to be passed as {@code this} from the calling pipeline
-	 * @param image: Path to a singularity container
-	 * @param app: App to be run
-	 * @param singularity_args: Additional arguments to the singularity instance creation
+	 * @param steps Pipeline steps, to be passed as {@code this} from the calling pipeline
+	 * @param image Path to a singularity container
+	 * @param app App to be run
+	 * @param singularity_args Additional arguments to the singularity instance creation
 	 */
 	SingularityInstance(steps, String image, String app, String singularity_args = "") {
 		this.steps = steps
@@ -101,7 +101,7 @@ class SingularityInstance implements Serializable, Closeable {
 	/**
 	 * Execute some command within the running container. Start it if necessary.
 	 *
-	 * @param command: Command to be executed
+	 * @param command Command to be executed
 	 */
 	void exec(String command) {
 		if (!running) {

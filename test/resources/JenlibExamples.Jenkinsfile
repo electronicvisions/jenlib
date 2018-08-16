@@ -64,9 +64,9 @@ pipeline {
 	post {
 		regression {
 			mattermostSend(channel: "#softies",
-					text: "@channel Regression in Jenkins build `${env.JOB_NAME}`!",
-					message: "${env.BUILD_URL}",
-					endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
+			               text: "@channel Regression in Jenkins build `${env.JOB_NAME}`!",
+			               message: "${env.BUILD_URL}",
+			               endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
 		}
 	}
 }

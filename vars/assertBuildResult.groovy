@@ -8,8 +8,8 @@
  * 	    }
  *	</pre>
  *
- * @param expected_result: Expected build state. One of ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]
- * @param content: Code that is supposed to change the build state to {@code expected_result}
+ * @param expected_result Expected build state. One of ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]
+ * @param content Code that is supposed to change the build state to {@code expected_result}
  */
 def call(String expected_result, Closure content) {
 	// Start clean

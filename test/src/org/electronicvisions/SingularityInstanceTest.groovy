@@ -39,8 +39,8 @@ class SingularityInstanceTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 
 		SingularityInstance container = new SingularityInstance(pipeline,
-				"/containers/jenkins/softies_darling",
-				"visionary-defaults")
+		                                                        "/containers/jenkins/softies_darling",
+		                                                        "visionary-defaults")
 
 		container.list_instances()
 		assertFalse(pipeline.stdout_lastrun.contains(container.instance_id))
@@ -67,8 +67,8 @@ class SingularityInstanceTest extends GroovyTestCase {
 		String instance_id = ""
 
 		new SingularityInstance(pipeline,
-				"/containers/jenkins/softies_darling",
-				"visionary-defaults").withCloseable { SingularityInstance container ->
+		                        "/containers/jenkins/softies_darling",
+		                        "visionary-defaults").withCloseable { SingularityInstance container ->
 			container.exec("env")
 			assertTrue(pipeline.stdout_lastrun.contains("SINGULARITY_CONTAINER"))
 
@@ -90,8 +90,8 @@ class SingularityInstanceTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 
 		SingularityInstance container = new SingularityInstance(pipeline,
-				"/containers/jenkins/softies_darling",
-				"visionary-defaults")
+		                                                        "/containers/jenkins/softies_darling",
+		                                                        "visionary-defaults")
 
 		container.list_instances()
 		assertFalse(pipeline.stdout_lastrun.contains(container.instance_id))
@@ -113,8 +113,8 @@ class SingularityInstanceTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 
 		SingularityInstance container = new SingularityInstance(pipeline,
-				"/containers/jenkins/softies_darling",
-				"visionary-defaults")
+		                                                        "/containers/jenkins/softies_darling",
+		                                                        "visionary-defaults")
 
 		container.start()
 
@@ -138,8 +138,8 @@ class SingularityInstanceTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 
 		SingularityInstance container = new SingularityInstance(pipeline,
-				"/containers/jenkins/softies_darling",
-				"visionary-defaults")
+		                                                        "/containers/jenkins/softies_darling",
+		                                                        "visionary-defaults")
 
 		// Instance was never started, cannot stop
 		shouldFail(IllegalStateException) {
