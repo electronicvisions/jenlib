@@ -17,7 +17,7 @@ def call(Map<String, Object> options = [:], Closure content) {
 	runOnSlave(label: "frontend") {
 		waf.build()
 	}
-	withEnv(["PATH+WAF=${waf.path}"]) {
+	withEnv(["PATH+WAF=${waf.path}", "SINGULARITYENV_PREPEND_PATH+WAF=${waf.path}"]) {
 		content()
 	}
 }
