@@ -29,6 +29,12 @@ node {
 				// Build and run tests
 				sh "mvn clean test"
 			}
+
+			// Coverage reports
+			jacoco(execPattern: 'target/jacoco.exec',
+			       classPattern: 'target/classes/org/electronicvisions',
+			       changeBuildStatus: true,
+			       maximumLineCoverage: '100')
 		}
 	} catch (Exception e) {
 		post_error_build_action()
