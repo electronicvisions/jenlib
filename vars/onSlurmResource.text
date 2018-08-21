@@ -18,7 +18,7 @@ For most efficient resource usage, make sure that this command is not run within
 Intended usage:
 <pre>
 	onSlurmResource(partition: "jenkins") {
-		sh "hostname"
+		sish "hostname"
 	}
 </pre>
 </p>

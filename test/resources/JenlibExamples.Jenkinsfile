@@ -1,5 +1,4 @@
-@Library('jenlib')
-import org.electronicvisions.SingularityInstance
+@Library('jenlib') _
 
 pipeline {
 	agent { label "frontend" }
@@ -18,7 +17,7 @@ pipeline {
 		stage("assertBuildResult") {
 			steps {
 				assertBuildResult("FAILURE") {
-					sh "exit 1"
+					sish "exit 1"
 				}
 			}
 		}
@@ -26,8 +25,8 @@ pipeline {
 		stage("checkPythonPackage") {
 			steps {
 				// Create python package
-				sh "mkdir -p lib/my_python_lib"
-				sh "echo 'class NiceClass(object):\n    pass' > lib/my_python_lib/__init__.py"
+				sish "mkdir -p lib/my_python_lib"
+				sish "echo 'class NiceClass(object):\n    pass' > lib/my_python_lib/__init__.py"
 
 				// Check it
 				checkPythonPackage(pkg: "lib/my_python_lib")
@@ -43,7 +42,7 @@ pipeline {
 		stage("onSlurmResource") {
 			steps {
 				onSlurmResource(partition: "jenkins") {
-					sh "hostname"
+					sish "hostname"
 				}
 			}
 		}
@@ -51,17 +50,15 @@ pipeline {
 		stage("runOnSlave") {
 			steps {
 				runOnSlave(label: "frontend") {
-					sh "hostname"
+					sish "hostname"
 				}
 			}
 		}
 
-		stage("SingularityInstance") {
+		stage("inSingularity") {
 			steps {
-				script {
-					container = new SingularityInstance(this, "/containers/jenkins/softies_darling", "visionary-defaults")
-					container.exec("env")
-					container.stop()
+				inSingularity {
+					sish "hostname"
 				}
 			}
 		}
@@ -69,7 +66,7 @@ pipeline {
 		stage("withWaf") {
 			steps {
 				withWaf() {
-					sh "waf --help"
+					sish "waf --help"
 				}
 			}
 		}

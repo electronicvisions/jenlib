@@ -13,7 +13,7 @@ import static java.util.UUID.randomUUID
  * 	waf = new Waf(this, [gerrit_changes: "GERRIT_CHANGES", gerrit_host: "GERRIT_HOST", gerrit_port: "GERRIT_PORT", gerrit_user: "GERRIT_USER"])
  * 	waf.build()
  *	withEnv(["PATH+WAF=" + waf.path]) {
- *		sh "waf do_something"
+ *		sish "waf do_something"
  *	}
  *	waf.clean()
  * </pre>
@@ -66,7 +66,7 @@ class Waf implements Serializable {
 		this.gerrit_changes = options.get('gerrit_changes', steps.env.GERRIT_CHANGE_NUMBER)
 		this.gerrit_host = options.get('gerrit_host', steps.env.GERRIT_HOST)
 
-		if(steps.env.GERRIT_PORT != null) { // needed because parseInt can't parse 'null'
+		if (steps.env.GERRIT_PORT != null) { // needed because parseInt can't parse 'null'
 			this.gerrit_port = options.get('gerrit_port', Integer.parseInt(steps.env.GERRIT_PORT))
 		} else {
 			this.gerrit_port = options.get('gerrit_port', 22) // default to 22 for ssh, if neither in env nor set.
@@ -83,30 +83,30 @@ class Waf implements Serializable {
 		if (built) {
 			throw new IllegalStateException("Waf was already built.")
 		}
-		steps.sh "mkdir ${waf_dir}"
-		steps.sh "mkdir ${path}"
-		steps.sh "cd ${waf_dir} && " +
-		         "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
-		steps.sh "cd ${waf_dir}/symwaf2ic && " +
-		         "make"
+		steps.sish "mkdir ${waf_dir}"
+		steps.sish "mkdir ${path}"
+		steps.sish "cd ${waf_dir} && " +
+		           "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
+		steps.sish "cd ${waf_dir}/symwaf2ic && " +
+		           "make"
 		if (gerrit_changes != null) {
 			if (gerrit_host != null) {
-				steps.sh "cd ${waf_dir} && " +
-				         "./symwaf2ic/waf setup --directory symwaf2ic " +
-				         "--clone-depth 1 " +
-				         "--gerrit-changes=${gerrit_changes} " +
-				         "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
+				steps.sish "cd ${waf_dir} && " +
+				           "./symwaf2ic/waf setup --directory symwaf2ic " +
+				           "--clone-depth 1 " +
+				           "--gerrit-changes=${gerrit_changes} " +
+				           "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
 			} else {
-				steps.sh "cd ${waf_dir} && " +
-				         "./symwaf2ic/waf setup --directory symwaf2ic " +
-				         "--clone-depth 1 " +
-				         "--gerrit-changes=${gerrit_changes}"
+				steps.sish "cd ${waf_dir} && " +
+				           "./symwaf2ic/waf setup --directory symwaf2ic " +
+				           "--clone-depth 1 " +
+				           "--gerrit-changes=${gerrit_changes}"
 			}
 		}
-		steps.sh "cd ${waf_dir}/symwaf2ic && " +
-		         "make"
-		steps.sh "cd ${waf_dir} && " +
-		         "cp symwaf2ic/waf bin/"
+		steps.sish "cd ${waf_dir}/symwaf2ic && " +
+		           "make"
+		steps.sish "cd ${waf_dir} && " +
+		           "cp symwaf2ic/waf bin/"
 		built = true
 	}
 
@@ -118,7 +118,7 @@ class Waf implements Serializable {
 			throw new IllegalStateException("Waf was not yet built.")
 		}
 		if (Paths.get(waf_dir).getNameCount() != 0) {
-			steps.sh "rm -rf ${waf_dir}"
+			steps.sish "rm -rf ${waf_dir}"
 		}
 		built = false
 	}

@@ -14,7 +14,7 @@ The parameter <b>target_node</b> takes the target node definition: one of 'name'
 Intended usage:
 <pre>
 	runOnSlave(label: "frontend") {
-		sh "hostname"
+		sish "hostname"
 	}
 </pre>
 </p>
