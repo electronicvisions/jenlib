@@ -63,29 +63,14 @@ class Waf implements Serializable {
 	Waf(steps, Map<String, Object> options = [:]) {
 		this.steps = steps
 
-		String tmp_changes
-		try {
-			tmp_changes = options.get('gerrit_changes', steps.env.GERRIT_CHANGE_NUMBER)
-		} catch (MissingPropertyException ignored) {
-			tmp_changes = options.get('gerrit_changes')
-		}
-		this.gerrit_changes = tmp_changes
+		this.gerrit_changes = options.get('gerrit_changes', steps.env.GERRIT_CHANGE_NUMBER)
+		this.gerrit_host = options.get('gerrit_host', steps.env.GERRIT_HOST)
 
-		String tmp_host
-		try {
-			tmp_host = options.get('gerrit_host', steps.env.GERRIT_HOST)
-		} catch (MissingPropertyException ignored) {
-			tmp_host = options.get('gerrit_host')
+		if(steps.env.GERRIT_PORT != null) { // needed because parseInt can't parse 'null'
+			this.gerrit_port = options.get('gerrit_port', Integer.parseInt(steps.env.GERRIT_PORT))
+		} else {
+			this.gerrit_port = options.get('gerrit_port', 22) // default to 22 for ssh, if neither in env nor set.
 		}
-		this.gerrit_host = tmp_host
-
-		int tmp_port
-		try {
-			tmp_port = options.get('gerrit_port', Integer.parseInt(steps.env.GERRIT_PORT))
-		} catch (MissingPropertyException ignored) {
-			tmp_port = options.get('gerrit_port', 22) // default to 22 for ssh, if neither in env nor set.
-		}
-		this.gerrit_port = tmp_port
 
 		waf_dir = Paths.get(steps.pwd([waf_dir: true]), "jenkins_waf_" + randomUUID().toString()).toString()
 		path = Paths.get(waf_dir.toString(), "bin").toString()
@@ -104,12 +89,19 @@ class Waf implements Serializable {
 		         "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
 		steps.sh "cd ${waf_dir}/symwaf2ic && " +
 		         "make"
-		if (gerrit_changes != null && gerrit_host != null && gerrit_port != null) {
-			steps.sh "cd ${waf_dir} && " +
-			         "./symwaf2ic/waf setup --directory symwaf2ic " +
-			         "--clone-depth 1 " +
-			         "--gerrit-changes=${gerrit_changes} " +
-			         "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
+		if (gerrit_changes != null) {
+			if (gerrit_host != null) {
+				steps.sh "cd ${waf_dir} && " +
+				         "./symwaf2ic/waf setup --directory symwaf2ic " +
+				         "--clone-depth 1 " +
+				         "--gerrit-changes=${gerrit_changes} " +
+				         "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
+			} else {
+				steps.sh "cd ${waf_dir} && " +
+				         "./symwaf2ic/waf setup --directory symwaf2ic " +
+				         "--clone-depth 1 " +
+				         "--gerrit-changes=${gerrit_changes}"
+			}
 		}
 		steps.sh "cd ${waf_dir}/symwaf2ic && " +
 		         "make"

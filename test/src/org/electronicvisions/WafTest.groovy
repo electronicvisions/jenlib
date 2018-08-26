@@ -2,19 +2,6 @@ package org.electronicvisions
 
 class WafTest extends GroovyTestCase {
 	/**
-	 * Mock for the Jenkins environment.
-	 */
-	class JenkinsEnv extends HashMap<String, String> implements Map<String, String> {
-		@Override
-		String get(Object key) {
-			if (!super.containsKey(key)) {
-				throw new MissingPropertyException("Key $key not in map")
-			}
-			return (String) super.get(key)
-		}
-	}
-
-	/**
 	 * Mock for the pipeline.
 	 */
 	class MockedPipelineScript {
@@ -27,7 +14,7 @@ class WafTest extends GroovyTestCase {
 		/**
 		 * Provide some necessary environment variables.
 		 */
-		public JenkinsEnv env = new JenkinsEnv()
+		public Map env = [:]
 
 		@SuppressWarnings("GroovyUnusedDeclaration")
 		void sh(String command) {
@@ -79,6 +66,28 @@ class WafTest extends GroovyTestCase {
 
 		pipeline.env.GERRIT_PORT = "29418"
 		pipeline.env.GERRIT_HOST = "brainscales-r.kip.uni-heidelberg.de"
+		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
+
+		Waf waf = new Waf(pipeline)
+		waf.build()
+
+		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
+
+		pipeline.sh "cd ${waf.waf_dir} && ${waf.path}/waf --help"
+
+		assertTrue(pipeline.stdout_lastrun.contains("waf [commands] [options]"))
+
+		waf.clean()
+	}
+
+	/**
+	 * Test that waf build with gerrit changeset without gerrit host and port specified succeeds.
+	 *
+	 * @throws Exception
+	 */
+	void testGerritCSwithoutPortHost() throws Exception {
+		MockedPipelineScript pipeline = new MockedPipelineScript()
+
 		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
 
 		Waf waf = new Waf(pipeline)
