@@ -101,9 +101,9 @@ abstract class SwarmSlave {
 			}
 		}
 
-		if (config.workspace != null) {
+		if (config.fsroot != null) {
 			args.add("-fsroot")
-			args.add("\"${config.workspace.toString()}\"")
+			args.add("\"${config.fsroot.toString()}\"")
 		}
 
 		return args.join(" ").trim()

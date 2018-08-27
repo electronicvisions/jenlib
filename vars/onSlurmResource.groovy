@@ -27,8 +27,10 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	config.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
 	config.mode = SwarmSlaveConfig.SlaveMode.EXCLUSIVE
 	config.slaveJar = "/wang/users/vis_jenkins/swarm_integration/swarm-client-latest.jar"
-	config.workspace = "/wang/users/vis_jenkins/fsroot-`hostname`"
 	config.numExecutors = 1
+
+	// Slurm slaves may share a workspace with the respective frontend since no new jobs will be started on them.
+	config.fsroot = '/jenkins/jenviz_$SLURM_SUBMIT_HOST/fsroot'
 
 	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurm_args)
 

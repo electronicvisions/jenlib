@@ -14,7 +14,7 @@ abstract class SwarmSlaveTest extends GroovyTestCase {
 	                                       slaveName         : "some_name",
 	                                       numExecutors      : 10,
 	                                       slaveJar          : "/some/path",
-	                                       workspace         : "/some/other/path"]
+	                                       fsroot            : "/some/other/path"]
 
 	abstract List<String> getMandatorySlaveParameters()
 

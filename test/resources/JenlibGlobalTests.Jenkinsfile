@@ -101,6 +101,14 @@ node {
 				assert (env.NODE_LABELS.contains("swarm"))
 			}
 
+			runOnSlave(label: "frontend"){
+				frontend_ws = pwd()
+				onSlurmResource(partition: "jenkins") {
+                                	slave_ws = pwd()
+					assert (slave_ws == frontend_ws) : "slave: $slave_ws, frontend: $frontend_ws"
+				}
+			}
+
 			assertBuildResult("FAILURE") {
 				onSlurmResource(partition: "jenkins", nodes: 2) {
 					sh "hostname"

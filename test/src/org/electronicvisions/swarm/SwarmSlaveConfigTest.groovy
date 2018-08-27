@@ -193,13 +193,13 @@ class SwarmSlaveConfigTest extends GroovyTestCase {
 
 	void testGetSetWorkspace() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
-		assertNull(config.workspace)
+		assertNull(config.fsroot)
 
-		config.workspace = "/some/path/"
-		assertEquals(config.workspace, "/some/path/")
+		config.fsroot = "/some/path/"
+		assertEquals(config.fsroot, "/some/path/")
 
 		shouldFail {
-			config.workspace = "relative/path/"
+			config.fsroot = "relative/path/"
 		}
 	}
 }

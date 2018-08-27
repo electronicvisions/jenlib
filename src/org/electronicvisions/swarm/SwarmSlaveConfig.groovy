@@ -103,9 +103,9 @@ class SwarmSlaveConfig {
 	private String slaveJar
 
 	/**
-	 * Absolute path to the workspace-root.
+	 * Absolute path to the slave's filesystem-root.
 	 */
-	private String workspace
+	private String fsroot
 
 	/**
 	 * Getter for {@link SwarmSlaveConfig#javaBinary}
@@ -278,18 +278,18 @@ class SwarmSlaveConfig {
 	}
 
 	/**
-	 * Getter for {@link SwarmSlaveConfig#workspace}
+	 * Getter for {@link SwarmSlaveConfig#fsroot}
 	 */
-	String getWorkspace() {
-		return workspace
+	String getFsroot() {
+		return fsroot
 	}
 
 	/**
-	 * Setter for {@link SwarmSlaveConfig#workspace}
+	 * Setter for {@link SwarmSlaveConfig#fsroot}
 	 */
-	void setWorkspace(String workspace) {
+	void setFsroot(String workspace) {
 		validateFileString(workspace)
-		this.workspace = workspace
+		this.fsroot = workspace
 	}
 
 	/**
