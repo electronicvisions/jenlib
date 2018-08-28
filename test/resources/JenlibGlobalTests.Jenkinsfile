@@ -86,6 +86,16 @@ node {
 			}
 		}
 
+		stage("notifyFailureTest") {
+			notifyFailure(mattermostChannel: "jenkins-trashbin", nonGerritOnly: true)
+			notifyFailure(mattermostChannel: "jenkins-trashbin", nonGerritOnly: false)
+
+			// mattermostChannel is mandatory
+			assertBuildResult("FAILURE") {
+				notifyFailure()
+			}
+		}
+
 		stage("onSlurmResourceTest") {
 			onSlurmResource(partition: "jenkins") {
 				assert (env.NODE_LABELS.contains("swarm"))

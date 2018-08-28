@@ -1,0 +1,3 @@
+Send a notification that this job has failed.
+
+Parameters: String mattermostChannel (mandatory), boolean nonGerritOnly (defaults true)

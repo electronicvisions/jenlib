@@ -34,6 +34,10 @@ pipeline {
 			}
 		}
 
+		stage("notifyFailure") {
+			notifyFailure(mattermostChannel: "jenkins-trashbin")
+		}
+
 		stage("onSlurmResource") {
 			steps {
 				onSlurmResource(partition: "jenkins") {
