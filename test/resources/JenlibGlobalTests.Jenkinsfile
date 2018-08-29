@@ -1,7 +1,4 @@
 node {
-	// Default to false to ensure failure messages are sent
-	GERRIT_BUILD = false
-
 	try {
 		cleanWs()
 
@@ -29,10 +26,7 @@ node {
 				}
 
 				library "jenlib@${tmp_branch_name}"
-
-				GERRIT_BUILD = true
 			} catch (MissingPropertyException ignored) {
-				GERRIT_BUILD = false
 				library 'jenlib'
 			} finally {
 				// Cleanup temporary branch
@@ -101,11 +95,11 @@ node {
 				assert (env.NODE_LABELS.contains("swarm"))
 			}
 
-			runOnSlave(label: "frontend"){
+			runOnSlave(label: "frontend") {
 				frontend_ws = pwd()
 				onSlurmResource(partition: "jenkins") {
-                                	slave_ws = pwd()
-					assert (slave_ws == frontend_ws) : "slave: $slave_ws, frontend: $frontend_ws"
+					slave_ws = pwd()
+					assert (slave_ws == frontend_ws): "slave: $slave_ws, frontend: $frontend_ws"
 				}
 			}
 
@@ -182,10 +176,5 @@ void post_all_build_action() {
 }
 
 void post_error_build_action() {
-	if (!GERRIT_BUILD) {
-		mattermostSend(channel: "#softies",
-		               text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
-		               message: "${env.BUILD_URL}",
-		               endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
-	}
+	notifyFailure(mattermostChannel: "#softies")
 }
