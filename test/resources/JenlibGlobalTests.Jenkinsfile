@@ -199,7 +199,9 @@ node {
 				stdout = sish(returnStdout: true, script: "waf --help")
 				assert (stdout.contains("waf [commands] [options]"))
 
-				stdout_singularity = sh(returnStdout: true, script: "singularity exec --app visionary-defaults /containers/jenkins/softies_darling waf --help")
+				inSingularity {
+					stdout_singularity = sish(returnStdout: true, script: "waf --help")
+				}
 				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
 
