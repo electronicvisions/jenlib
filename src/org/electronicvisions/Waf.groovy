@@ -44,10 +44,16 @@ class Waf implements Serializable {
 	 * Path to waf executable
 	 */
 	public final String path
+
 	/**
 	 * State of Waf instance
 	 */
 	public boolean built = false
+
+	/**
+	 * Enable debug output during waf build
+	 */
+	private boolean debug = false
 
 	/**
 	 * Pipeline context
@@ -62,6 +68,7 @@ class Waf implements Serializable {
 	 */
 	Waf(steps, Map<String, Object> options = [:]) {
 		this.steps = steps
+		this.debug = options.get('debug', false)
 
 		this.gerrit_changes = options.get('gerrit_changes', steps.env.GERRIT_CHANGE_NUMBER)
 		this.gerrit_host = options.get('gerrit_host', steps.env.GERRIT_HOST)
@@ -83,29 +90,29 @@ class Waf implements Serializable {
 		if (built) {
 			throw new IllegalStateException("Waf was already built.")
 		}
-		steps.sish "mkdir ${waf_dir}"
-		steps.sish "mkdir ${path}"
-		steps.sish "cd ${waf_dir} && " +
+		debugShell "mkdir ${waf_dir}"
+		debugShell "mkdir ${path}"
+		debugShell "cd ${waf_dir} && " +
 		           "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
-		steps.sish "cd ${waf_dir}/symwaf2ic && " +
+		debugShell "cd ${waf_dir}/symwaf2ic && " +
 		           "make"
 		if (gerrit_changes != null) {
 			if (gerrit_host != null) {
-				steps.sish "cd ${waf_dir} && " +
+				debugShell "cd ${waf_dir} && " +
 				           "./symwaf2ic/waf setup --directory symwaf2ic " +
 				           "--clone-depth 1 " +
 				           "--gerrit-changes=${gerrit_changes} " +
 				           "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
 			} else {
-				steps.sish "cd ${waf_dir} && " +
+				debugShell "cd ${waf_dir} && " +
 				           "./symwaf2ic/waf setup --directory symwaf2ic " +
 				           "--clone-depth 1 " +
 				           "--gerrit-changes=${gerrit_changes}"
 			}
 		}
-		steps.sish "cd ${waf_dir}/symwaf2ic && " +
+		debugShell "cd ${waf_dir}/symwaf2ic && " +
 		           "make"
-		steps.sish "cd ${waf_dir} && " +
+		debugShell "cd ${waf_dir} && " +
 		           "cp symwaf2ic/waf bin/"
 		built = true
 	}
@@ -118,8 +125,21 @@ class Waf implements Serializable {
 			throw new IllegalStateException("Waf was not yet built.")
 		}
 		if (Paths.get(waf_dir).getNameCount() != 0) {
-			steps.sish "rm -rf ${waf_dir}"
+			debugShell "rm -rf ${waf_dir}"
 		}
 		built = false
+	}
+
+	/**
+	 * Shell wrapper that cuts all stdout if {@link Waf#debug} is <code>false</code>
+	 */
+	private void debugShell(String command) {
+		if (debug) {
+			steps.sish command
+		} else {
+			command.replace("&&", "> /dev/null &&")
+			command += "> /dev/null"
+			steps.sish "${command}"
+		}
 	}
 }

@@ -9,8 +9,8 @@ class WafTest extends GroovyTestCase {
 		/**
 		 * Last process' standard output. Used to get the result of a {@code sh} step.
 		 */
-		public String stdout_lastrun
-		public String stdout_accumulated
+		public String stdout_lastrun = new String()
+		public String stdout_accumulated = new String()
 		/**
 		 * Provide some necessary environment variables.
 		 */
@@ -68,7 +68,7 @@ class WafTest extends GroovyTestCase {
 		pipeline.env.GERRIT_HOST = "brainscales-r.kip.uni-heidelberg.de"
 		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
 
-		Waf waf = new Waf(pipeline)
+		Waf waf = new Waf(pipeline, [debug: true])
 		waf.build()
 
 		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
@@ -90,7 +90,7 @@ class WafTest extends GroovyTestCase {
 
 		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
 
-		Waf waf = new Waf(pipeline)
+		Waf waf = new Waf(pipeline, [debug: true])
 		waf.build()
 
 		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
@@ -148,5 +148,24 @@ class WafTest extends GroovyTestCase {
 		shouldFail(IllegalStateException) {
 			waf.clean()
 		}
+	}
+
+	/**
+	 * Test 'debug' switch:
+	 *   If set, there must be no output.
+	 *   If unset, we expect waf's make output.
+	 *
+	 * @throws Exception
+	 */
+	void testDebugOutput() throws Exception {
+		MockedPipelineScript pipeline = new MockedPipelineScript()
+
+		Waf releaseWaf = new Waf(pipeline)
+		releaseWaf.build()
+		assertFalse(pipeline.stdout_accumulated.length() > 0)
+
+		Waf debugWaf = new Waf(pipeline, [debug: true])
+		debugWaf.build()
+		assertTrue(pipeline.stdout_accumulated.contains("adding waflib"))
 	}
 }
