@@ -135,6 +135,25 @@ node {
 			}
 		}
 
+		stage("wafSetupTest") {
+			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
+			wafSetup(projects: ["frickel-dls@v3testing"])
+
+			// Multiple projects
+			wafSetup(projects: ["frickel-dls@v3testing", "hicann-dls-scripts@v3testing"])
+
+			// Unsupported command line options
+			assertBuildResult("FAILURE") {
+				wafSetup()
+			}
+			assertBuildResult("FAILURE") {
+				wafSetup(projects: "frickel-dls")
+			}
+			assertBuildResult("FAILURE") {
+				wafSetup(projects: [])
+			}
+		}
+
 		stage("getGerritUsernameTest") {
 			// We expect this to be hudson in the general case
 			assert (getGerritUsername().equals("hudson"))

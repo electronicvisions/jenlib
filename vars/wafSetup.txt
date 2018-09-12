@@ -1,0 +1,9 @@
+Pipeline step for checking out a list of waf projects, respecting any gerrit changesets given in the current environment.
+
+Available options:
+<ul>
+    <li><b>projects</b> (mandatory): List of projects to be built
+    <li><b>wafOptions</b> (optional): Options passed to <code>withWaf</code>
+    <li><b>setupOptions</b> (optional): Options passed to the <code>waf setup</code> call.
+        Defaults to <code>"--clone-depth=1"</code>
+</ul>

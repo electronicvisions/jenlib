@@ -33,6 +33,12 @@ pipeline {
 			}
 		}
 
+		stage("wafSetup") {
+			steps {
+				wafSetup(projects: ["frickel-dls@v3testing"])
+			}
+		}
+
 		stage("notifyFailure") {
 			steps {
 				notifyFailure(mattermostChannel: "jenkins-trashbin")
