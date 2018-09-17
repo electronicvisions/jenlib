@@ -286,6 +286,40 @@ node {
 				assert (stdout.contains("waf [commands] [options]"))
 			}
 		}
+
+		stage("fillTemplateTest") {
+			template = 'Hello <% out.print firstname %> ${lastname}'
+			result = fillTemplate(template, [firstname: "Jenkins", lastname: "Hudson"])
+			assert (result == 'Hello Jenkins Hudson'): result
+		}
+
+		stage('deployModuleTest') {
+			sish "mkdir -p $WORKSPACE/source"
+			sish "mkdir -p $WORKSPACE/source/bin"
+			sish "echo '#!/bin/bash\necho bla' > $WORKSPACE/source/bin/test_executable"
+			sish "chmod +x $WORKSPACE/source/bin/test_executable"
+
+			inSingularity() {
+				deployModule([name      : "testmodule",
+				              moduleRoot: "$WORKSPACE/module",
+				              targetRoot: "$WORKSPACE/install",
+				              source    : "$WORKSPACE/source"])
+			}
+
+			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
+				assert (sish(returnStdout: true,
+				             script: "module load testmodule && test_executable").contains("bla"))
+			}
+
+			assertBuildResult("FAILURE") {
+				deployModule([name      : "testmodule",
+				              moduleRoot: "$WORKSPACE/module",
+				              targetRoot: "$WORKSPACE/install",
+				              source    : "$WORKSPACE/source"])
+			}
+			sish "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
+		}
+
 	} catch (Exception e) {
 		post_error_build_action()
 		throw e

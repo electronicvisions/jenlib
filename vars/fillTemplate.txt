@@ -1,0 +1,6 @@
+Fill a template using groovy's <code>StreamingTemplateEngine</code>.
+
+<b>Usage:</b>
+<pre>
+    String result = fillTemplate(String template, Map parameters)
+</pre>

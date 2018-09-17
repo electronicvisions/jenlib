@@ -1,0 +1,4 @@
+#%Module1.0
+## Created by: Jenkins
+
+set ModulesVersion "${VERSION}"

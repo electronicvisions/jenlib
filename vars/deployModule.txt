@@ -1,0 +1,17 @@
+<p>
+Deploy content to module.
+</p>
+
+<p>
+Intended usage:
+<pre>
+	inSingularity() {
+		deployModule([name: "ppu", source: "install"])
+	}
+</pre>
+</p>
+
+<p>
+The content of a source folder and a associated named new modulefile is deployed to specified locations.
+The singularity container name is placed in the help message of the module.
+</p>
