@@ -150,11 +150,21 @@ node {
 				assert (env.NODE_LABELS.contains("swarm"))
 			}
 
+			// PWD stays the same
 			runOnSlave(label: "frontend") {
-				frontend_ws = pwd()
+				frontendPwd = pwd()
 				onSlurmResource(partition: "jenkins") {
-					slave_ws = pwd()
-					assert (slave_ws == frontend_ws): "slave: $slave_ws, frontend: $frontend_ws"
+					slavePwd = pwd()
+					assert (slavePwd == frontendPwd): "slavePwd: $slavePwd, frontendPwd: $frontendPwd"
+				}
+			}
+
+			// Workspace stays the same
+			runOnSlave(label: "frontend") {
+				frontendWs = WORKSPACE
+				onSlurmResource(partition: "jenkins") {
+					slaveWs = WORKSPACE
+					assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
 				}
 			}
 
