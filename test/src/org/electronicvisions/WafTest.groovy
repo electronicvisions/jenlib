@@ -77,6 +77,10 @@ class WafTest extends GroovyTestCase {
 
 		assertTrue(pipeline.stdout_lastrun.contains("waf [commands] [options]"))
 
+		pipeline.sish "cd ${waf.waf_dir}/waf/ && git log"
+
+		assertTrue(pipeline.stdout_lastrun.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
+
 		waf.clean()
 	}
 

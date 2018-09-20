@@ -99,21 +99,26 @@ class Waf implements Serializable {
 		if (gerrit_changes != null) {
 			if (gerrit_host != null) {
 				debugShell "cd ${waf_dir} && " +
-				           "./symwaf2ic/waf setup --directory symwaf2ic " +
+				           "./symwaf2ic/waf setup --project waf@symwaf2ic " +
 				           "--clone-depth 1 " +
 				           "--gerrit-changes=${gerrit_changes} " +
 				           "--gerrit-url=ssh://${gerrit_host}:${gerrit_port}"
 			} else {
 				debugShell "cd ${waf_dir} && " +
-				           "./symwaf2ic/waf setup --directory symwaf2ic " +
+				           "./symwaf2ic/waf setup --project waf@symwaf2ic " +
 				           "--clone-depth 1 " +
 				           "--gerrit-changes=${gerrit_changes}"
 			}
+			debugShell "cd ${waf_dir}/waf && " +
+			           "make"
+			debugShell "cd ${waf_dir} && " +
+			           "cp waf/waf bin/"
+		} else {
+			debugShell "cd ${waf_dir}/symwaf2ic && " +
+			           "make"
+			debugShell "cd ${waf_dir} && " +
+			           "cp symwaf2ic/waf bin/"
 		}
-		debugShell "cd ${waf_dir}/symwaf2ic && " +
-		           "make"
-		debugShell "cd ${waf_dir} && " +
-		           "cp symwaf2ic/waf bin/"
 		built = true
 	}
 
