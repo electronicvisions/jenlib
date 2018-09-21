@@ -1,4 +1,4 @@
-#!/usr/bin/env groovy
+@Library('jenlib') _
 
 node {
 	try {
@@ -26,27 +26,14 @@ node {
 			       maximumLineCoverage: '100')
 		}
 	} catch (Exception e) {
-		post_error_build_action()
+		notifyFailure(mattermostChannel: "#softies")
 		throw e
 	} finally {
-		post_all_build_action()
+		cleanWs()
 	}
 
 	// Some Jenkins steps fail a build without raising (e.g. archiveArtifacts)
 	if (currentBuild.currentResult != "SUCCESS") {
-		post_error_build_action()
+		notifyFailure(mattermostChannel: "#softies")
 	}
-}
-
-/*
-/* HELPER FUNCTIONS
-*/
-
-void post_all_build_action() {
-	// Always clean the workspace
-	cleanWs()
-}
-
-void post_error_build_action() {
-	notifyFailure(mattermostChannel: "#softies")
 }
