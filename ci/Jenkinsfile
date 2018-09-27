@@ -13,7 +13,9 @@ node {
 			          jdk: 'J8',
 			          mavenLocalRepo: '.repository',
 			          options: [artifactsPublisher(disabled: true),
-			                    openTasksPublisher(disabled: true)]) {
+			                    openTasksPublisher(disabled: true),
+			                    // we need more jacoco options than available here
+			                    jacocoPublisher(disabled: true)]) {
 
 				// Build and run tests
 				sh "mvn clean test"
@@ -22,6 +24,8 @@ node {
 			// Coverage reports
 			jacoco(execPattern: 'target/jacoco.exec',
 			       classPattern: 'target/classes/org/electronicvisions',
+			       sourcePattern: 'src/',
+			       sourceInclusionPattern: '**/*.groovy',
 			       changeBuildStatus: true,
 			       maximumLineCoverage: '100')
 		}
