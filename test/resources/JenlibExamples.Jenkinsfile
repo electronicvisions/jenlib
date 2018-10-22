@@ -33,6 +33,13 @@ pipeline {
 			}
 		}
 
+		stage("wafDefaultPipeline") {
+			steps {
+				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				                   app: "visionary-dls")
+			}
+		}
+
 		stage("wafSetup") {
 			steps {
 				wafSetup(projects: ["frickel-dls@v3testing"])

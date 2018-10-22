@@ -135,6 +135,34 @@ node {
 			}
 		}
 
+		stage("wafDefaultPipeline") {
+			// Test build a seldom altered project with minimal dependencies and a stable CI flow
+			wafDefaultPipeline(projects: ["frickel-dls@v3testing"], app: "visionary-dls")
+
+			// Unsupported command line options
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline()
+			}
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(projects: "frickel-dls")
+			}
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(projects: ["frickel-dls"])
+			}
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(projects: [])
+			}
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(configureInstallOptions: "--target='*'")
+			}
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(configureInstallOptions: "--test-execnone")
+			}
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(testOptions: "--target='*'")
+			}
+		}
+
 		stage("wafSetupTest") {
 			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
 			wafSetup(projects: ["frickel-dls@v3testing"])

@@ -1,0 +1,23 @@
+Pipeline for verifying "typical" waf projects:
+<ul>
+    <li>Cleanup, setup, build of the given projects
+    <li>Run tests
+    <li>Evaluate test results
+</ul>
+
+The project is built and tested for the default target definition as well as <code>--target='*'</code>.
+
+Available options (see also <code>wafSetup</code>):
+<ul>
+    <li><b>projects</b> (mandatory): see <code>wafSetup</code>
+    <li><b>setupOptions</b> (optional): see <code>wafSetup</code>
+    <li><b>app</b> (mandatory): Container app to be used
+    <li><b>configureInstallOptions</b> (optional): Options passed to the
+        <code>waf configure install</code> call.
+        Defaults to <code>""</code>, <code>--test-execnone</code> is always set.
+    <li><b>testSlurmResource</b> (optional): Slurm resource definition tests are run on.
+        Defaults to <code>[partition: "jenkins", "cpus-per-task": "8"]</code>
+    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
+        Defaults to <code>"--test-execall"</code>
+    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
+</ul>
