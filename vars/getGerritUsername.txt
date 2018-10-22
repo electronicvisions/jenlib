@@ -1,0 +1,1 @@
+Return the username to be used for logging into gerrit.

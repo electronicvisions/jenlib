@@ -21,7 +21,7 @@ def call(LinkedHashMap options) {
 					try {
 						sish "waf setup --project code-format " +
 						     "--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
-						     "--gerrit-url=ssh://hudson@$GERRIT_HOST:$GERRIT_PORT"
+						     "--gerrit-url=ssh://${getGerritUsername()}@$GERRIT_HOST:$GERRIT_PORT"
 					} catch (MissingPropertyException ignored) {
 						sish "waf setup --project code-format"
 					}

@@ -135,6 +135,23 @@ node {
 			}
 		}
 
+		stage("getGerritUsernameTest") {
+			// We expect this to be hudson in the general case
+			assert (getGerritUsername().equals("hudson"))
+
+			// Local repos have priority
+			String repoDir = UUID.randomUUID().toString()
+			sish("mkdir -p ${repoDir}")
+			sish("cd ${repoDir} && git init")
+			sish("cd ${repoDir} && git config gitreview.username foobar")
+
+			dir(repoDir) {
+				assert (getGerritUsername().equals("foobar"))
+			}
+
+			// Global config not testable without interfering with other builds
+		}
+
 		stage("notifyFailureTest") {
 			notifyFailure(mattermostChannel: "jenkins-trashbin", nonGerritOnly: true)
 			notifyFailure(mattermostChannel: "jenkins-trashbin", nonGerritOnly: false)
