@@ -87,28 +87,32 @@ def call(Map<String, Object> options = [:]) {
 
 	// Evaluate waf test results
 	stage("Test Evaluation") {
-		step([$class       : 'XUnitBuilder',
-		      thresholdMode: 1,
-		      thresholds   : [[$class           : 'FailedThreshold',
-		                       unstableThreshold: '0'],
-		      ],
-		      tools        : [[$class               : 'GoogleTestType',
-		                       deleteOutputFiles    : true,
-		                       failIfNotNew         : true,
-		                       pattern              : testResultDirs.join("/**/*.xml, ") + "/**/*.xml",
-		                       skipNoTestFiles      : false,
-		                       stopProcessingIfError: true]
-		      ]
-		])
+		runOnSlave(label: "frontend") {
+			step([$class       : 'XUnitBuilder',
+			      thresholdMode: 1,
+			      thresholds   : [[$class           : 'FailedThreshold',
+			                       unstableThreshold: '0'],
+			      ],
+			      tools        : [[$class               : 'GoogleTestType',
+			                       deleteOutputFiles    : true,
+			                       failIfNotNew         : true,
+			                       pattern              : testResultDirs.join("/**/*.xml, ") + "/**/*.xml",
+			                       skipNoTestFiles      : false,
+			                       stopProcessingIfError: true]
+			      ]
+			])
+		}
 	}
 
 	// Scan for compiler warnings
 	stage("Compiler Warnings") {
-		warnings canComputeNew: false,
-		         canRunOnFailed: true,
-		         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)'],
-		                          [parserName: 'Clang (LLVM based)']],
-		         excludePattern: ".*/opt/spack.*,${warningsIgnorePattern}"
-		         unstableTotalAll: '0'
+		runOnSlave(label: "frontend") {
+			warnings canComputeNew: false,
+			         canRunOnFailed: true,
+			         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)'],
+			                          [parserName: 'Clang (LLVM based)']],
+			         excludePattern: ".*/opt/spack.*,${warningsIgnorePattern}"
+			unstableTotalAll: '0'
+		}
 	}
 }
