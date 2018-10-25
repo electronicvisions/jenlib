@@ -12,6 +12,7 @@ Available options (see also <code>wafSetup</code>):
     <li><b>projects</b> (mandatory): see <code>wafSetup</code>
     <li><b>setupOptions</b> (optional): see <code>wafSetup</code>
     <li><b>app</b> (mandatory): Container app to be used
+    <li><b>notificationChannel</b> (mandatory): Channel to be notified in case of failure (e.g. <code>#softies</code>)
     <li><b>configureInstallOptions</b> (optional): Options passed to the
         <code>waf configure install</code> call.
         Defaults to <code>""</code>, <code>--test-execnone</code> is always set.

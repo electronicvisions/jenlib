@@ -137,7 +137,9 @@ node {
 
 		stage("wafDefaultPipeline") {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
-			wafDefaultPipeline(projects: ["frickel-dls@v3testing"], app: "visionary-dls")
+			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+			                   app: "visionary-dls",
+			                   notificationChannel: "#jenkins-trashbin")
 
 			// Unsupported command line options
 			assertBuildResult("FAILURE") {
