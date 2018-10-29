@@ -94,7 +94,7 @@ def call(Map<String, Object> options = [:]) {
 
 					stage("Build ${wafTargetOption}".trim()) {
 						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
-							sish("waf configure install " +
+							jesh("waf configure install " +
 							     "--test-xml-summary=${testOutputDir} " +
 							     "--test-execnone " +
 							     "${wafTargetOption} ${configureInstallOptions}")
@@ -104,7 +104,7 @@ def call(Map<String, Object> options = [:]) {
 					// Run tests defined in waf
 					stage("Tests ${wafTargetOption}".trim()) {
 						onSlurmResource(testSlurmResource) {
-							sish("waf build ${testOptions}")
+							jesh("waf build ${testOptions}")
 						}
 					}
 				}

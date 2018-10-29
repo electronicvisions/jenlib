@@ -19,18 +19,18 @@ def call(LinkedHashMap options) {
 			dir("code-format") {
 				withWaf {
 					try {
-						sish "waf setup --project code-format " +
+						jesh "waf setup --project code-format " +
 						     "--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
 						     "--gerrit-url=ssh://${getGerritUsername()}@$GERRIT_HOST:$GERRIT_PORT"
 					} catch (MissingPropertyException ignored) {
-						sish "waf setup --project code-format"
+						jesh "waf setup --project code-format"
 					}
 				}
 			}
 		}
 
 		// PEP8
-		sish("pycodestyle --config=./code-format/code-format/pycodestyle ${package_dir.toString()} " +
+		jesh("pycodestyle --config=./code-format/code-format/pycodestyle ${package_dir.toString()} " +
 		     "> pep8_report_${package_name}.txt || exit 0")
 		warnings canComputeNew: false,
 		         unstableTotalAll: '0',
@@ -39,11 +39,11 @@ def call(LinkedHashMap options) {
 		// PyLint
 		withEnv(["PYTHONPATH+WHATEVER=${package_parentdir}"]) {
 			// Linting
-			sish("pylint --rcfile ./code-format/code-format/pylintrc ${package_name} " +
+			jesh("pylint --rcfile ./code-format/code-format/pylintrc ${package_name} " +
 			     "> pylint_report_${package_name}.txt|| exit 0")
 
 			// Python3 compatibility, don't check absolute-import future statements, we require absolute imports anyways
-			sish("pylint --py3k --disable=no-absolute-import --rcfile " +
+			jesh("pylint --py3k --disable=no-absolute-import --rcfile " +
 			     "./code-format/code-format/pylintrc ${package_name} " +
 			     ">> pylint_report_${package_name}.txt|| exit 0")
 		}

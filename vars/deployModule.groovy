@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
  * @param options Map of options of module deployment.
  */
 def call(Map<String, String> options = [:]) {
-	String container = sish(returnStdout: true, script: "echo \$SINGULARITY_CONTAINER").trim()
+	String container = jesh(returnStdout: true, script: "echo \$SINGULARITY_CONTAINER").trim()
 	if (container == "") {
 		throw new IllegalStateException("Module deployment only works in the container.")
 	}
@@ -43,15 +43,15 @@ def call(Map<String, String> options = [:]) {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
 		String date = formatter.format(Date.from(Instant.now()))
 
-		String num = sish(returnStdout: true,
+		String num = jesh(returnStdout: true,
 		                  script: "num=1 && while [[ -e \"$targetDir/$date-\$num\" ]] ; do let num++; done && echo \$num").trim()
 
 		String version = "$date-$num"
 
 		// Create module directories, if they do not exist
-		sish "mkdir -p ${targetDir}"
-		sish "mkdir -p ${moduleDir}"
-		sish "cp -a $source ${Paths.get(targetDir, version).toString()}"
+		jesh "mkdir -p ${targetDir}"
+		jesh "mkdir -p ${moduleDir}"
+		jesh "cp -a $source ${Paths.get(targetDir, version).toString()}"
 
 		// Construct module file and default module version
 		String moduleFileContent = fillTemplate(moduleFileTemplate, [CONTAINER: container,

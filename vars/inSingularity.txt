@@ -1,6 +1,6 @@
 <p>
 Run a section of code within a specified singularity container.
-This makes {@code sish} steps being executed inside a bash within the given singularity container.
+This makes {@code jesh} steps being executed inside a bash within the given singularity container.
 </p>
 
 <p>

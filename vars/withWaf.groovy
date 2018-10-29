@@ -6,7 +6,7 @@ import org.electronicvisions.Waf
  * Example:
  * 	<pre>
  * 	    withWaf() {
- * 	        sish "waf setup --project some_project"
+ * 	        jesh "waf setup --project some_project"
  * 	    }
  *	</pre>
  *

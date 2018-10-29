@@ -15,7 +15,7 @@ def call(String stageName, Closure content) {
 	if (env.GERRIT_PORT && env.GERRIT_HOST && env.GERRIT_PATCHSET_REVISION) {
 		// Report everything that is no success
 		if (currentBuild.currentResult != "SUCCESS") {
-			sish(script: "ssh -p $GERRIT_PORT ${getGerritUsername()}@$GERRIT_HOST " +
+			jesh(script: "ssh -p $GERRIT_PORT ${getGerritUsername()}@$GERRIT_HOST " +
 			             "gerrit review --label Code-Review=-1 " +
 			             "-m '\"Early failure notification for Jenkins build $BUILD_URL\"' " +
 			             "$GERRIT_PATCHSET_REVISION")

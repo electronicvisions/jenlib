@@ -17,7 +17,7 @@ class WafTest extends GroovyTestCase {
 		public Map env = [:]
 
 		@SuppressWarnings("GroovyUnusedDeclaration")
-		void sish(String command) {
+		void jesh(String command) {
 
 			def out = new ByteArrayOutputStream()
 			def err = new ByteArrayOutputStream()
@@ -49,7 +49,7 @@ class WafTest extends GroovyTestCase {
 		Waf waf = new Waf(pipeline)
 		waf.build()
 
-		pipeline.sish "cd ${waf.waf_dir} && ${waf.path}/waf --help"
+		pipeline.jesh "cd ${waf.waf_dir} && ${waf.path}/waf --help"
 
 		assertTrue(pipeline.stdout_lastrun.contains("waf [commands] [options]"))
 
@@ -73,11 +73,11 @@ class WafTest extends GroovyTestCase {
 
 		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
 
-		pipeline.sish "cd ${waf.waf_dir} && ${waf.path}/waf --help"
+		pipeline.jesh "cd ${waf.waf_dir} && ${waf.path}/waf --help"
 
 		assertTrue(pipeline.stdout_lastrun.contains("waf [commands] [options]"))
 
-		pipeline.sish "cd ${waf.waf_dir}/waf/ && git log"
+		pipeline.jesh "cd ${waf.waf_dir}/waf/ && git log"
 
 		assertTrue(pipeline.stdout_lastrun.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
 
@@ -99,7 +99,7 @@ class WafTest extends GroovyTestCase {
 
 		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
 
-		pipeline.sish "cd ${waf.waf_dir} && ${waf.path}/waf --help"
+		pipeline.jesh "cd ${waf.waf_dir} && ${waf.path}/waf --help"
 
 		assertTrue(pipeline.stdout_lastrun.contains("waf [commands] [options]"))
 

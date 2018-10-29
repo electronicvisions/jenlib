@@ -58,36 +58,36 @@ node {
 
 			// Expected exceptions should be catched
 			assertBuildResult("FAILURE") {
-				sish "exit 1"
+				jesh "exit 1"
 			}
 			assert (currentBuild.currentResult == "SUCCESS")
 		}
 
-		stage('sishTest') {
+		stage('jeshTest') {
 			// Basic functionality
-			assert (sish(script: "hostname", returnStdout: true) == sh(script: "hostname", returnStdout: true))
+			assert (jesh(script: "hostname", returnStdout: true) == sh(script: "hostname", returnStdout: true))
 
 			// Must not be inside singularity
-			String shellEnv = sish(script: "env", returnStdout: true)
+			String shellEnv = jesh(script: "env", returnStdout: true)
 			assert (!shellEnv.contains("SINGULARITY_CONTAINER"))
 
 			// Mandatory arguments have to be there
 			assertBuildResult("FAILURE") {
-				sish(returnStdout: true)
+				jesh(returnStdout: true)
 			}
 
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
 		stage('inSingularityTest') {
-			// sish-shell steps are executed in containers
+			// jesh-shell steps are executed in containers
 			inSingularity {
-				String containerEnv = sish(script: "env", returnStdout: true)
+				String containerEnv = jesh(script: "env", returnStdout: true)
 				assert (containerEnv.contains("SINGULARITY_CONTAINER"))
 			}
 
 			// Clearing the environment works
-			String shellEnv = sish(script: "env", returnStdout: true)
+			String shellEnv = jesh(script: "env", returnStdout: true)
 			assert (!shellEnv.contains("SINGULARITY_CONTAINER"))
 
 			// Other commands still work
@@ -100,35 +100,35 @@ node {
 			assertBuildResult("FAILURE") {
 				inSingularity {
 					inSingularity {
-						sish("hostname")
+						jesh("hostname")
 					}
 				}
 			}
 
-			// Escaping of sish scripts
+			// Escaping of jesh scripts
 			// Escaping of " is not tested since it does not work in plain "sh" steps
 			for (command in ['echo $USER', 'echo \'echo hello\'', 'echo "hello\\nworld"']) {
 				shOutput = sh(script: command, returnStdout: true)
 				inSingularity {
-					sishOutput = sish(script: command, returnStdout: true)
+					jeshOutput = jesh(script: command, returnStdout: true)
 				}
-				assert (shOutput == sishOutput): "sh: $shOutput != sish: $sishOutput"
+				assert (shOutput == jeshOutput): "sh: $shOutput != jesh: $jeshOutput"
 			}
 		}
 
 		stage("checkPythonPackageTest") {
 			inSingularity {
-				sish "mkdir lib"
+				jesh "mkdir lib"
 
 				// Good package
-				sish "mkdir lib/good_package"
-				sish "echo 'class NiceClass(object):\n    pass' > lib/good_package/__init__.py"
+				jesh "mkdir lib/good_package"
+				jesh "echo 'class NiceClass(object):\n    pass' > lib/good_package/__init__.py"
 				checkPythonPackage(pkg: "lib/good_package")
 				assert (currentBuild.currentResult == "SUCCESS")
 
 				// Bad package
-				sish "mkdir lib/bad_package"
-				sish "echo 'class uglyclass(): pass' > lib/bad_package/__init__.py"
+				jesh "mkdir lib/bad_package"
+				jesh "echo 'class uglyclass(): pass' > lib/bad_package/__init__.py"
 				assertBuildResult("UNSTABLE") {
 					checkPythonPackage(pkg: "lib/bad_package")
 				}
@@ -212,9 +212,9 @@ node {
 
 			// Local repos have priority
 			String repoDir = UUID.randomUUID().toString()
-			sish("mkdir -p ${repoDir}")
-			sish("cd ${repoDir} && git init")
-			sish("cd ${repoDir} && git config gitreview.username foobar")
+			jesh("mkdir -p ${repoDir}")
+			jesh("cd ${repoDir} && git init")
+			jesh("cd ${repoDir} && git config gitreview.username foobar")
 
 			dir(repoDir) {
 				assert (getGerritUsername().equals("foobar"))
@@ -258,7 +258,7 @@ node {
 
 			assertBuildResult("FAILURE") {
 				onSlurmResource(partition: "jenkins", nodes: 2) {
-					sish "hostname"
+					jesh "hostname"
 				}
 			}
 		}
@@ -294,17 +294,17 @@ node {
 
 		stage('withWafTest') {
 			withWaf() {
-				stdout = sish(returnStdout: true, script: "waf --help")
+				stdout = jesh(returnStdout: true, script: "waf --help")
 				assert (stdout.contains("waf [commands] [options]"))
 
 				inSingularity {
-					stdout_singularity = sish(returnStdout: true, script: "waf --help")
+					stdout_singularity = jesh(returnStdout: true, script: "waf --help")
 				}
 				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
 
 			withWaf(gerrit_changes: "3981") {
-				stdout = sish(returnStdout: true, script: "waf --help")
+				stdout = jesh(returnStdout: true, script: "waf --help")
 				assert (stdout.contains("waf [commands] [options]"))
 			}
 		}
@@ -316,10 +316,10 @@ node {
 		}
 
 		stage('deployModuleTest') {
-			sish "mkdir -p $WORKSPACE/source"
-			sish "mkdir -p $WORKSPACE/source/bin"
-			sish "echo '#!/bin/bash\necho bla' > $WORKSPACE/source/bin/test_executable"
-			sish "chmod +x $WORKSPACE/source/bin/test_executable"
+			jesh "mkdir -p $WORKSPACE/source"
+			jesh "mkdir -p $WORKSPACE/source/bin"
+			jesh "echo '#!/bin/bash\necho bla' > $WORKSPACE/source/bin/test_executable"
+			jesh "chmod +x $WORKSPACE/source/bin/test_executable"
 
 			inSingularity() {
 				deployModule([name      : "testmodule",
@@ -329,7 +329,7 @@ node {
 			}
 
 			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
-				assert (sish(returnStdout: true,
+				assert (jesh(returnStdout: true,
 				             script: "module load testmodule && test_executable").contains("bla"))
 			}
 
@@ -354,7 +354,7 @@ node {
 				              targetRoot: "$WORKSPACE/install",
 				              source    : "$WORKSPACE/source"])
 			}
-			sish "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
+			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
 		}
 
 	} catch (Exception e) {

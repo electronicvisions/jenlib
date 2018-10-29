@@ -6,7 +6,7 @@ Provide the waf build tool.
 Intended usage:
 <pre>
 	withWaf(gerrit_changes: 'x') {
-		sish "waf setup --project some_project"
+		jesh "waf setup --project some_project"
 	}
 </pre>
 </p>

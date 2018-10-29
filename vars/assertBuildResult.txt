@@ -6,7 +6,7 @@ State an assertion on the influence of some code on the current pipeline's resul
 Intended usage:
 <pre>
 	assertBuildResult("FAILURE") {
-		sish "exit 1"
+		jesh "exit 1"
 	}
 </pre>
 </p>

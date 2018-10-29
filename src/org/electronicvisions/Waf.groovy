@@ -13,7 +13,7 @@ import static java.util.UUID.randomUUID
  * 	waf = new Waf(this, [gerrit_changes: "GERRIT_CHANGES", gerrit_host: "GERRIT_HOST", gerrit_port: "GERRIT_PORT", gerrit_user: "GERRIT_USER"])
  * 	waf.build()
  *	withEnv(["PATH+WAF=" + waf.path]) {
- *		sish "waf do_something"
+ *		jesh "waf do_something"
  *	}
  *	waf.clean()
  * </pre>
@@ -140,11 +140,11 @@ class Waf implements Serializable {
 	 */
 	private void debugShell(String command) {
 		if (debug) {
-			steps.sish command
+			steps.jesh command
 		} else {
 			command.replace("&&", "> /dev/null &&")
 			command += "> /dev/null"
-			steps.sish "${command}"
+			steps.jesh "${command}"
 		}
 	}
 }

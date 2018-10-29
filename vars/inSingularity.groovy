@@ -1,6 +1,8 @@
+import org.electronicvisions.ShellManipulator
+
 /**
  * Run a section of code within a specified singularity container.
- * This makes {@code sish} steps being executed inside a bash within the given singularity container.
+ * This makes {@code jesh} steps being executed inside a bash within the given singularity container.
  *
  * @param containerOptions Keys:
  *                          <ul>
@@ -11,21 +13,20 @@
  * @param content Code to be executed in the context of a container instance.
  */
 def call(Map<String, String> containerOptions = [:], Closure content) {
-	if (env.JENLIB_CONTAINER_IMAGE?.length()) {
-		throw new IllegalStateException("Cannot nest singularity instances: ${env.JENLIB_CONTAINER_IMAGE}")
-	}
 
-	env.JENLIB_CONTAINER_IMAGE = containerOptions.get("image", "/containers/stable/latest")
-	env.JENLIB_CONTAINER_APP = containerOptions.get("app", "visionary-defaults")
-	env.JENLIB_CONTAINER_ARGS = containerOptions.get("singularityArgs", "")
+	String cmdPrefix = "singularity exec " +
+	                   "--app ${containerOptions.get("app", "visionary-defaults")} " +
+	                   "${containerOptions.get("singularityArgs", "")} " +
+	                   "${containerOptions.get("image", "/containers/stable/latest")}"
+
+	ShellManipulator manipulator = new ShellManipulator(this)
+	manipulator.add(cmdPrefix, "")
 
 	try {
 		content()
 	} catch (Throwable anything) {
 		throw anything
 	} finally {
-		env.JENLIB_CONTAINER_IMAGE = ""
-		env.JENLIB_CONTAINER_APP = ""
-		env.JENLIB_CONTAINER_ARGS = ""
+		manipulator.restore()
 	}
 }

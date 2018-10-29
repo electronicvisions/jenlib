@@ -33,11 +33,11 @@ def call(Map<String, Object> options = [:]) {
 		stage('Checkout') {
 			runOnSlave(label: "frontend") {
 				if (env.GERRIT_CHANGE_NUMBER) {
-					sish("waf setup ${projectCommand} ${setupOptions} " +
+					jesh("waf setup ${projectCommand} ${setupOptions} " +
 					     "--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
 					     "--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
 				} else {
-					sish("waf setup ${projectCommand} ${setupOptions}")
+					jesh("waf setup ${projectCommand} ${setupOptions}")
 				}
 			}
 		}
