@@ -1,0 +1,14 @@
+<p>
+    Run a section of code with some loaded modules.
+</p>
+
+<p>
+    This makes <code>jesh</code> steps being executed in a shell that has the specified modules loaded.
+</p>
+
+Available options:
+<ul>
+    <li>modules: List of modules to be loaded (e.g. <code>["git/2.6.2"]</code>)</li>
+    <li>purge: [optional, defaults to {@code false}] Purge existing modules before loading new ones.</li>
+    <li>moduleInitPath: [optional] Path to sourecable file that provides the <code>module</code> command.</li>
+</ul>

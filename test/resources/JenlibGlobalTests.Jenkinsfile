@@ -206,6 +206,36 @@ node {
 			}
 		}
 
+		stage("withModulesTest") {
+			noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+
+			withModules(modules: ["localdir"]) {
+				localdirPath = jesh(script: 'echo $PATH', returnStdout: true)
+			}
+			assert (noModulePath != localdirPath): "$noModulePath should not be $localdirPath"
+
+			withModules(modules: ["localdir"]) {
+				withModules(purge: true, modules: []) {
+					purgedLocaldirPath = jesh(script: 'echo $PATH', returnStdout: true)
+				}
+			}
+			assert (noModulePath == purgedLocaldirPath): "$noModulePath should be $purgedLocaldirPath"
+
+			// Fail early on bad input
+			assertBuildResult("FAILURE") {
+				// 'modules' has to be of type List<String>
+				withModules(modules: "git") {}
+			}
+			assertBuildResult("FAILURE") {
+				// 'purge' has to be of type boolean
+				withModules(purge: "git") {}
+			}
+			assertBuildResult("FAILURE") {
+				// 'moduleInitPath' has to be of type String
+				withModules(moduleInitPath: true) {}
+			}
+		}
+
 		stage("getGerritUsernameTest") {
 			// We expect this to be hudson in the general case
 			assert (getGerritUsername().equals("hudson"))
