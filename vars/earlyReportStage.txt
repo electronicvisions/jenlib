@@ -1,0 +1,9 @@
+<p>
+    Special stage that reports unstable results back to jenkins before the build is finished.
+</p>
+
+<p>
+    Note that this is <i>not</i> a drop-in replacement for <code>stage()</code> blocks
+    in declarative pipelines (in scripted ones it is!): Jenkins is missing a feature
+    that allows redefinition of declarative stages, c.f. JENKINS-50548.
+</p>
