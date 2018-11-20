@@ -21,4 +21,6 @@ Available options (see also <code>wafSetup</code>):
     <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
         Defaults to <code>"--test-execall"</code>
     <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
+    <li><b>postPipelineCleanup</b> (optional): Cleanup the workspace after the pipeline has been run.
+                                               Defaults to <code>true</code>.
 </ul>

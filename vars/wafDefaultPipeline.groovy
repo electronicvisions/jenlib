@@ -23,9 +23,13 @@
  *                    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
+ *                    <li><b>postPipelineCleanup</b> (optional): Cleanup the workspace after the pipeline has been run.
+ *                                                               Defaults to {@code true}
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
+	boolean postPipelineCleanup = options.get("postPipelineCleanup", true)
+
 	try {
 		if (options.get("app") == null) {
 			throw new IllegalArgumentException("Container app is a mandatory argument.")
@@ -127,8 +131,10 @@ def call(Map<String, Object> options = [:]) {
 		notifyFailure(mattermostChannel: notificationChannel)
 		throw t
 	} finally {
-		runOnSlave(label: "frontend") {
-			cleanWs()
+		if (postPipelineCleanup) {
+			runOnSlave(label: "frontend") {
+				cleanWs()
+			}
 		}
 	}
 
