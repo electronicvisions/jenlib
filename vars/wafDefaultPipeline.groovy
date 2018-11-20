@@ -127,7 +127,9 @@ def call(Map<String, Object> options = [:]) {
 		notifyFailure(mattermostChannel: notificationChannel)
 		throw t
 	} finally {
-		cleanWs()
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
 	}
 
 	if (currentBuild.currentResult != "SUCCESS") {
