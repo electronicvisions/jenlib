@@ -30,13 +30,20 @@
 def call(Map<String, Object> options = [:]) {
 	boolean postPipelineCleanup = options.get("postPipelineCleanup", true)
 
-	try {
-		if (options.get("app") == null) {
-			throw new IllegalArgumentException("Container app is a mandatory argument.")
-		}
+	/*
+	 * Default failure notification channel: This is only used when a non-gerrit triggered (nightly)
+	 * pipeline fails without setting the (mandatory) {@code notificationChannel} argument.
+	 */
+	String notificationChannel = "#softies"
 
+	try {
 		if (options.get("notificationChannel") == null) {
 			throw new IllegalArgumentException("Notification channel is a mandatory argument.")
+		}
+		notificationChannel = options.get("notificationChannel")
+
+		if (options.get("app") == null) {
+			throw new IllegalArgumentException("Container app is a mandatory argument.")
 		}
 
 		if (options.get("configureInstallOptions")?.contains("--target")) {
@@ -52,7 +59,6 @@ def call(Map<String, Object> options = [:]) {
 		}
 
 		String app = options.get("app")
-		String notificationChannel = options.get("notificationChannel")
 		String configureInstallOptions = options.get("configureInstallOptions", "")
 		Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
 		                                                                          [partition: "jenkins", "cpus-per-task": "8"])
