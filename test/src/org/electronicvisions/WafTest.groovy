@@ -166,10 +166,12 @@ class WafTest extends GroovyTestCase {
 
 		Waf releaseWaf = new Waf(pipeline)
 		releaseWaf.build()
+		releaseWaf.clean()
 		assertFalse(pipeline.stdout_accumulated.length() > 0)
 
 		Waf debugWaf = new Waf(pipeline, [debug: true])
 		debugWaf.build()
+		debugWaf.clean()
 		assertTrue(pipeline.stdout_accumulated.contains("adding waflib"))
 	}
 }
