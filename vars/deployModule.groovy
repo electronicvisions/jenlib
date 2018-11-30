@@ -44,7 +44,7 @@ def call(Map<String, String> options = [:]) {
 		String date = formatter.format(Date.from(Instant.now()))
 
 		String num = sish(returnStdout: true,
-		                  script: "num=1 && while [[ -e '$targetDir/$date-\$num' ]] ; do let num++; done && echo \$num").trim()
+		                  script: "num=1 && while [[ -e \"$targetDir/$date-\$num\" ]] ; do let num++; done && echo \$num").trim()
 
 		String version = "$date-$num"
 

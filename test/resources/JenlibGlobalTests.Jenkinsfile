@@ -311,6 +311,21 @@ node {
 				             script: "module load testmodule && test_executable").contains("bla"))
 			}
 
+			// test increasing counter of module directory
+			num_before = sish(returnStdout: true,
+			    script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
+			inSingularity() {
+				deployModule([name: "testmodule",
+				              moduleRoot: "$WORKSPACE/module",
+				              targetRoot: "$WORKSPACE/install",
+				              source: "$WORKSPACE/source"])
+			}
+			num_after = sish(returnStdout: true,
+			    script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
+			assert (num_before == 1)
+			assert (num_after == 2)
+
+			// test fail without being in inSingularity closure
 			assertBuildResult("FAILURE") {
 				deployModule([name      : "testmodule",
 				              moduleRoot: "$WORKSPACE/module",
