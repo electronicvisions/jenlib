@@ -12,7 +12,8 @@
  *                <ul>
  *                    <li><b>projects</b> (mandatory): see <code>wafSetup</code>
  *                    <li><b>setupOptions</b> (optional): see <code>wafSetup</code>
- *                    <li><b>app</b> (mandatory): Container app to be used
+ *                    <li><b>container</b> (mandatory): Map of options to be passed to <code>inSingularity</code>.
+ *                                                      <code>app</code> key is mandatory.
  *                    <li><b>notificationChannel</b> (mandatory): Channel to be notified in case of failure
  *                                                                (e.g. <code>#softies</code>)
  *                    <li><b>configureInstallOptions</b> (optional): Options passed to the
@@ -42,10 +43,6 @@ def call(Map<String, Object> options = [:]) {
 		}
 		notificationChannel = options.get("notificationChannel")
 
-		if (options.get("app") == null) {
-			throw new IllegalArgumentException("Container app is a mandatory argument.")
-		}
-
 		if (options.get("configureInstallOptions")?.contains("--target")) {
 			throw new IllegalArgumentException("Cannot overwrite target definition.")
 		}
@@ -58,7 +55,18 @@ def call(Map<String, Object> options = [:]) {
 			throw new IllegalArgumentException("Cannot overwrite target definition.")
 		}
 
-		String app = options.get("app")
+		LinkedHashMap<String, String> containerOptions
+		if (options.get("app") != null) {
+			echo "[WARNING] 'app' pipeline parameter is deprecated. Use 'container: [app: ]' instead.'"
+			containerOptions = [app: (String) options.get("app")]
+		} else {
+			containerOptions = (LinkedHashMap<String, String>) options.get("container")
+		}
+
+		if (containerOptions.get("app") == null) {
+			throw new IllegalArgumentException("Container app needs to be specified.")
+		}
+
 		String configureInstallOptions = options.get("configureInstallOptions", "")
 		Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
 		                                                                          [partition: "jenkins", "cpus-per-task": "8"])
@@ -77,7 +85,7 @@ def call(Map<String, Object> options = [:]) {
 		// Directories test-result XML files are written to
 		LinkedList<String> testResultDirs = new LinkedList<String>()
 
-		inSingularity(app: app) {
+		inSingularity(containerOptions) {
 			withWaf() {
 				// Build and run tests with default target and target="*"
 				for (String wafTargetOption in ["", "--target='*'"]) {

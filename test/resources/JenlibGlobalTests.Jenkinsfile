@@ -135,33 +135,55 @@ node {
 			}
 		}
 
-		stage("wafDefaultPipeline") {
+		stage("wafDefaultPipelineTest") {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
 			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
-			                   app: "visionary-dls",
+			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin")
 
 			// Unsupported command line options
 			assertBuildResult("FAILURE") {
+				// No pipeline without projects
 				wafDefaultPipeline()
 			}
 			assertBuildResult("FAILURE") {
+				// 'projects' has to be of type List<String>
 				wafDefaultPipeline(projects: "frickel-dls")
 			}
 			assertBuildResult("FAILURE") {
-				wafDefaultPipeline(projects: ["frickel-dls"])
+				// 'notificationChannel' argument is mandatory
+				wafDefaultPipeline(projects: ["frickel-dls"],
+				                   container: [app: "visionary-dls"])
 			}
 			assertBuildResult("FAILURE") {
+				// container app has to be specified
+				wafDefaultPipeline(projects: ["frickel-dls"],
+				                   notificationChannel: "#jenkins-trashbin")
+			}
+			assertBuildResult("FAILURE") {
+				// No pipeline without projects
 				wafDefaultPipeline(projects: [])
 			}
 			assertBuildResult("FAILURE") {
-				wafDefaultPipeline(configureInstallOptions: "--target='*'")
+				// Target may not be modified, the pipeline runs for default and '*' internally
+				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				                   container: [app: "visionary-dls"],
+				                   notificationChannel: "#jenkins-trashbin",
+				                   configureInstallOptions: "--target='*'")
 			}
 			assertBuildResult("FAILURE") {
-				wafDefaultPipeline(configureInstallOptions: "--test-execnone")
+				// Target may not be modified, the pipeline runs for default and '*' internally
+				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				                   container: [app: "visionary-dls"],
+				                   notificationChannel: "#jenkins-trashbin",
+				                   testOptions: "--target='*'")
 			}
 			assertBuildResult("FAILURE") {
-				wafDefaultPipeline(testOptions: "--target='*'")
+				// Test handling may not be modified, the pipeline does it internally
+				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				                   container: [app: "visionary-dls"],
+				                   notificationChannel: "#jenkins-trashbin",
+				                   configureInstallOptions: "--test-execnone")
 			}
 		}
 
@@ -313,15 +335,15 @@ node {
 
 			// test increasing counter of module directory
 			num_before = sish(returnStdout: true,
-			    script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
+			                  script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
 			inSingularity() {
-				deployModule([name: "testmodule",
+				deployModule([name      : "testmodule",
 				              moduleRoot: "$WORKSPACE/module",
 				              targetRoot: "$WORKSPACE/install",
-				              source: "$WORKSPACE/source"])
+				              source    : "$WORKSPACE/source"])
 			}
 			num_after = sish(returnStdout: true,
-			    script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
+			                 script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
 			assert (num_before == 1)
 			assert (num_after == 2)
 
