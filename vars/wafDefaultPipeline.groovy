@@ -137,8 +137,8 @@ def call(Map<String, Object> options = [:]) {
 				         canRunOnFailed: true,
 				         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)'],
 				                          [parserName: 'Clang (LLVM based)']],
-				         excludePattern: ".*/opt/spack.*,${warningsIgnorePattern}"
-				unstableTotalAll: '0'
+				         excludePattern: ".*opt/spack.*,${warningsIgnorePattern}",
+				         unstableTotalAll: '0'
 			}
 		}
 	} catch (Throwable t) {
