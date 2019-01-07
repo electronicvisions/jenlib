@@ -1,0 +1,9 @@
+<p>
+    Encode a given String in Base64.
+</p>
+<p>
+    Parameters:
+<ul>
+    <li>message: The String to encode.</li>
+</ul>
+</p>

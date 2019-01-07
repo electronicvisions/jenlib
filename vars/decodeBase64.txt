@@ -1,0 +1,9 @@
+<p>
+    Decode a given String from Base64.
+</p>
+<p>
+    Parameters:
+<ul>
+    <li>input: The Base64-encoded string to decode</li>
+</ul>
+</p>

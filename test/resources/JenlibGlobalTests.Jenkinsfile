@@ -79,6 +79,14 @@ node {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
+		stage('decodeBase64Test') {
+			assert (decodeBase64("Zm9vYmFy") == "foobar")
+		}
+
+		stage('encodeBase64Test') {
+			assert (encodeBase64("barfoo") == "YmFyZm9v")
+		}
+
 		stage('inSingularityTest') {
 			// jesh-shell steps are executed in containers
 			inSingularity {
@@ -101,6 +109,87 @@ node {
 				inSingularity {
 					inSingularity {
 						jesh("hostname")
+					}
+				}
+			}
+
+			// "In-Container:" specified in commit message
+			String pathCustomImage = jesh(
+					script: "find /containers/stable -type f | grep \"[0-9]\" | head -n 1",
+					returnStdout: true).trim()
+
+			String nameCustomImage = jesh(
+					script: "basename ${pathCustomImage}",
+					returnStdout: true).trim()
+
+			// NOTE; additional white-space in the commit-messages is intended
+			List<String> commitMessagesSuccess = [
+					"""
+				Fake commit message subject
+
+				Here be dragons!
+
+				In-Container: ${pathCustomImage}
+
+				Change-Id: 12345678
+				""",
+
+					"""
+				Fake commit message subject
+
+				Here be dragons!
+
+				In-Container:${pathCustomImage}     
+
+				Change-Id: 12345678
+				""",
+
+					"""
+				Fake commit message subject
+
+				Change-Id: 12345678
+				In-Container:       ${pathCustomImage}     
+				"""
+			]
+
+			for (String fakeCommitMessage : commitMessagesSuccess) {
+				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
+
+				withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
+					inSingularity {
+						String singularityContainer = jesh(
+								script: 'echo ${SINGULARITY_CONTAINER}',
+								returnStdout: true).trim()
+
+						assert singularityContainer == nameCustomImage:
+								"Expected ${nameCustomImage}, but " +
+								"SINGULARITY_CONTAINER is " +
+								"${singularity_container}!"
+					}
+				}
+			}
+
+			List<String> commitMessagesFail = [
+					"""
+				Fake commit message subject
+
+				Here be dragons! And multiple In-Container statements!
+
+				In-Container:${pathCustomImage}     
+				In-Container: ${pathCustomImage}
+
+				Change-Id: 12345678
+				""",
+			]
+
+			for (String fakeCommitMessage : commitMessagesFail) {
+				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
+
+				assertBuildResult("FAILURE") {
+					withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
+						inSingularity {
+							jesh('env')
+						}
 					}
 				}
 			}
