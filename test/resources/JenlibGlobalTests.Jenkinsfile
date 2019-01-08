@@ -437,6 +437,7 @@ node {
 		stage('deployModuleTest') {
 			jesh "mkdir -p $WORKSPACE/source"
 			jesh "mkdir -p $WORKSPACE/source/bin"
+			jesh "mkdir -p $WORKSPACE/source/lib"
 			jesh "echo '#!/bin/bash\necho bla' > $WORKSPACE/source/bin/test_executable"
 			jesh "chmod +x $WORKSPACE/source/bin/test_executable"
 
@@ -450,6 +451,22 @@ node {
 			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
 				assert (jesh(returnStdout: true,
 				             script: "module load testmodule && test_executable").contains("bla"))
+			}
+
+			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
+				withModules(modules: ["testmodule"]) {
+					assert (jesh(returnStdout: true,
+					             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
+				}
+			}
+
+			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
+				withModules(modules: ["testmodule"]) {
+					inSingularity() {
+						assert (jesh(returnStdout: true,
+						             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
+					}
+				}
 			}
 
 			// test increasing counter of module directory
