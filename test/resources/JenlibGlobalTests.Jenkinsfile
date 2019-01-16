@@ -290,9 +290,6 @@ node {
 			assertBuildResult("FAILURE") {
 				wafSetup(projects: "frickel-dls")
 			}
-			assertBuildResult("FAILURE") {
-				wafSetup(projects: [])
-			}
 		}
 
 		stage("withModulesTest") {

@@ -19,10 +19,6 @@ def call(Map<String, Object> options = [:]) {
 		throw new IllegalArgumentException("Projects have to be a list.")
 	}
 
-	if (!options.get("projects").size()) {
-		throw new IllegalArgumentException("List of projects is empty.")
-	}
-
 	List<String> projects = options.get("projects") as List<String>
 
 	projects.add(0, "")
