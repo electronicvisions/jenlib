@@ -24,6 +24,7 @@
  *                                                             Defaults to <code>[partition: "jenkins", "cpus-per-task": "8"]</code>
  *                    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
  *                                                       Defaults to <code>"--test-execall"</code>
+ *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
  *                    <li><b>postPipelineCleanup</b> (optional): Cleanup the workspace after the pipeline has been run.
  *                                                               Defaults to {@code true}
@@ -69,6 +70,10 @@ def call(Map<String, Object> options = [:]) {
 		}
 
 		Map<String, Object> modulesOptions = (Map<String, Object>) options.get("modules", [modules: []])
+		String testTimeout = ""
+		if (options.get("testTimeout") != null) {
+			testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
+		}
 		String configureInstallOptions = options.get("configureInstallOptions", "")
 		Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
 		                                                                          [partition: "jenkins", "cpus-per-task": "8"])
@@ -99,6 +104,7 @@ def call(Map<String, Object> options = [:]) {
 							inSingularity(containerOptions) {
 								jesh("waf configure install " +
 								     "--test-xml-summary=${testOutputDir} " +
+								     "${testTimeout} " +
 								     "--test-execnone " +
 								     "${wafTargetOption} ${configureInstallOptions}")
 							}
