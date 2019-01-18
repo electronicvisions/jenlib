@@ -12,6 +12,7 @@
  *                <ul>
  *                    <li><b>projects</b> (mandatory): see <code>wafSetup</code>
  *                    <li><b>setupOptions</b> (optional): see <code>wafSetup</code>
+ *                    <li><b>modules</b> (optional): Map of options to be passed to <code>withModules</code>.
  *                    <li><b>container</b> (mandatory): Map of options to be passed to <code>inSingularity</code>.
  *                                                      <code>app</code> key is mandatory.
  *                    <li><b>notificationChannel</b> (mandatory): Channel to be notified in case of failure
@@ -67,6 +68,7 @@ def call(Map<String, Object> options = [:]) {
 			throw new IllegalArgumentException("Container app needs to be specified.")
 		}
 
+		Map<String, Object> modulesOptions = (Map<String, Object>) options.get("modules", [modules: []])
 		String configureInstallOptions = options.get("configureInstallOptions", "")
 		Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
 		                                                                          [partition: "jenkins", "cpus-per-task": "8"])
@@ -85,26 +87,32 @@ def call(Map<String, Object> options = [:]) {
 		// Directories test-result XML files are written to
 		LinkedList<String> testResultDirs = new LinkedList<String>()
 
-		inSingularity(containerOptions) {
-			withWaf() {
-				// Build and run tests with default target and target="*"
-				for (String wafTargetOption in ["", "--target='*'"]) {
-					String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
-					testResultDirs.add("build/" + testOutputDir)
+		withWaf() {
+			// Build and run tests with default target and target="*"
+			for (String wafTargetOption in ["", "--target='*'"]) {
+				String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
+				testResultDirs.add("build/" + testOutputDir)
 
-					stage("Build ${wafTargetOption}".trim()) {
-						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
-							jesh("waf configure install " +
-							     "--test-xml-summary=${testOutputDir} " +
-							     "--test-execnone " +
-							     "${wafTargetOption} ${configureInstallOptions}")
+				stage("Build ${wafTargetOption}".trim()) {
+					onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+						withModules(modulesOptions) {
+							inSingularity(containerOptions) {
+								jesh("waf configure install " +
+								     "--test-xml-summary=${testOutputDir} " +
+								     "--test-execnone " +
+								     "${wafTargetOption} ${configureInstallOptions}")
+							}
 						}
 					}
+				}
 
-					// Run tests defined in waf
-					stage("Tests ${wafTargetOption}".trim()) {
-						onSlurmResource(testSlurmResource) {
-							jesh("waf build ${testOptions}")
+				// Run tests defined in waf
+				stage("Tests ${wafTargetOption}".trim()) {
+					onSlurmResource(testSlurmResource) {
+						withModules(modulesOptions) {
+							inSingularity(containerOptions) {
+								jesh("waf build ${testOptions}")
+							}
 						}
 					}
 				}
