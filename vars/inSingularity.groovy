@@ -1,8 +1,5 @@
 import org.electronicvisions.ShellManipulator
 
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
 /**
  * Run a section of code within a specified singularity container.
  * This makes {@code jesh} steps being executed inside a bash within the given singularity container.
@@ -25,30 +22,10 @@ import java.util.regex.Pattern
  */
 def call(Map<String, String> containerOptions = [:], Closure content) {
 
-	String defaultImageCanonical = "/containers/stable/latest"
-	String defaultImage = defaultImageCanonical
-
-	if (env.GERRIT_CHANGE_COMMIT_MESSAGE != null) {
-		String commitMessage = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE)
-
-		Pattern regex = Pattern.compile('^In-Container:\\s*(.*?)\\s*$')
-
-		for (String line : commitMessage.normalize().readLines()) {
-			Matcher match = regex.matcher(line)
-
-			if (match.find()) {
-				if (defaultImage != defaultImageCanonical) {
-					throw new IllegalArgumentException("'In-Container:' specified multiple times in commit messsage.")
-				}
-				defaultImage = match.group(1)
-			}
-		}
-	}
-
 	String cmdPrefix = "singularity exec " +
 	                   "--app ${containerOptions.get("app", "visionary-defaults")} " +
 	                   "${containerOptions.get("singularityArgs", "")} " +
-	                   "${containerOptions.get("image", defaultImage)}"
+	                   "${containerOptions.get("image", (String) getDefaultContainerPath())}"
 
 	ShellManipulator manipulator = new ShellManipulator(this)
 	manipulator.add(cmdPrefix, "")

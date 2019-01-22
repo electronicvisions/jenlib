@@ -1,0 +1,12 @@
+<p>
+    Evaluate the default container path to be used.
+</p>
+
+<p>
+    This usually evaluates to <code>/containers/stable/latest</code>, this value can however be overwritten by a single
+    line in the commit message of gerrit-triggered commits starting with <code>In-Container: /some/other/image</code>.
+</p>
+
+<p>
+    Multiple such lines will result in an <code>IllegalArgumentException</code>.
+</p>

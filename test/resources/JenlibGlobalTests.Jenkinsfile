@@ -113,14 +113,44 @@ node {
 				}
 			}
 
-			// "In-Container:" specified in commit message
-			String pathCustomImage = jesh(
-					script: "find /containers/stable -type f | grep \"[0-9]\" | head -n 1",
-					returnStdout: true).trim()
+			// Escaping of jesh scripts
+			// Escaping of " is not tested since it does not work in plain "sh" steps
+			for (command in ['echo $USER', 'echo \'echo hello\'', 'echo "hello\\nworld"']) {
+				shOutput = sh(script: command, returnStdout: true)
+				inSingularity {
+					jeshOutput = jesh(script: command, returnStdout: true)
+				}
+				assert (shOutput == jeshOutput): "sh: $shOutput != jesh: $jeshOutput"
+			}
+		}
 
-			String nameCustomImage = jesh(
-					script: "basename ${pathCustomImage}",
-					returnStdout: true).trim()
+		stage("checkPythonPackageTest") {
+			inSingularity {
+				jesh "mkdir lib"
+
+				// Good package
+				jesh "mkdir lib/good_package"
+				jesh "echo 'class NiceClass(object):\n    pass' > lib/good_package/__init__.py"
+				checkPythonPackage(pkg: "lib/good_package")
+				assert (currentBuild.currentResult == "SUCCESS")
+
+				// Bad package
+				jesh "mkdir lib/bad_package"
+				jesh "echo 'class uglyclass(): pass' > lib/bad_package/__init__.py"
+				assertBuildResult("UNSTABLE") {
+					checkPythonPackage(pkg: "lib/bad_package")
+				}
+			}
+		}
+
+		stage("getDefaultContainerPathTest") {
+			// Default without "In-Container:" in commit message
+			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
+				assert getDefaultContainerPath() == "/containers/stable/latest"
+			}
+
+			// "In-Container:" specified in commit message
+			String pathCustomImage = "/foo/bar/path"
 
 			// NOTE; additional white-space in the commit-messages is intended
 			List<String> commitMessagesSuccess = [
@@ -155,17 +185,10 @@ node {
 			for (String fakeCommitMessage : commitMessagesSuccess) {
 				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
 
-				withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
-					inSingularity {
-						String singularityContainer = jesh(
-								script: 'echo ${SINGULARITY_CONTAINER}',
-								returnStdout: true).trim()
-
-						assert singularityContainer == nameCustomImage:
-								"Expected ${nameCustomImage}, but " +
-								"SINGULARITY_CONTAINER is " +
-								"${singularity_container}!"
-					}
+				withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=$encodedFakeCommitMessage"]) {
+					String containerPath = getDefaultContainerPath()
+					assert containerPath == pathCustomImage:
+							"Expected $pathCustomImage, but container path is $containerPath."
 				}
 			}
 
@@ -187,39 +210,8 @@ node {
 
 				assertBuildResult("FAILURE") {
 					withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
-						inSingularity {
-							jesh('env')
-						}
+						getDefaultContainerPath()
 					}
-				}
-			}
-
-			// Escaping of jesh scripts
-			// Escaping of " is not tested since it does not work in plain "sh" steps
-			for (command in ['echo $USER', 'echo \'echo hello\'', 'echo "hello\\nworld"']) {
-				shOutput = sh(script: command, returnStdout: true)
-				inSingularity {
-					jeshOutput = jesh(script: command, returnStdout: true)
-				}
-				assert (shOutput == jeshOutput): "sh: $shOutput != jesh: $jeshOutput"
-			}
-		}
-
-		stage("checkPythonPackageTest") {
-			inSingularity {
-				jesh "mkdir lib"
-
-				// Good package
-				jesh "mkdir lib/good_package"
-				jesh "echo 'class NiceClass(object):\n    pass' > lib/good_package/__init__.py"
-				checkPythonPackage(pkg: "lib/good_package")
-				assert (currentBuild.currentResult == "SUCCESS")
-
-				// Bad package
-				jesh "mkdir lib/bad_package"
-				jesh "echo 'class uglyclass(): pass' > lib/bad_package/__init__.py"
-				assertBuildResult("UNSTABLE") {
-					checkPythonPackage(pkg: "lib/bad_package")
 				}
 			}
 		}
