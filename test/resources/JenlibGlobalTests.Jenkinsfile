@@ -216,6 +216,11 @@ node {
 			}
 		}
 
+		stage("getContainerAppsTest"){
+			assert getContainerApps().contains("visionary-dls")
+			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
+		}
+
 		stage("wafDefaultPipelineTest") {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
 			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],

@@ -1,0 +1,10 @@
+<p>
+    Create a list of all apps available for a given singularity container.
+</p>
+
+<p>
+    Parameters:
+<ul>
+    <li><b>containerPath</b>Path to the container in question. <code>null</code> leads to the default path being used.</li>
+</ul>
+</p>
