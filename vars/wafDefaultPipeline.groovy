@@ -1,3 +1,4 @@
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 /**
  * Pipeline for verifying "typical" waf projects:
  * <ul>
@@ -33,6 +34,10 @@
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
  *                    <li><b>wafTargetOptions</b> (optional): List of targets to be built.
  *                                                            Defaults to <code>[""]</code>, representing only the default target set.
+ *                    <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
+                                                               Defaults to <code>true</code>.
+ *                    <li><b>enableClangFormatFullDiff</b> (optional): Enable full diff for clang-format checks of non-Gerrit triggered builds.
+ *                                                                     Defaults to <code>false</code>.
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
@@ -168,6 +173,24 @@ def call(Map<String, Object> options = [:]) {
 					                       stopProcessingIfError: true]
 					      ]
 					])
+				}
+			}
+
+			// Check C/C++ source formatting
+			stage("Test clang-format") {
+				Boolean enableClangFormat = options.get("enableClangFormat", true)
+				if (enableClangFormat) {
+					runOnSlave(label: "frontend") {
+						inSingularity(containerOptions) {
+							Boolean enableClangFormatFullDiff = options.get("enableClangFormatFullDiff", false)
+							for (String project in options.get("projects")) {
+								checkClangFormat([folder: project.split("@")[0],
+								                  fullDiff: (enableClangFormatFullDiff && !isTriggeredByGerrit())])
+							}
+						}
+					}
+				} else {
+					Utils.markStageSkippedForConditional(env.STAGE_NAME)
 				}
 			}
 

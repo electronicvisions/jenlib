@@ -384,6 +384,84 @@ try {
 			}
 		}
 
+		stage('checkClangFormatTest') {
+			dir ("good_repo") {
+				jesh "git init"
+				jesh "echo initial > initial && git add ."
+				jesh "git commit -m='first'"
+				jesh "echo 'void function() {}' > file.h"
+				jesh "git add ."
+				jesh "git commit -m='second'"
+			}
+
+			assertBuildResult("SUCCESS") {
+				inSingularity(app: "dls") {
+					checkClangFormat(folder: "good_repo")
+				}
+			}
+
+			assertBuildResult("SUCCESS") {
+				inSingularity(app: "dls") {
+					checkClangFormat(folder: "good_repo", fullDiff: true)
+				}
+			}
+
+			dir ("no_change_repo") {
+				jesh "git init"
+				jesh "echo initial > initial && git add ."
+				jesh "git commit -m='first'"
+				jesh "echo 'def fun(): pass; foo()' > file.py"
+				jesh "git add ."
+				jesh "git commit -m='second'"
+			}
+
+			assertBuildResult("SUCCESS") {
+				inSingularity(app: "dls") {
+					checkClangFormat(folder: "no_change_repo")
+				}
+			}
+
+			assertBuildResult("SUCCESS") {
+				inSingularity(app: "dls") {
+					checkClangFormat(folder: "no_change_repo", fullDiff: true)
+				}
+			}
+
+			dir ("bad_repo") {
+				jesh "git init"
+				jesh "echo initial > initial && git add ."
+				jesh "git commit -m='first'"
+				jesh "echo 'void function() {' > file.h"
+				jesh "echo '}' >> file"
+				jesh "git add ."
+				jesh "git commit -m='second'"
+			}
+
+			assertBuildResult("UNSTABLE") {
+				inSingularity(app: "dls") {
+					checkClangFormat(folder: "bad_repo")
+				}
+			}
+
+			assertBuildResult("UNSTABLE") {
+				inSingularity(app: "dls") {
+					checkClangFormat(folder: "bad_repo", fullDiff: true)
+				}
+			}
+
+			assertBuildResult("FAILURE") {
+				checkClangFormat(folder: "good_repo")
+			}
+
+			assertBuildResult("FAILURE") {
+				inSingularity(app: "dls") {
+					checkClangFormat(nofolder: "good_repo")
+				}
+			}
+
+			jesh "rm -rf good_repo bad_repo"
+		}
+
 		stage("wafDefaultPipelineTest") {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
 			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
@@ -440,6 +518,14 @@ try {
 				                   notificationChannel: "#jenkins-trashbin",
 				                   configureInstallOptions: "--test-execnone")
 			}
+
+			// Test a small project without clang-format test
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   testSlurmResource: [partition: "jenkins"],
+			                   notificationChannel: "#jenkins-trashbin",
+			                   enableClangFormat: false)
+			cleanWs()
 		}
 
 		stage("withModulesTest") {

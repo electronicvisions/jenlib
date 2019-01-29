@@ -1,0 +1,13 @@
+<p>
+    Check source files of commit or whole repository for compliance with clang-format formatting.
+</p>
+<p>
+    Parameters:
+<ul>
+    <li><b>folder</b> (mandatory): Location of repository.
+    <li><b>reference</b> (optional): Reference from which to clang-format.
+                                     Defaults to HEAD.
+    <li><b>fullDiff</b> (optional): Whether to git clang-format from reference to reference~1 or the full repository.
+                                    Defaults to <code>false</code>.
+</ul>
+</p>

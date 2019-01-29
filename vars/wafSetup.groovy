@@ -34,10 +34,10 @@ def impl(Map<String, Object> options = [:]) {
 		throw new IllegalArgumentException("Projects have to be a list.")
 	}
 
-	List<String> projects = options.get("projects") as List<String>
+	List<String> projects = options.get("projects").collect()
 
 	projects.add(0, "")
-	String setupOptions = options.get("setupOptions", "--clone-depth=1")
+	String setupOptions = options.get("setupOptions", "--clone-depth=2")
 	String projectCommand = projects.join(" --project ").trim()
 
 	withWaf() {
