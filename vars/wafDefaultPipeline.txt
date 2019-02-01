@@ -11,7 +11,7 @@ Available options (see also <code>wafSetup</code>):
 <ul>
     <li><b>projects</b> (mandatory): see <code>wafSetup</code>
     <li><b>setupOptions</b> (optional): see <code>wafSetup</code>
-    <li><b>modules</b> (optional): Map of options to be passed to <code>withModules</code>.
+    <li><b>moduleOptions</b> (optional): Map of options to be passed to <code>withModules</code>.
     <li><b>container</b> (mandatory): Map of options to be passed to <code>inSingularity</code>.
                                       <code>app</code> key is mandatory.
     <li><b>notificationChannel</b> (mandatory): Channel to be notified in case of failure (e.g. <code>#softies</code>)

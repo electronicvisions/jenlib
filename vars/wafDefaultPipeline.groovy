@@ -12,7 +12,7 @@
  *                <ul>
  *                    <li><b>projects</b> (mandatory): see <code>wafSetup</code>
  *                    <li><b>setupOptions</b> (optional): see <code>wafSetup</code>
- *                    <li><b>modules</b> (optional): Map of options to be passed to <code>withModules</code>.
+ *                    <li><b>moduleOptions</b> (optional): Map of options to be passed to <code>withModules</code>.
  *                    <li><b>container</b> (mandatory): Map of options to be passed to <code>inSingularity</code>.
  *                                                      <code>app</code> key is mandatory.
  *                    <li><b>notificationChannel</b> (mandatory): Channel to be notified in case of failure
@@ -69,7 +69,7 @@ def call(Map<String, Object> options = [:]) {
 			throw new IllegalArgumentException("Container app needs to be specified.")
 		}
 
-		Map<String, Object> modulesOptions = (Map<String, Object>) options.get("modules", [modules: []])
+		Map<String, Object> moduleOptions = (Map<String, Object>) options.get("moduleOptions", [modules: []])
 		String testTimeout = ""
 		if (options.get("testTimeout") != null) {
 			testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
@@ -100,7 +100,7 @@ def call(Map<String, Object> options = [:]) {
 
 				stage("Build ${wafTargetOption}".trim()) {
 					onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
-						withModules(modulesOptions) {
+						withModules(moduleOptions) {
 							inSingularity(containerOptions) {
 								jesh("waf configure install " +
 								     "--test-xml-summary=${testOutputDir} " +
@@ -115,7 +115,7 @@ def call(Map<String, Object> options = [:]) {
 				// Run tests defined in waf
 				stage("Tests ${wafTargetOption}".trim()) {
 					onSlurmResource(testSlurmResource) {
-						withModules(modulesOptions) {
+						withModules(moduleOptions) {
 							inSingularity(containerOptions) {
 								jesh("waf build ${testOptions}")
 							}
