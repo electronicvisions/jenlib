@@ -149,8 +149,7 @@ def call(Map<String, Object> options = [:]) {
 			runOnSlave(label: "frontend") {
 				warnings canComputeNew: false,
 				         canRunOnFailed: true,
-				         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)'],
-				                          [parserName: 'Clang (LLVM based)']],
+				         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
 				         excludePattern: ".*opt/spack.*,${warningsIgnorePattern}",
 				         unstableTotalAll: '0'
 			}
