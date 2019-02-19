@@ -1,0 +1,13 @@
+<p>
+    Add a new build parameter to the job in whose context this step is executed.
+</p>
+
+<p>
+    Existing parameters will not be changed.
+</p>
+
+<p>
+    This method either takes parameters as <code>hudson.model.ParameterDefinition</code> or
+    in the form of <code>string(name: parameterName, defaultValue: parameterValue)</code>. The latter dos not require
+    object instantiation in the Jenkinsfile and is therefore suited for secured scripts.
+</p>

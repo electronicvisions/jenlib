@@ -1,3 +1,5 @@
+import hudson.model.Result
+
 /**
  * This method allows to set the build result of the current job in an arbitrary way.
  * The default setter only allows results to get worse.
@@ -6,5 +8,5 @@
  * @param state Result to be set, one of ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]
  */
 def call(String state) {
-	currentBuild.rawBuild.@result = hudson.model.Result.metaClass.getAttribute(hudson.model.Result, state)
+	currentBuild.rawBuild.@result = Result.metaClass.getAttribute(Result, state)
 }
