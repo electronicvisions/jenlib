@@ -82,6 +82,14 @@ def call(Map<String, Object> options = [:], Closure content) {
 	ShellManipulator manipulator = new ShellManipulator(this)
 	manipulator.add(prefixCommands.join(" && ") + " &&", "")
 
+	// module load sometimes fails with exit code 0, make sure all modules load correctly
+	String modules = jesh(script: "module list 2>&1", returnStdout: true)
+	for (String module in (List<String>) options.get("modules")) {
+		if (!modules.contains(module)) {
+			throw new IllegalStateException("[withModules] module load was not successful! $module is missing.")
+		}
+	}
+
 	try {
 		content()
 	} catch (Throwable anything) {

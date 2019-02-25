@@ -216,7 +216,7 @@ node {
 			}
 		}
 
-		stage("getContainerAppsTest"){
+		stage("getContainerAppsTest") {
 			assert getContainerApps().contains("visionary-dls")
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
@@ -303,6 +303,11 @@ node {
 				}
 			}
 			assert (noModulePath == purgedLocaldirPath): "$noModulePath should be $purgedLocaldirPath"
+
+			// Fail if module load does not succeed
+			assertBuildResult("FAILURE") {
+				withModules(modules: ["jenlibNonExistingModule"]) {}
+			}
 
 			// Fail early on bad input
 			assertBuildResult("FAILURE") {
