@@ -30,10 +30,10 @@ def call(Map<String, Object> options = [:], Closure content) {
 	 * LUT for the paths to files that may be sourced to make the module command available on different machines.
 	 * Keys are regex expressions that are supposed to match the respective hostname.
 	 */
-	HashMap<String, String> moduleInitPaths = ["helvetica"             : "/wang/environment/software/Modules/bashrc",
-	                                           "AMTHost\\d+"           : "/wang/environment/software/Modules/bashrc",
-	                                           "HBPHost\\d+"           : "/wang/environment/software/Modules/bashrc",
-	                                           "ome.*|vrhea.*|vtitan.*": "/usr/local/Modules/current/init/bash"]
+	HashMap<String, String> moduleInitPaths = ["helvetica"                      : "/wang/environment/software/Modules/bashrc",
+	                                           "AMTHost\\d+"                    : "/wang/environment/software/Modules/bashrc",
+	                                           "HBPHost\\d+"                    : "/wang/environment/software/Modules/bashrc",
+	                                           "ome.*|vrhea.*|vtitan.*|uranus.*": "/usr/local/Modules/current/init/bash"]
 
 	List<String> prefixCommands = new ArrayList()
 
