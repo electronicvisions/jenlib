@@ -79,6 +79,9 @@ def call(Map<String, Object> options = [:], Closure content) {
 		prefixCommands.add("module load $module")
 	}
 
+	// Keep module command alive if it's not yet exported. Don't fail if it's not a function.
+	prefixCommands.add("export -f module || true")
+
 	ShellManipulator manipulator = new ShellManipulator(this)
 	manipulator.add(prefixCommands.join(" && ") + " &&", "")
 
