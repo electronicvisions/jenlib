@@ -104,15 +104,6 @@ node {
 				assert (currentDirectory)   // must not be empty
 			}
 
-			// Nested containers are forbidden
-			assertBuildResult("FAILURE") {
-				inSingularity {
-					inSingularity {
-						jesh("hostname")
-					}
-				}
-			}
-
 			// Escaping of jesh scripts
 			// Escaping of " is not tested since it does not work in plain "sh" steps
 			for (command in ['echo $USER', 'echo \'echo hello\'', 'echo "hello\\nworld"']) {
