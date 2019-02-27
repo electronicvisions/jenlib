@@ -79,29 +79,6 @@ node {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
-		stage("addBuildParameterTest") {
-			String parameterName = UUID.randomUUID().toString()
-			String parameterValue = UUID.randomUUID().toString()
-			assert (params.get(parameterName) == null)
-
-			// Check parameters can be added
-			addBuildParameter(string(name: parameterName, defaultValue: parameterValue))
-			assert (params.get(parameterName) == parameterValue): "Build parameter was not added."
-
-			// Cleanup: Remove all build parameters: This pipeline is not supposed to have any
-			removeAllBuildParameters()
-		}
-
-		stage("removeAllBuildParametersTest") {
-			// Add some parameter
-			addBuildParameter(string(name: "foo", defaultValue: "bar"))
-			assert (params.foo == "bar"): "Could not add build parameter."
-
-			// Remove all parameters, this pipeline is not supposed to have any
-			removeAllBuildParameters()
-			assert (params.foo == null): "Build parameter survived removal."
-		}
-
 		stage('decodeBase64Test') {
 			assert (decodeBase64("Zm9vYmFy") == "foobar")
 		}
