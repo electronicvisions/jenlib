@@ -9,7 +9,8 @@ import org.electronicvisions.ShellManipulator
  *                      <ul>
  *                          <li>modules: List of modules to be loaded (e.g. {@code ["git/2.6.2"]})</li>
  *                          <li>purge: [optional, defaults to {@code false}] Purge existing module before loading new ones.</li>
- *                          <li>moduleInitPath: [optional] Path to sourecable file that provides the {@code module} command.</li>
+ *                          <li>moduleInitPath: [optional] Path to sourceable file that provides the {@code module} command.</li>
+ *                          <li>prependModulePath: [optional] Path to prepended to {@code MODULEPATH}.</li>
  *                      </ul>
  * @param content Code to be executed in the context of some modules.
  */
@@ -22,8 +23,12 @@ def call(Map<String, Object> options = [:], Closure content) {
 		throw new IllegalArgumentException("purge has to be boolean.")
 	}
 
-	if (!(options.get("moduleInitPath", "") instanceof String)) {
+	if (!(options.get("moduleInitPath", "") instanceof CharSequence)) {
 		throw new IllegalArgumentException("moduleInitPath has to be a string.")
+	}
+
+	if (!(options.get("prependModulePath", "") instanceof CharSequence)) {
+		throw new IllegalArgumentException("prependModulePath has to be a string.")
 	}
 
 	/**
@@ -71,6 +76,10 @@ def call(Map<String, Object> options = [:], Closure content) {
 		}
 	}
 
+	if (options.get("prependModulePath")?.length()) {
+		prefixCommands.add("export MODULEPATH=${options.get("prependModulePath")}\${MODULEPATH:+:\${MODULEPATH}}")
+	}
+
 	if ((boolean) options.get("purge", false)) {
 		prefixCommands.add("module purge")
 	}
@@ -89,6 +98,7 @@ def call(Map<String, Object> options = [:], Closure content) {
 	String modules = jesh(script: "module list 2>&1", returnStdout: true)
 	for (String module in (List<String>) options.get("modules")) {
 		if (!modules.contains(module)) {
+			manipulator.restore()
 			throw new IllegalStateException("[withModules] module load was not successful! $module is missing.")
 		}
 	}

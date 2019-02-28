@@ -295,6 +295,10 @@ node {
 			}
 			assert (noModulePath == purgedLocaldirPath): "$noModulePath should be $purgedLocaldirPath"
 
+			withModules(modules: [], prependModulePath: "foo/bar") {
+				assert (jesh(script: "echo \$MODULEPATH", returnStdout: true).contains("foo/bar"))
+			}
+
 			// Fail if module load does not succeed
 			assertBuildResult("FAILURE") {
 				withModules(modules: ["jenlibNonExistingModule"]) {}
@@ -443,19 +447,17 @@ node {
 				             script: "module load testmodule && test_executable").contains("bla"))
 			}
 
-			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
-				withModules(modules: ["testmodule"]) {
-					assert (jesh(returnStdout: true,
-					             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
-				}
+			withModules(modules: ["testmodule"],
+			            prependModulePath: "$WORKSPACE/module") {
+				assert (jesh(returnStdout: true,
+				             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
 			}
 
-			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
-				withModules(modules: ["testmodule"]) {
-					inSingularity() {
-						assert (jesh(returnStdout: true,
-						             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
-					}
+			withModules(modules: ["testmodule"],
+			            prependModulePath: "$WORKSPACE/module") {
+				inSingularity() {
+					assert (jesh(returnStdout: true,
+					             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
 				}
 			}
 
