@@ -26,7 +26,7 @@ def call(Map<String, Object> options = [:]) {
 	String projectCommand = projects.join(" --project ").trim()
 
 	withWaf(options.get("wafOptions", [:])) {
-		stage('Checkout') {
+		stage('Waf Setup') {
 			runOnSlave(label: "frontend") {
 				if (env.GERRIT_CHANGE_NUMBER) {
 					jesh("waf setup ${projectCommand} ${setupOptions} " +
