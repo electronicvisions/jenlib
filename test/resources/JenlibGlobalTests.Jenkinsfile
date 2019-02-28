@@ -221,16 +221,12 @@ node {
 			// Unsupported command line options
 			assertBuildResult("FAILURE") {
 				// No pipeline without projects
-				wafDefaultPipeline()
+				wafDefaultPipeline(notificationChannel: "#jenkins-trashbin")
 			}
 			assertBuildResult("FAILURE") {
 				// 'projects' has to be of type List<String>
-				wafDefaultPipeline(projects: "frickel-dls")
-			}
-			assertBuildResult("FAILURE") {
-				// 'notificationChannel' argument is mandatory
-				wafDefaultPipeline(projects: ["frickel-dls"],
-				                   container: [app: "visionary-dls"])
+				wafDefaultPipeline(projects: "frickel-dls",
+				                   notificationChannel: "#jenkins-trashbin")
 			}
 			assertBuildResult("FAILURE") {
 				// container app has to be specified
@@ -239,7 +235,8 @@ node {
 			}
 			assertBuildResult("FAILURE") {
 				// No pipeline without projects
-				wafDefaultPipeline(projects: [])
+				wafDefaultPipeline(projects: [],
+				                   notificationChannel: "#jenkins-trashbin")
 			}
 			assertBuildResult("FAILURE") {
 				// Target may not be modified, the pipeline runs for default and '*' internally
