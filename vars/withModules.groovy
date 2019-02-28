@@ -76,6 +76,9 @@ def call(Map<String, Object> options = [:], Closure content) {
 		}
 	}
 
+	// Keep module command alive if it's not yet exported. Don't fail if it's not a function.
+	prefixCommands.add("export -f module || true")
+
 	if (options.get("prependModulePath")?.length()) {
 		prefixCommands.add("export MODULEPATH=${options.get("prependModulePath")}\${MODULEPATH:+:\${MODULEPATH}}")
 	}
@@ -87,9 +90,6 @@ def call(Map<String, Object> options = [:], Closure content) {
 	for (String module in (List<String>) options.get("modules")) {
 		prefixCommands.add("module load $module")
 	}
-
-	// Keep module command alive if it's not yet exported. Don't fail if it's not a function.
-	prefixCommands.add("export -f module || true")
 
 	ShellManipulator manipulator = new ShellManipulator(this)
 	manipulator.add(prefixCommands.join(" && ") + " &&", "")
