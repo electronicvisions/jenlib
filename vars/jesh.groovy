@@ -1,3 +1,4 @@
+import hudson.AbortException
 import org.electronicvisions.ShellManipulator
 
 /**
@@ -21,7 +22,19 @@ def call(Map<String, Object> options = [:]) {
 	options["script"] = "bash " + manipulator.constructScriptStack(command)
 
 	echo("[jesh] Running command: $command")
-	return sh(options)
+	try {
+		return sh(options)
+	} catch (AbortException shellFailure) {
+		echo("""[jesh] Shell step has failed. Debug information:
+		        |
+		        |Running command: \"${command}\"
+		        |Pending shell manipulations: ${manipulator.manipulations}
+		        |
+		        |Environment:
+		        |${sh(script: "env", returnStdout: true)}
+		        |""".stripMargin())
+		throw shellFailure
+	}
 }
 
 /**
