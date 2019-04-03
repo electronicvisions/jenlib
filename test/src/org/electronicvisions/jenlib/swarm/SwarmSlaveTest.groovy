@@ -1,4 +1,4 @@
-package org.electronicvisions.swarm
+package org.electronicvisions.jenlib.swarm
 
 
 abstract class SwarmSlaveTest extends GroovyTestCase {

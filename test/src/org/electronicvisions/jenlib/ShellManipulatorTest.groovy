@@ -1,4 +1,4 @@
-package org.electronicvisions
+package org.electronicvisions.jenlib
 
 import groovy.json.JsonSlurperClassic
 

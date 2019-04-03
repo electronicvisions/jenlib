@@ -1,4 +1,4 @@
-import org.electronicvisions.Waf
+import org.electronicvisions.jenlib.Waf
 
 /**
  * Provide the waf build tool.

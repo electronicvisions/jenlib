@@ -1,4 +1,4 @@
-package org.electronicvisions
+package org.electronicvisions.jenlib
 
 class WafTest extends GroovyTestCase {
 	/**

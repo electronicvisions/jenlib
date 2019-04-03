@@ -1,4 +1,4 @@
-package org.electronicvisions.swarm
+package org.electronicvisions.jenlib.swarm
 
 /**
  * Abstraction for the Jenkins Swarm Slave client.

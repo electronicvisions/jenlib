@@ -1,4 +1,4 @@
-package org.electronicvisions.swarm
+package org.electronicvisions.jenlib.swarm
 
 import static junit.framework.TestCase.assertFalse
 import static junit.framework.TestCase.assertTrue

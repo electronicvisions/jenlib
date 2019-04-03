@@ -21,7 +21,7 @@ Issues and feature requests are tracked in [OpenProject/jenlib](https://openproj
 Make sure to add an issue for whatever you work on: Things should not get done twice.
 
 Read and understand [JenkinsIO/shared-libraries](https://jenkins.io/doc/book/pipeline/shared-libraries/) for the basic concepts.
-We support global variables implemented in `var/` as well as arbitrary Groovy code within the `org.electronicvisions` package under `src/`.
+We support global variables implemented in `var/` as well as arbitrary Groovy code within the `org.electronicvisions.jenlib` package under `src/`.
 Make sure to provide *javadoc*-style documentation for all your code and add tests (see [Testing and CI](#testing-and-ci) below).
 
 If you introduce new dependencies, make sure to add them to the `pom.xml`: Although Jenkins does not use *maven*, the test infrastructure does.

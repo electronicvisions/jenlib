@@ -1,5 +1,5 @@
 import hudson.AbortException
-import org.electronicvisions.ShellManipulator
+import org.electronicvisions.jenlib.ShellManipulator
 
 /**
  * JeSH -> Jenlib Shell

@@ -1,5 +1,5 @@
-import org.electronicvisions.swarm.SlurmSwarmSlave
-import org.electronicvisions.swarm.SwarmSlaveConfig
+import org.electronicvisions.jenlib.swarm.SlurmSwarmSlave
+import org.electronicvisions.jenlib.swarm.SwarmSlaveConfig
 
 /**
  * Run a block of commands on a machine allocated via slurm.

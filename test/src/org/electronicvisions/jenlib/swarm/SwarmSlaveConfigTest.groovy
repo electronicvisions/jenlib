@@ -1,4 +1,4 @@
-package org.electronicvisions.swarm
+package org.electronicvisions.jenlib.swarm
 
 class SwarmSlaveConfigTest extends GroovyTestCase {
 	Random random_generator

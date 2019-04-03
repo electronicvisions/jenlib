@@ -1,4 +1,4 @@
-package org.electronicvisions.swarm
+package org.electronicvisions.jenlib.swarm
 
 class SSHSwarmSlaveTest extends SwarmSlaveTest {
 	static List<String> getMandatorySlaveParameters() {

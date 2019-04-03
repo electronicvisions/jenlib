@@ -1,4 +1,4 @@
-import org.electronicvisions.ShellManipulator
+import org.electronicvisions.jenlib.ShellManipulator
 
 /**
  * Run a section of code with some loaded modules.

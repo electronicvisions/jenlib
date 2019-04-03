@@ -1,4 +1,4 @@
-package org.electronicvisions
+package org.electronicvisions.jenlib
 
 import com.cloudbees.groovy.cps.NonCPS
 import groovy.json.JsonOutput

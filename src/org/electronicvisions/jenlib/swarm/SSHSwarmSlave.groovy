@@ -1,4 +1,4 @@
-package org.electronicvisions.swarm
+package org.electronicvisions.jenlib.swarm
 
 /**
  * {@link SwarmSlave} implementation for starting slaves on SSH-accessible remote machines.
