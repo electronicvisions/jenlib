@@ -79,6 +79,22 @@ node {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
+		stage('withCcacheTest') {
+			withCcache() {
+				inSingularity(app: "visionary-wafer") {
+					jesh(script: "ln -s \$(which gcc) ccache")
+					ccacheVersion = jesh(script: "./ccache --version | head -n1", returnStdout: true)
+					jesh(script: "rm -f ccache")
+					assert (ccacheVersion.contains("ccache")): "$ccacheVersion does not contain 'ccache'"
+				}
+			}
+
+			// Fail if ccacheNoHashDir is not boolean
+			assertBuildResult("FAILURE") {
+				withCcache(ccacheNoHashDir: "no") {}
+			}
+		}
+
 		stage("isGerritTriggered") {
 			// We assume that this pipeline is never triggered from an upstream job, otherwise this test will fail!
 			assert (isGerritTriggered() == (boolean) env.GERRIT_CHANGE_NUMBER)
