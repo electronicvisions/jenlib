@@ -29,6 +29,25 @@ node {
 			       changeBuildStatus: true,
 			       maximumLineCoverage: '100')
 		}
+
+		stage('Build/Deploy Documentation') {
+			withMaven(maven: 'M3',
+			          jdk: 'J8',
+			          mavenLocalRepo: '.repository',
+			          options: [artifactsPublisher(disabled: true),
+			                    openTasksPublisher(disabled: true),
+			                    jacocoPublisher(disabled: true)]) {
+				sh "mvn gplus:generateStubs gplus:groovydoc"
+			}
+
+			publishHTML([allowMissing         : false,
+			             alwaysLinkToLastBuild: false,
+			             keepAll              : false,
+			             reportDir            : 'target/gapidocs',
+			             reportFiles          : 'index.html',
+			             reportName           : 'Jenlib Documentation',
+			             reportTitles         : 'Jenlib Documentation'])
+		}
 	} catch (Exception e) {
 		notifyFailure(mattermostChannel: "#softies")
 		throw e

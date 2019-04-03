@@ -9,7 +9,12 @@ Have a look at [JenkinsIO/shared-libraries](https://jenkins.io/doc/book/pipeline
 ## How to use
 Include the library in your *Jenkinsfile* via `@Library("jenlib") _`.
 All implemented features (should) implement a short example in `test/resources/JenlibGlobalTests.Jenkinsfile`.
+
 References for all implemented global variables can be found [here](https://jenkins.bioai.eu/view/nightly/job/bld_nightly-jenlib-globals/pipeline-syntax/globals) (rendered nightly).
+
+API documentation is nightly deployed on an internal Jenkins server.
+If you have access, have a look [here](https://jenkins.bioai.eu/job/bld_nightly-jenlib-unittests/Jenlib_20Documentation).bld_gerrit-jenlib-unittests
+
 
 ## How to contribute
 Issues and feature requests are tracked in [OpenProject/jenlib](https://openproject.bioai.eu/projects/jenlib/work_packages).
