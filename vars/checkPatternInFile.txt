@@ -1,0 +1,13 @@
+<p>
+    Make sure that some regular expression pattern does occur in a given file.
+    The pattern is passed to <code>grep -P</code> and may make use of Perl's RegEx dialect.
+</p>
+
+<p>
+    Missing files fail the build.
+</p>
+
+<ul>
+    <li><b>regexPattern:</b> Pattern to be searched for</li>
+    <li><b>filename:</b> File the pattern is searched in</li>
+</ul>

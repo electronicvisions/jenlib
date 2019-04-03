@@ -79,6 +79,42 @@ node {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
+		stage('checkPatternInFileTest') {
+			String testFile = UUID.randomUUID().toString()
+			writeFile(file: testFile, text: "foo\tbar")
+
+			// Pattern matches, no effect on build
+			checkPatternInFile("^foo\tbar\$", testFile)
+
+			// Missing file, fail build
+			assertBuildResult("FAILURE") {
+				checkPatternInFile("^foo\tbar\$", UUID.randomUUID().toString())
+			}
+
+			// Pattern does not match, unstable build
+			assertBuildResult("UNSTABLE") {
+				checkPatternInFile("^foo bar\$", testFile)
+			}
+		}
+
+		stage('checkPatternNotInFileTest') {
+			String testFile = UUID.randomUUID().toString()
+			writeFile(file: testFile, text: "foo\tbar")
+
+			// Pattern matches, unstable build
+			assertBuildResult("UNSTABLE") {
+				checkPatternNotInFile("^foo\tbar\$", testFile)
+			}
+
+			// Missing file, fail build
+			assertBuildResult("FAILURE") {
+				checkPatternNotInFile("^foo\tbar\$", UUID.randomUUID().toString())
+			}
+
+			// Pattern does not match, no effect on build
+			checkPatternNotInFile("^foo bar\$", testFile)
+		}
+
 		stage('decodeBase64Test') {
 			assert (decodeBase64("Zm9vYmFy") == "foobar")
 		}
