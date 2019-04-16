@@ -13,7 +13,7 @@ All implemented features (should) implement a short example in `test/resources/J
 References for all implemented global variables can be found [here](https://jenkins.bioai.eu/view/nightly/job/bld_nightly-jenlib-globals/pipeline-syntax/globals) (rendered nightly).
 
 API documentation is nightly deployed on an internal Jenkins server.
-If you have access, have a look [here](https://jenkins.bioai.eu/job/bld_nightly-jenlib-unittests/Jenlib_20Documentation).bld_gerrit-jenlib-unittests
+If you have access, have a look [here](https://jenkins.bioai.eu/job/bld_nightly-jenlib-unittests/Jenlib_20Documentation).
 
 
 ## How to contribute
