@@ -163,7 +163,7 @@ def call(Map<String, Object> options = [:]) {
 					warnings canComputeNew: false,
 					         canRunOnFailed: true,
 					         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
-					         excludePattern: ".*opt/spack.*,${warningsIgnorePattern}",
+					         excludePattern: ".*opt/spack.*,*.dox,${warningsIgnorePattern}",
 					         unstableTotalAll: '0'
 
 					recordIssues(qualityGates: [[threshold: 1,
@@ -177,6 +177,33 @@ def call(Map<String, Object> options = [:]) {
 					                          id: "pep8_" + UUID.randomUUID().toString(),
 					                          name: "PEP8 Warnings")]
 					)
+				}
+			}
+
+			// Deploy built html documentation
+			stage("Deploy Documentation") {
+				String[] projects
+
+				runOnSlave(label: "frontend") {
+					int projects_return = jesh(script: "ls -d doc/*/html", returnStatus: true)
+					if (projects_return == 0) {
+						String projects_string = jesh(script: "ls -d doc/*/html", returnStdout: true)
+						projects = projects_string.split()
+					} else {
+						echo("No documentation found to deploy.")
+					}
+				}
+
+				for (String project in projects) {
+					String name = project.split("/")[1]
+
+					publishHTML([allowMissing: false,
+					            alwaysLinkToLastBuild: false,
+					            keepAll: false,
+					            reportDir: project,
+					            reportFiles: 'index.html',
+					            reportName: "Documentation (" + name + ")",
+					            reportTitles: ''])
 				}
 			}
 		} catch (Throwable t) {
