@@ -6,4 +6,6 @@ Available options:
     <li><b>wafOptions</b> (optional): Options passed to <code>withWaf</code>
     <li><b>setupOptions</b> (optional): Options passed to the <code>waf setup</code> call.
         Defaults to <code>"--clone-depth=1"</code>
+    <li><b>noExtraStage</b> (optional): Don't wrap the waf setup in a dedicated stage.
+        Defaults to <code>false</code>.
 </ul>
