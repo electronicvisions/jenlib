@@ -1,3 +1,23 @@
-Send a notification that this job has failed.
+<p>
+    Send a notification that this job has failed.
+</p>
 
-Parameters: String mattermostChannel (mandatory), boolean nonGerritOnly (defaults true)
+<p>
+    A notification is sent if any of these apply:
+<ul>
+    <li><code>nonGerritOnly</code> is <code>false</code></li>
+    <li>The change has been triggered by a merge-event in gerrit</li>
+</ul>
+</p>
+
+<p>
+    Otherwise (this especially includes non-merge gerrit events!), no notification is sent.
+</p>
+
+<p>
+    Parameters:
+<ul>
+    <li>String mattermostChannel (mandatory)</li>
+    <li>boolean nonGerritOnly (defaults true)</li>
+</ul>
+</p>

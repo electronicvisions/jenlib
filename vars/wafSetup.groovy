@@ -41,7 +41,7 @@ def impl(Map<String, Object> options = [:]) {
 
 	withWaf(options.get("wafOptions", [:])) {
 		runOnSlave(label: "frontend") {
-			if (env.GERRIT_CHANGE_NUMBER) {
+			if (isGerritTriggered()) {
 				jesh("waf setup ${projectCommand} ${setupOptions} " +
 				     "--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
 				     "--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
