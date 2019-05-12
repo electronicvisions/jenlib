@@ -20,13 +20,13 @@ def call(String expected_result, Closure content) {
 	// Execute the content, it may throw if we are expecting a failure
 	try {
 		content()
-	} catch (Exception e) {
+	} catch (Throwable t) {
 		if (expected_result == "FAILURE") {
-			echo "${e.toString()} was raised, expected failure occured."
+			echo "${t.toString()} was raised, expected failure occured."
 			setBuildState("SUCCESS")
 			return
 		} else {
-			throw e
+			throw t
 		}
 	}
 

@@ -48,9 +48,9 @@ node {
 			             reportName           : 'Jenlib Documentation',
 			             reportTitles         : 'Jenlib Documentation'])
 		}
-	} catch (Exception e) {
+	} catch (Throwable t) {
 		notifyFailure(mattermostChannel: "#softies")
-		throw e
+		throw t
 	} finally {
 		cleanWs()
 	}

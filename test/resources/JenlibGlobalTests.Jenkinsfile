@@ -565,9 +565,9 @@ node {
 			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
 		}
 
-	} catch (Exception e) {
+	} catch (Throwable t) {
 		post_error_build_action()
-		throw e
+		throw t
 	} finally {
 		post_all_build_action()
 	}
