@@ -95,9 +95,9 @@ node {
 			}
 		}
 
-		stage("isGerritTriggered") {
+		stage("isGerritTriggeredTest") {
 			// We assume that this pipeline is never triggered from an upstream job, otherwise this test will fail!
-			assert (isGerritTriggered() == (boolean) env.GERRIT_CHANGE_NUMBER)
+			assert (isGerritTriggered() == (env.GERRIT_CHANGE_NUMBER ? true : false))
 		}
 
 		stage("addBuildParameterTest") {
