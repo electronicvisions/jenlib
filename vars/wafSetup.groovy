@@ -1,6 +1,8 @@
 /**
  * Pipeline step for checking out a list of waf projects, respecting
- * any gerrit changesets given in the current environment.
+ * any gerrit changesets given in the current environment. Note that
+ * Gerrit changes in upstream jobs will not be passed on to downstream
+ * builds and are currently not honoured within `wafSetup`.
  *
  * @param options Map of options for setting up the waf projects:
  *                <ul>
@@ -41,7 +43,7 @@ def impl(Map<String, Object> options = [:]) {
 
 	withWaf(options.get("wafOptions", [:])) {
 		runOnSlave(label: "frontend") {
-			if (isGerritTriggered()) {
+			if (env.GERRIT_CHANGE_NUMBER) {
 				jesh("waf setup ${projectCommand} ${setupOptions} " +
 				     "--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
 				     "--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
