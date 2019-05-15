@@ -157,14 +157,26 @@ def call(Map<String, Object> options = [:]) {
 				}
 			}
 
-			// Scan for compiler warnings
-			stage("Compiler Warnings") {
+			// Scan for compiler and linting warnings
+			stage("Compiler/Linting Warnings") {
 				runOnSlave(label: "frontend") {
 					warnings canComputeNew: false,
 					         canRunOnFailed: true,
 					         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
 					         excludePattern: ".*opt/spack.*,${warningsIgnorePattern}",
 					         unstableTotalAll: '0'
+
+					recordIssues(qualityGates: [[threshold: 1,
+					                             type     : 'TOTAL',
+					                             unstable : true]],
+					             blameDisabled: true,
+					             tools: [pyLint(pattern: testResultDirs.join("/**/*.pylint, ") + "/**/*.pylint",
+					                            id: "pylint_" + UUID.randomUUID().toString(),
+					                            name: "Pylint Warnings"),
+					                     pep8(pattern: testResultDirs.join("/**/*.pycodestyle, ") + "/**/*.pycodestyle",
+					                          id: "pep8_" + UUID.randomUUID().toString(),
+					                          name: "PEP8 Warnings")]
+					)
 				}
 			}
 		} catch (Throwable t) {
