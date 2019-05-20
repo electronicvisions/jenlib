@@ -94,7 +94,7 @@ def call(Map<String, Object> options = [:]) {
 
 		withWaf() {
 			// Build and run tests with default target and target="*"
-			for (String wafTargetOption in ["", "--target='*'"]) {
+			for (String wafTargetOption in ["", "--targets='*'"]) {
 				String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
 				testResultDirs.add("build/" + testOutputDir)
 
@@ -117,7 +117,7 @@ def call(Map<String, Object> options = [:]) {
 					onSlurmResource(testSlurmResource) {
 						withModules(moduleOptions) {
 							inSingularity(containerOptions) {
-								jesh("waf build ${testOptions}")
+								jesh("waf build ${wafTargetOption} ${testOptions}")
 							}
 						}
 					}
