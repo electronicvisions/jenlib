@@ -31,141 +31,144 @@
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
-	boolean postPipelineCleanup = options.get("postPipelineCleanup", true)
+	timestamps {
 
-	/*
-	 * Default failure notification channel: This is only used when a non-gerrit triggered (nightly)
-	 * pipeline fails without setting the (mandatory) {@code notificationChannel} argument.
-	 */
-	String notificationChannel = "#softies"
+		boolean postPipelineCleanup = options.get("postPipelineCleanup", true)
 
-	try {
-		if (options.get("notificationChannel") == null) {
-			throw new IllegalArgumentException("Notification channel is a mandatory argument.")
-		}
-		notificationChannel = options.get("notificationChannel")
+		/*
+		 * Default failure notification channel: This is only used when a non-gerrit triggered (nightly)
+		 * pipeline fails without setting the (mandatory) {@code notificationChannel} argument.
+		 */
+		String notificationChannel = "#softies"
 
-		if (options.get("configureInstallOptions")?.contains("--target")) {
-			throw new IllegalArgumentException("Cannot overwrite target definition.")
-		}
-
-		if (options.get("configureInstallOptions")?.contains("test")) {
-			throw new IllegalArgumentException("Cannot overwrite test definition.")
-		}
-
-		if (options.get("testOptions")?.contains("--target")) {
-			throw new IllegalArgumentException("Cannot overwrite target definition.")
-		}
-
-		LinkedHashMap<String, String> containerOptions
-		if (options.get("app") != null) {
-			echo "[WARNING] 'app' pipeline parameter is deprecated. Use 'container: [app: ]' instead.'"
-			containerOptions = [app: (String) options.get("app")]
-		} else {
-			containerOptions = (LinkedHashMap<String, String>) options.get("container")
-		}
-
-		if (containerOptions.get("app") == null) {
-			throw new IllegalArgumentException("Container app needs to be specified.")
-		}
-
-		Map<String, Object> moduleOptions = (Map<String, Object>) options.get("moduleOptions", [modules: []])
-		String testTimeout = ""
-		if (options.get("testTimeout") != null) {
-			testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
-		}
-		String configureInstallOptions = options.get("configureInstallOptions", "")
-		Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
-		                                                                          [partition: "jenkins", "cpus-per-task": "8"])
-		String testOptions = options.get("testOptions", "--test-execall")
-		String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
-
-		stage("Cleanup") {
-			runOnSlave(label: "frontend") {
-				cleanWs()
+		try {
+			if (options.get("notificationChannel") == null) {
+				throw new IllegalArgumentException("Notification channel is a mandatory argument.")
 			}
-		}
+			notificationChannel = options.get("notificationChannel")
 
-		// Setup and build the project
-		wafSetup(options)
+			if (options.get("configureInstallOptions")?.contains("--target")) {
+				throw new IllegalArgumentException("Cannot overwrite target definition.")
+			}
 
-		// Directories test-result XML files are written to
-		LinkedList<String> testResultDirs = new LinkedList<String>()
+			if (options.get("configureInstallOptions")?.contains("test")) {
+				throw new IllegalArgumentException("Cannot overwrite test definition.")
+			}
 
-		withWaf() {
-			// Build and run tests with default target and target="*"
-			for (String wafTargetOption in ["", "--targets='*'"]) {
-				String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
-				testResultDirs.add("build/" + testOutputDir)
+			if (options.get("testOptions")?.contains("--target")) {
+				throw new IllegalArgumentException("Cannot overwrite target definition.")
+			}
 
-				stage("Build ${wafTargetOption}".trim()) {
-					onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
-						withModules(moduleOptions) {
-							inSingularity(containerOptions) {
-								jesh("waf configure install " +
-								     "--test-xml-summary=${testOutputDir} " +
-								     "${testTimeout} " +
-								     "--test-execnone " +
-								     "${wafTargetOption} ${configureInstallOptions}")
+			LinkedHashMap<String, String> containerOptions
+			if (options.get("app") != null) {
+				echo "[WARNING] 'app' pipeline parameter is deprecated. Use 'container: [app: ]' instead.'"
+				containerOptions = [app: (String) options.get("app")]
+			} else {
+				containerOptions = (LinkedHashMap<String, String>) options.get("container")
+			}
+
+			if (containerOptions.get("app") == null) {
+				throw new IllegalArgumentException("Container app needs to be specified.")
+			}
+
+			Map<String, Object> moduleOptions = (Map<String, Object>) options.get("moduleOptions", [modules: []])
+			String testTimeout = ""
+			if (options.get("testTimeout") != null) {
+				testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
+			}
+			String configureInstallOptions = options.get("configureInstallOptions", "")
+			Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
+			                                                                          [partition: "jenkins", "cpus-per-task": "8"])
+			String testOptions = options.get("testOptions", "--test-execall")
+			String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
+
+			stage("Cleanup") {
+				runOnSlave(label: "frontend") {
+					cleanWs()
+				}
+			}
+
+			// Setup and build the project
+			wafSetup(options)
+
+			// Directories test-result XML files are written to
+			LinkedList<String> testResultDirs = new LinkedList<String>()
+
+			withWaf() {
+				// Build and run tests with default target and target="*"
+				for (String wafTargetOption in ["", "--targets='*'"]) {
+					String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
+					testResultDirs.add("build/" + testOutputDir)
+
+					stage("Build ${wafTargetOption}".trim()) {
+						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+							withModules(moduleOptions) {
+								inSingularity(containerOptions) {
+									jesh("waf configure install " +
+									     "--test-xml-summary=${testOutputDir} " +
+									     "${testTimeout} " +
+									     "--test-execnone " +
+									     "${wafTargetOption} ${configureInstallOptions}")
+								}
+							}
+						}
+					}
+
+					// Run tests defined in waf
+					stage("Tests ${wafTargetOption}".trim()) {
+						onSlurmResource(testSlurmResource) {
+							withModules(moduleOptions) {
+								inSingularity(containerOptions) {
+									jesh("waf build ${wafTargetOption} ${testOptions}")
+								}
 							}
 						}
 					}
 				}
+			}
 
-				// Run tests defined in waf
-				stage("Tests ${wafTargetOption}".trim()) {
-					onSlurmResource(testSlurmResource) {
-						withModules(moduleOptions) {
-							inSingularity(containerOptions) {
-								jesh("waf build ${wafTargetOption} ${testOptions}")
-							}
-						}
-					}
+			// Evaluate waf test results
+			stage("Test Evaluation") {
+				runOnSlave(label: "frontend") {
+					step([$class       : 'XUnitBuilder',
+					      thresholdMode: 1,
+					      thresholds   : [[$class           : 'FailedThreshold',
+					                       unstableThreshold: '0'],
+					      ],
+					      tools        : [[$class               : 'GoogleTestType',
+					                       deleteOutputFiles    : true,
+					                       failIfNotNew         : true,
+					                       pattern              : testResultDirs.join("/**/*.xml, ") + "/**/*.xml",
+					                       skipNoTestFiles      : false,
+					                       stopProcessingIfError: true]
+					      ]
+					])
+				}
+			}
+
+			// Scan for compiler warnings
+			stage("Compiler Warnings") {
+				runOnSlave(label: "frontend") {
+					warnings canComputeNew: false,
+					         canRunOnFailed: true,
+					         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
+					         excludePattern: ".*opt/spack.*,${warningsIgnorePattern}",
+					         unstableTotalAll: '0'
+				}
+			}
+		} catch (Throwable t) {
+			notifyFailure(mattermostChannel: notificationChannel)
+			throw t
+		} finally {
+			if (postPipelineCleanup) {
+				runOnSlave(label: "frontend") {
+					cleanWs()
 				}
 			}
 		}
 
-		// Evaluate waf test results
-		stage("Test Evaluation") {
-			runOnSlave(label: "frontend") {
-				step([$class       : 'XUnitBuilder',
-				      thresholdMode: 1,
-				      thresholds   : [[$class           : 'FailedThreshold',
-				                       unstableThreshold: '0'],
-				      ],
-				      tools        : [[$class               : 'GoogleTestType',
-				                       deleteOutputFiles    : true,
-				                       failIfNotNew         : true,
-				                       pattern              : testResultDirs.join("/**/*.xml, ") + "/**/*.xml",
-				                       skipNoTestFiles      : false,
-				                       stopProcessingIfError: true]
-				      ]
-				])
-			}
+		if (currentBuild.currentResult != "SUCCESS") {
+			notifyFailure(mattermostChannel: notificationChannel)
 		}
-
-		// Scan for compiler warnings
-		stage("Compiler Warnings") {
-			runOnSlave(label: "frontend") {
-				warnings canComputeNew: false,
-				         canRunOnFailed: true,
-				         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
-				         excludePattern: ".*opt/spack.*,${warningsIgnorePattern}",
-				         unstableTotalAll: '0'
-			}
-		}
-	} catch (Throwable t) {
-		notifyFailure(mattermostChannel: notificationChannel)
-		throw t
-	} finally {
-		if (postPipelineCleanup) {
-			runOnSlave(label: "frontend") {
-				cleanWs()
-			}
-		}
-	}
-
-	if (currentBuild.currentResult != "SUCCESS") {
-		notifyFailure(mattermostChannel: notificationChannel)
 	}
 }
