@@ -26,6 +26,8 @@
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
+ *                    <li><b>prePipelineCleanup</b> (optional): Cleanup the workspace before the pipeline is run.
+ *                                                              Defaults to {@code true}
  *                    <li><b>postPipelineCleanup</b> (optional): Cleanup the workspace after the pipeline has been run.
  *                                                               Defaults to {@code true}
  *                </ul>
@@ -33,6 +35,7 @@
 def call(Map<String, Object> options = [:]) {
 	timestamps {
 
+		boolean prePipelineCleanup = options.get("prePipelineCleanup", true)
 		boolean postPipelineCleanup = options.get("postPipelineCleanup", true)
 
 		/*
@@ -82,9 +85,11 @@ def call(Map<String, Object> options = [:]) {
 			String testOptions = options.get("testOptions", "--test-execall")
 			String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
 
-			stage("Cleanup") {
-				runOnSlave(label: "frontend") {
-					cleanWs()
+			if (prePipelineCleanup) {
+				stage("Cleanup") {
+					runOnSlave(label: "frontend") {
+						cleanWs()
+					}
 				}
 			}
 
