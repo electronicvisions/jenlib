@@ -483,6 +483,12 @@ node {
 			runOnSlave(name: env.NODE_NAME) {
 				assert (env.EXECUTOR_NUMBER == pipeline_executor)
 			}
+
+			// Make sure the workspace fulfills the expected pattern
+			runOnSlave(name: env.NODE_NAME) {
+				assert (WORKSPACE ==~ /(?!.*__.+$)^\/jenkins\/jenlib_workspaces\/.+$/) :
+						"Workspace '$WORKSPACE' not matching the expected pattern."
+			}
 		}
 
 		stage('withWafTest') {
