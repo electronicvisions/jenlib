@@ -135,6 +135,12 @@ def call(Map<String, Object> options = [:]) {
 			// Evaluate waf test results
 			stage("Test Evaluation") {
 				runOnSlave(label: "frontend") {
+					String xmlResultPattern = testResultDirs.join("/**/*.xml, ") + "/**/*.xml"
+
+					// Always keep the plain results
+					archiveArtifacts xmlResultPattern
+
+					// Parse test results
 					step([$class       : 'XUnitBuilder',
 					      thresholdMode: 1,
 					      thresholds   : [[$class           : 'FailedThreshold',
@@ -143,7 +149,7 @@ def call(Map<String, Object> options = [:]) {
 					      tools        : [[$class               : 'GoogleTestType',
 					                       deleteOutputFiles    : true,
 					                       failIfNotNew         : true,
-					                       pattern              : testResultDirs.join("/**/*.xml, ") + "/**/*.xml",
+					                       pattern              : xmlResultPattern,
 					                       skipNoTestFiles      : false,
 					                       stopProcessingIfError: true]
 					      ]
