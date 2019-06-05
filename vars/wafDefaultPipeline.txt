@@ -24,4 +24,8 @@ Available options (see also <code>wafSetup</code>):
         Defaults to <code>"--test-execall"</code>
     <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
     <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
+    <li><b>prePipelineCleanup</b> (optional): Cleanup the workspace before the pipeline is run.
+                                              Defaults to <code>true</code>.
+    <li><b>postPipelineCleanup</b> (optional): Cleanup the workspace after the pipeline has been run.
+                                               Defaults to <code>true</code>.
 </ul>

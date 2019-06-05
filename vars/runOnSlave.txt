@@ -7,10 +7,6 @@ In contrast to using </pre>node ( )</pre> directly, no new executor is allocated
 </p>
 
 <p>
-	<code>runOnSlave</code> additionally enforces a build-unique shared workspace between all nodes.
-</p>
-
-<p>
 The parameter <b>target_node</b> takes the target node definition: one of 'name'|'label'
 </p>
 

@@ -29,21 +29,34 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	config.slaveJar = "/wang/users/vis_jenkins/swarm_integration/swarm-client-latest.jar"
 	config.numExecutors = 1
 
-	// Workspace is overwritten to a shared workspace in runOnSlave
+	// Workspace is overwritten to be the same as on the frontend below
 	config.fsroot = "/jenkins/jenviz_`hostname`/fsroot"
+
+	// Working directory on the frontend
+	String frontendPwd
+
+	// Workspace on the frontend
+	String frontendWorkspace
 
 	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurm_args)
 
 	// Slurm controller has to be accessed from a frontend
 	runOnSlave(label: "frontend") {
+		frontendPwd = pwd()
+		frontendWorkspace = WORKSPACE
+		sh "stat ${frontendPwd} > /dev/null"        // Flush NFS attribute cache
+		sh "stat ${frontendWorkspace} > /dev/null"  // Flush NFS attribute cache
 		slave.startSlave()
-		jesh("stat ${WORKSPACE} > /dev/null")  // Flush NFS attribute cache
 	}
 
 	try {
 		// Run the content on the upcoming node as soon as it is available
-		runOnSlave(name: "slurm_${slave.jobID.toString()}") {
-			content()
+		node("slurm_${slave.jobID.toString()}") {
+			ws(frontendWorkspace) {
+				dir(frontendPwd) {
+					content()
+				}
+			}
 		}
 	} catch (Throwable anything) {
 		throw anything
