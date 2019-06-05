@@ -26,17 +26,14 @@
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
- *                    <li><b>prePipelineCleanup</b> (optional): Cleanup the workspace before the pipeline is run.
- *                                                              Defaults to {@code true}
- *                    <li><b>postPipelineCleanup</b> (optional): Cleanup the workspace after the pipeline has been run.
- *                                                               Defaults to {@code true}
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
 	timestamps {
 
-		boolean prePipelineCleanup = options.get("prePipelineCleanup", true)
-		boolean postPipelineCleanup = options.get("postPipelineCleanup", true)
+		if (options.containsKey("prePipelineCleanup") | options.containsKey("prePipelineCleanup")){
+			echo "[WARNING] Pipeline cleanup is deprecated! Builds use unique workspaces."
+		}
 
 		/*
 		 * Default failure notification channel: This is only used when a non-gerrit triggered (nightly)
@@ -84,14 +81,6 @@ def call(Map<String, Object> options = [:]) {
 			                                                                          [partition: "jenkins", "cpus-per-task": "8"])
 			String testOptions = options.get("testOptions", "--test-execall")
 			String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
-
-			if (prePipelineCleanup) {
-				stage("Cleanup") {
-					runOnSlave(label: "frontend") {
-						cleanWs()
-					}
-				}
-			}
 
 			// Setup and build the project
 			wafSetup(options)
@@ -209,12 +198,6 @@ def call(Map<String, Object> options = [:]) {
 		} catch (Throwable t) {
 			notifyFailure(mattermostChannel: notificationChannel)
 			throw t
-		} finally {
-			if (postPipelineCleanup) {
-				runOnSlave(label: "frontend") {
-					cleanWs()
-				}
-			}
 		}
 
 		if (currentBuild.currentResult != "SUCCESS") {

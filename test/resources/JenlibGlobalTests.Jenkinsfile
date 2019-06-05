@@ -1,9 +1,12 @@
-node {
-	try {
-		cleanWs()
+try {
+	stage('Cleanup') {
+		node(label: "frontend") {
+			cleanWs()
+		}
+	}
 
-		stage('Load Library') {
-
+	stage('Load Library') {
+		node(label: "frontend") {
 			/**
 			 * Temporary sandbox branch for gerrit changesets
 			 */
@@ -35,7 +38,9 @@ node {
 				}
 			}
 		}
+	}
 
+	runOnSlave(label: "frontend") {
 		stage('setBuildStateTest') {
 			for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
 				assert (currentBuild.currentResult == "SUCCESS")
@@ -505,6 +510,31 @@ node {
 			runOnSlave(name: env.NODE_NAME) {
 				assert (env.EXECUTOR_NUMBER == pipeline_executor)
 			}
+
+			// Make sure the workspace fulfills the expected pattern
+			runOnSlave(name: env.NODE_NAME) {
+				assert (WORKSPACE ==~ /(?!.*__.+$)^\/jenkins\/jenlib_workspaces_f9\/.+$/):
+						"Workspace '$WORKSPACE' not matching the expected pattern."
+			}
+
+			// Directory switching around runOnSlave has an effect
+			String targetDir = UUID.randomUUID().toString()
+			dir(targetDir) {
+				runOnSlave(label: "frontend") {
+					assert (pwd().contains(targetDir)): "Switching directories to ${targetDir} was not succesful."
+				}
+			}
+
+			// Cannot use runOnSlave when in a generic workspace
+			assertBuildResult("FAILURE") {
+				node {
+					ws(pwd()) {
+						runOnSlave(label: "frontend") {
+							jesh("hostname")
+						}
+					}
+				}
+			}
 		}
 
 		stage('withWafTest') {
@@ -586,19 +616,19 @@ node {
 			}
 			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
 		}
-
-	} catch (Throwable t) {
-		post_error_build_action()
-		throw t
-	} finally {
-		post_all_build_action()
 	}
-
-	// Some Jenkins steps fail a build without raising (e.g. archiveArtifacts)
-	if (currentBuild.currentResult != "SUCCESS") {
-		post_error_build_action()
-	}
+} catch (Throwable t) {
+	post_error_build_action()
+	throw t
+} finally {
+	post_all_build_action()
 }
+
+// Some Jenkins steps fail a build without raising (e.g. archiveArtifacts)
+if (currentBuild.currentResult != "SUCCESS") {
+	post_error_build_action()
+}
+
 
 /*
 /* HELPER FUNCTIONS
@@ -606,9 +636,13 @@ node {
 
 void post_all_build_action() {
 	// Always clean the workspace
-	cleanWs()
+	node(label: "frontend") {
+		cleanWs()
+	}
 }
 
 void post_error_build_action() {
-	notifyFailure(mattermostChannel: "#softies")
+	node(label: "frontend") {
+		notifyFailure(mattermostChannel: "#softies")
+	}
 }
