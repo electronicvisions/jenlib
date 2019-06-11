@@ -295,6 +295,29 @@ node {
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
 
+		stage("wafSetupTest") {
+			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
+			wafSetup(projects: ["frickel-dls@v3testing"])
+
+			// Multiple projects
+			wafSetup(projects: ["frickel-dls@v3testing", "hicann-dls-scripts@v3testing"])
+
+			// Setup in subfolder
+			String subfolder = UUID.randomUUID().toString()
+			dir(subfolder) {
+				wafSetup(projects: ["hate"])
+			}
+			assert fileExists("${subfolder}/wscript")
+
+			// Unsupported command line options
+			assertBuildResult("FAILURE") {
+				wafSetup()
+			}
+			assertBuildResult("FAILURE") {
+				wafSetup(projects: "frickel-dls")
+			}
+		}
+
 		stage("wafDefaultPipelineTest") {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
 			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
@@ -341,22 +364,6 @@ node {
 				                   container: [app: "visionary-dls"],
 				                   notificationChannel: "#jenkins-trashbin",
 				                   configureInstallOptions: "--test-execnone")
-			}
-		}
-
-		stage("wafSetupTest") {
-			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
-			wafSetup(projects: ["frickel-dls@v3testing"])
-
-			// Multiple projects
-			wafSetup(projects: ["frickel-dls@v3testing", "hicann-dls-scripts@v3testing"])
-
-			// Unsupported command line options
-			assertBuildResult("FAILURE") {
-				wafSetup()
-			}
-			assertBuildResult("FAILURE") {
-				wafSetup(projects: "frickel-dls")
 			}
 		}
 
