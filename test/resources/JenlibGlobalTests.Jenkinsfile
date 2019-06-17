@@ -386,6 +386,16 @@ node {
 				assert (jesh(script: "echo \$MODULEPATH", returnStdout: true).contains("foo/bar"))
 			}
 
+			// Test module load in container
+			inSingularity {
+				noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+
+				withModules(modules: ["localdir"]) {
+					localdirPath = jesh(script: 'echo $PATH', returnStdout: true)
+				}
+				assert (noModulePath != localdirPath): "$noModulePath should not be $localdirPath"
+			}
+
 			// Fail if module load does not succeed
 			assertBuildResult("FAILURE") {
 				withModules(modules: ["jenlibNonExistingModule"]) {}
