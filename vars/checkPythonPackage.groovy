@@ -14,9 +14,11 @@ def call(LinkedHashMap options) {
 
 	stage("Python Checking: ${package_name}") {
 
+		String tmp_code_format_folder = "code-format_" + UUID.randomUUID().toString()
+
 		// Get most recent code formatting guidelines
 		runOnSlave(label: "frontend") {
-			dir("code-format") {
+			dir(tmp_code_format_folder) {
 				withWaf {
 					try {
 						jesh "waf setup --project code-format " +
@@ -30,7 +32,7 @@ def call(LinkedHashMap options) {
 		}
 
 		// PEP8
-		jesh("pycodestyle --config=./code-format/code-format/pycodestyle ${package_dir.toString()} " +
+		jesh("pycodestyle --config=./code-format/" + tmp_code_format_folder + "/pycodestyle ${package_dir.toString()} " +
 		     "> pep8_report_${package_name}.txt || exit 0")
 		warnings canComputeNew: false,
 		         unstableTotalAll: '0',
@@ -39,16 +41,18 @@ def call(LinkedHashMap options) {
 		// PyLint
 		withEnv(["PYTHONPATH+WHATEVER=${package_parentdir}"]) {
 			// Linting
-			jesh("pylint --rcfile ./code-format/code-format/pylintrc ${package_name} " +
+			jesh("pylint --rcfile ./code-format/" + tmp_code_format_folder + "/pylintrc ${package_name} " +
 			     "> pylint_report_${package_name}.txt|| exit 0")
 
 			// Python3 compatibility, don't check absolute-import future statements, we require absolute imports anyways
 			jesh("pylint --py3k --disable=no-absolute-import --rcfile " +
-			     "./code-format/code-format/pylintrc ${package_name} " +
+			     "./code-format/" + tmp_code_format_folder + "/pylintrc ${package_name} " +
 			     ">> pylint_report_${package_name}.txt|| exit 0")
 		}
 		warnings canComputeNew: false,
 		         unstableTotalAll: '0',
 		         parserConfigurations: [[parserName: 'PyLint', pattern: "pylint_report_${package_name}.txt"]]
+
+		jesh("rm -rf " + tmp_code_format_folder)
 	}
 }
