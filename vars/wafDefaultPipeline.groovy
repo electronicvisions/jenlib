@@ -192,18 +192,18 @@ def call(Map<String, Object> options = [:]) {
 					} else {
 						echo("No documentation found to deploy.")
 					}
-				}
 
-				for (String project in projects) {
-					String name = project.split("/")[1]
+					for (String project in projects) {
+						String name = project.split("/")[1]
 
-					publishHTML([allowMissing: false,
-					            alwaysLinkToLastBuild: false,
-					            keepAll: false,
-					            reportDir: project,
-					            reportFiles: 'index.html',
-					            reportName: "Documentation (" + name + ")",
-					            reportTitles: ''])
+						publishHTML([allowMissing: false,
+						            alwaysLinkToLastBuild: false,
+						            keepAll: false,
+						            reportDir: project,
+						            reportFiles: 'index.html',
+						            reportName: "Documentation (" + name + ")",
+						            reportTitles: ''])
+					}
 				}
 			}
 		} catch (Throwable t) {
