@@ -31,14 +31,10 @@ def call(Map<String, Object> options = [:], Closure content) {
 		throw new IllegalArgumentException("prependModulePath has to be a string.")
 	}
 
-	/**
-	 * LUT for the paths to files that may be sourced to make the module command available on different machines.
-	 * Keys are regex expressions that are supposed to match the respective hostname.
-	 */
-	HashMap<String, String> moduleInitPaths = ["helvetica"                      : "/wang/environment/software/Modules/bashrc",
-	                                           "AMTHost\\d+"                    : "/wang/environment/software/Modules/bashrc",
-	                                           "HBPHost\\d+"                    : "/wang/environment/software/Modules/bashrc",
-	                                           "ome.*|vrhea.*|vtitan.*|uranus.*": "/usr/local/Modules/current/init/bash"]
+	// Default non-container module init path, different on ASIC machines vs. F9 cluster
+	String moduleInitPath = isAsicJenkins() ?
+	                        "/usr/local/Modules/current/init/bash" :
+	                        "/wang/environment/software/Modules/bashrc"
 
 	List<String> prefixCommands = new ArrayList()
 
@@ -48,26 +44,6 @@ def call(Map<String, Object> options = [:], Closure content) {
 	} else {
 		if (jesh(script: "which module >/dev/null 2>&1", returnStatus: true)) {
 			// We don't already have a module command, try to get one
-			String hostname = jesh(script: "hostname", returnStdout: true).trim()
-			String moduleInitPath
-
-			// Search for a module init command that belongs to the hostname
-			int foundInitPaths = 0
-			for (String hostRegex in moduleInitPaths.keySet()) {
-				if (hostname.matches(hostRegex)) {
-					moduleInitPath = moduleInitPaths.get(hostRegex)
-					foundInitPaths += 1
-				}
-			}
-
-			if (moduleInitPath == null) {
-				throw new IllegalStateException("No module init file registered for host $hostname.")
-			}
-
-			if (foundInitPaths > 1) {
-				echo "[withModules] Multiple module init files found for host $hostname, chosing $moduleInitPath"
-			}
-
 			if (!fileExists(moduleInitPath)) {
 				throw new InternalError("Expected file $moduleInitPath not found on host $hostname.")
 			}

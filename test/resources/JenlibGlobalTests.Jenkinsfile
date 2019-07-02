@@ -79,6 +79,11 @@ node {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
+		stage('isAsicJenkinsTest') {
+			// This file can only run on F9 jenkins
+			assert isAsicJenkins() == false: "ASIC Jenkins detected, but running on Softie Jenkins."
+		}
+
 		stage('withCcacheTest') {
 			withCcache() {
 				inSingularity(app: "visionary-wafer") {

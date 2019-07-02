@@ -1,0 +1,7 @@
+<p>
+    Check whether we are running on KIP ASIC Jenkins Server or the internal Visionary Jenkins.
+</p>
+
+<p>
+    <b>returns</b> <code>true</code> if running on ASIC
+</p>
