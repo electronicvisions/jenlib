@@ -208,25 +208,6 @@ try {
 			}
 		}
 
-		stage("checkPythonPackageTest") {
-			inSingularity {
-				jesh "mkdir lib"
-
-				// Good package
-				jesh "mkdir lib/good_package"
-				jesh "echo 'class NiceClass(object):\n    pass' > lib/good_package/__init__.py"
-				checkPythonPackage(pkg: "lib/good_package")
-				assert (currentBuild.currentResult == "SUCCESS")
-
-				// Bad package
-				jesh "mkdir lib/bad_package"
-				jesh "echo 'class uglyclass(): pass' > lib/bad_package/__init__.py"
-				assertBuildResult("UNSTABLE") {
-					checkPythonPackage(pkg: "lib/bad_package")
-				}
-			}
-		}
-
 		stage("getDefaultContainerPathTest") {
 			// Default without "In-Container:" in commit message
 			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
