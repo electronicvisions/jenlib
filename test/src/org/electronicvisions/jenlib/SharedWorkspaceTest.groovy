@@ -65,12 +65,14 @@ class SharedWorkspaceTest extends GroovyTestCase {
 						return ""
 					}
 
-					return "DELETE_ME\n" +                   // wrong general format    => delete
-					       "DELETE_ME.foo\n" +               // not a build number      => delete
-					       "DELETE_ME.REVMRVRFX01FIzQy\n" +  // correct but not special => delete
-					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz\n" +
-					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz@tmp\n " +
-					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz__tmp"
+					return "DELETE_ME\n" +                    // wrong general format    => delete
+					       "DELETE_ME.foo.\n" +               // not a build number      => delete
+					       "DELETE_ME.REVMRVRFX01FIzQy.\n" +  // correct but not special => delete
+					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.\n" +
+					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.@tmp\n " +
+					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.__tmp\n" +
+					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz._ws-cleanup\n" +
+					       "specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.some.thing"
 				}
 			}
 
@@ -93,7 +95,7 @@ class SharedWorkspaceTest extends GroovyTestCase {
 	void testGetWorkspace() {
 		MockedPipelineScript pipeline = new MockedPipelineScript(false)
 		File workspace = new File(SharedWorkspace.getWorkspace(pipeline))
-		assertEquals("specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz",
+		assertEquals("specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.",
 		             workspace.getName())
 	}
 

@@ -60,7 +60,7 @@ class SharedWorkspace {
 	/**
 	 * Get the workspace directory file for the current build.
 	 *
-	 * Workspace names follow the convention projectName.base64url(buildId)
+	 * Workspace names follow the convention projectName.base64url(buildId).
 	 *
 	 * @param steps Pipeline context
 	 * @return Workspace directory
@@ -72,8 +72,8 @@ class SharedWorkspace {
 		String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(identifier.getBytes())
 
 		// We prepend the encoded id by the project name for readability
-		// '.' is not part of the base64url alphabet
-		String workspaceName = projectName + "." + encodedId
+		// Id-delimiting '.'s are not part of the base64url alphabet
+		String workspaceName = projectName + "." + encodedId + "."
 		return new File(getWorkspaceRoot(steps), workspaceName)
 	}
 
@@ -84,8 +84,8 @@ class SharedWorkspace {
 	 * @return Matching jenkins build, null if no matching build is found
 	 */
 	private static file2Build(File workspace) {
-		// Jenkins creates temporary directories called ws__tmp or ws@tmp
-		Matcher idMatcher = (workspace.getName() =~ /^.+\.(?<id>.+?)(__.+)?(@.+)?$/)
+		// Jenkins postfixes workspaces => actual id is delimited by '.'s
+		Matcher idMatcher = (workspace.getName() =~ /^.+?\.(?<id>.+?)(\..*)?$/)
 		if (!idMatcher.matches()) {
 			return null
 		}
