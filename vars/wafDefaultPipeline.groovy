@@ -166,11 +166,14 @@ def call(Map<String, Object> options = [:]) {
 			// Scan for compiler and linting warnings
 			stage("Compiler/Linting Warnings") {
 				runOnSlave(label: "frontend") {
-					warnings canComputeNew: false,
-					         canRunOnFailed: true,
-					         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
-					         excludePattern: ".*usr/include.*,.*opt/spack.*,*.dox,${warningsIgnorePattern}",
-					         unstableTotalAll: '0'
+					recordIssues(qualityGates: [[threshold: 1,
+					                             type     : 'TOTAL',
+					                             unstable : true]],
+					             blameDisabled: true,
+					             excludeFile: ".*usr/include.*,.*opt/spack.*,*.dox,${warningsIgnorePattern}",
+					             tools: [gcc(id: "gcc_" + UUID.randomUUID().toString(),
+					                         name: "GCC Warnings")]
+					)
 
 					recordIssues(qualityGates: [[threshold: 1,
 					                             type     : 'TOTAL',
