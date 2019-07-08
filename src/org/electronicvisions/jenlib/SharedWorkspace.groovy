@@ -73,7 +73,8 @@ class SharedWorkspace {
 
 		// We prepend the encoded id by the project name for readability
 		// Id-delimiting '.'s are not part of the base64url alphabet
-		String workspaceName = projectName + "." + encodedId + "."
+		// Append an arbitrary character "x", some tools don't like folders ending with "."
+		String workspaceName = projectName + "." + encodedId + "." + "x"
 		return new File(getWorkspaceRoot(steps), workspaceName)
 	}
 

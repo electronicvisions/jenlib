@@ -95,7 +95,7 @@ class SharedWorkspaceTest extends GroovyTestCase {
 	void testGetWorkspace() {
 		MockedPipelineScript pipeline = new MockedPipelineScript(false)
 		File workspace = new File(SharedWorkspace.getWorkspace(pipeline))
-		assertEquals("specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.",
+		assertEquals("specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.x",
 		             workspace.getName())
 	}
 
