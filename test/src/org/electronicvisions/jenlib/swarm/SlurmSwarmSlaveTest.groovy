@@ -30,14 +30,6 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [gres: "B201330"])
 			slave.startSlave()
 		}
-
-		// Multiple nodes are prohibited
-		shouldFail(IllegalArgumentException) {
-			SwarmSlaveConfig config = new SwarmSlaveConfig()
-			config.slaveJar = "/some/path.jar"
-			SwarmSlave slave_multinodes = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [partition: "compile", nodes: 4])
-			slave_multinodes.startSlave()
-		}
 	}
 
 	void testSlurmJobIdParsing() {
@@ -47,5 +39,16 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 		SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [partition: "jenkins"])
 		slave.startSlave()
 		assertEquals(slave.jobID, SlurmSwarmSlavePipelineMock.MOCKED_SLURM_ID)
+	}
+
+	void testSingleNodeOnly() {
+		SwarmSlaveConfig config = new SwarmSlaveConfig()
+		config.slaveJar = "/some/path.jar"
+
+		shouldFail(IllegalArgumentException) {
+			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config,
+			                                       [partition: "jenkins", nodes: 2])
+			slave.startSlave()
+		}
 	}
 }

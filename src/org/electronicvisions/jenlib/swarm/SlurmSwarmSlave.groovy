@@ -90,6 +90,9 @@ class SlurmSwarmSlave extends SwarmSlave {
 		// Since there can be only one jenkins slave per host, we want our nodes exclusively
 		args.add("--exclusive")
 
+		// Make sure exactly one node is allocated
+		args.add("--nodes=1-1")
+
 		for (String key in slurm_args.keySet()) {
 			args.add("--$key")
 			args.add(slurm_args.get(key).toString())
@@ -112,7 +115,7 @@ class SlurmSwarmSlave extends SwarmSlave {
 	 *
 	 * @param arguments Slurm arguments to be verified
 	 */
-	private void checkSlurmArguments(Map<String, Object> arguments) {
+	private static void checkSlurmArguments(Map<String, Object> arguments) {
 		for (String key in arguments.keySet()) {
 			if (key.length() < 2) {
 				throw new IllegalArgumentException('Only fully-named argument identifiers (--$key) are supported.')
@@ -123,12 +126,8 @@ class SlurmSwarmSlave extends SwarmSlave {
 			throw new MissingPropertyException("Slurm partition has to be specified.")
 		}
 
-		// Make sure that the arguments are valid and result in exactly one node allocated
-		String stdout = steps.sh(script: "srun --test-only ${buildSlurmArguments()} " + '2>&1', returnStdout: true)
-
-		// Multiple nodes are something like: 'HBPHost[8-11]' or 'HBPHost[3,6]' or 'AMTHost13,HBPHost4'
-		if (stdout.trim().matches(".*(\\[.*])|(,).*")) {
-			throw new IllegalArgumentException("Slurm arguments result in multiple allocated nodes.")
+		if (arguments.containsKey("nodes")) {
+			throw new IllegalArgumentException("Slurm nodes are fixed to 1.")
 		}
 	}
 }

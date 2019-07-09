@@ -458,7 +458,8 @@ try {
 			}
 
 			assertBuildResult("FAILURE") {
-				onSlurmResource(partition: "jenkins", nodes: 2) {
+				// Too many tasks for a single node
+				onSlurmResource(partition: "jenkins", ntasks: 32) {
 					jesh "hostname"
 				}
 			}
