@@ -1,0 +1,3 @@
+Find out if today is a weekend's day.
+
+<b>Returns</b> <code>true</code> if today is Saturday or Sunday.

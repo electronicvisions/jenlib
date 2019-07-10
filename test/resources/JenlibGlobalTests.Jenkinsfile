@@ -84,6 +84,13 @@ try {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
+		stage('isWeekendTest') {
+			boolean bashIsWeekend = jesh(script: "[[ \$(date +%u) -lt 6 ]]", returnStatus: true)
+			boolean jenlibIsWeekend = isWeekend()
+			assert (jenlibIsWeekend == bashIsWeekend): "Bash says weekend: ${bashIsWeekend}, " +
+			                                           "jenlib: ${jenlibIsWeekend}"
+		}
+
 		stage('isAsicJenkinsTest') {
 			// This file can only run on F9 jenkins
 			assert isAsicJenkins() == false: "ASIC Jenkins detected, but running on Softie Jenkins."
