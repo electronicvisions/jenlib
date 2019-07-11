@@ -14,7 +14,8 @@
 def call(String expected_result, Closure content) {
 	// Start clean
 	if (currentBuild.currentResult) {
-		assert (currentBuild.currentResult == "SUCCESS")
+		assert (currentBuild.currentResult == "SUCCESS"):
+				"Current build status should be 'SUCCESS' (is: ${currentBuild.currentResult})"
 	}
 
 	// Execute the content, it may throw if we are expecting a failure
@@ -31,7 +32,8 @@ def call(String expected_result, Closure content) {
 	}
 
 	// Check for the correct result
-	assert (currentBuild.currentResult == expected_result)
+	assert (currentBuild.currentResult == expected_result):
+			"Current build status should be '${expected_result}' (is: ${currentBuild.currentResult})"
 
 	// If we didn't raise so far, everything's good
 	setBuildState("SUCCESS")
