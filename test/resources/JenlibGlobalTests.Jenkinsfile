@@ -112,9 +112,15 @@ try {
 			}
 		}
 
-		stage("isGerritTriggeredTest") {
+		stage("isTriggeredByGerritTest") {
 			// We assume that this pipeline is never triggered from an upstream job, otherwise this test will fail!
-			assert (isGerritTriggered() == (env.GERRIT_CHANGE_NUMBER ? true : false))
+			assert (isTriggeredByGerrit() == (env.GERRIT_CHANGE_NUMBER ? true : false))
+		}
+
+		stage("isTriggeredByUserActionTest") {
+			// We assume that this pipeline is never triggered manually, otherwise this test will fail!
+			assert (isTriggeredByUserAction() == false):
+					"Manual trigger detected, disable 'isTriggeredByUserActionTest' when running this pipeline manually!"
 		}
 
 		stage("addBuildParameterTest") {
@@ -432,8 +438,7 @@ try {
 		}
 
 		stage("notifyFailureTest") {
-			notifyFailure(mattermostChannel: "jenkins-trashbin", nonGerritOnly: true)
-			notifyFailure(mattermostChannel: "jenkins-trashbin", nonGerritOnly: false)
+			notifyFailure(mattermostChannel: "jenkins-trashbin")
 
 			// mattermostChannel is mandatory
 			assertBuildResult("FAILURE") {

@@ -3,21 +3,18 @@
 </p>
 
 <p>
-    A notification is sent if any of these apply:
-<ul>
-    <li><code>nonGerritOnly</code> is <code>false</code></li>
-    <li>The change has been triggered by a merge-event in gerrit</li>
-</ul>
+    A notification is <b>not sent</b> if any of these apply:
 </p>
 
-<p>
-    Otherwise (this especially includes non-merge gerrit events!), no notification is sent.
-</p>
+<ul>
+    <li>The change has been triggered by a gerrit event that was not a merge</li>
+    <li>The change has been triggered manually</li>
+</ul>
+
 
 <p>
     Parameters:
+</p>
 <ul>
     <li>String mattermostChannel (mandatory)</li>
-    <li>boolean nonGerritOnly (defaults true)</li>
 </ul>
-</p>

@@ -1,0 +1,1 @@
+Test whether the current build or any of its upstream triggers has been triggered by a specific cause.

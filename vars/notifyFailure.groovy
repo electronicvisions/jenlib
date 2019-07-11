@@ -1,16 +1,13 @@
 /**
  * Send a notification that this job has failed.
  *
- * A notification is sent if any of these apply:
+ * A notification is <b>not sent</b> if any of these apply:
  * <ul>
- *  <li>{@code nonGerritOnly} is {@code false}</li>
- *  <li>The change has been triggered by a merge-event in gerrit</li>
+ *  <li>The change has been triggered by a gerrit event that was not a merge</li>
+ *  <li>The change has been triggered manually</li>
  * </ul>
  *
- * Otherwise (this especially includes non-merge gerrit events!), no notification is sent.
- *
- * @param options Map of options. Currently supported: String mattermostChannel, boolean nonGerritOnly
- *                mattermostChannel is mandatory.
+ * @param options Map of options. Currently supported: String mattermostChannel (mandatory).
  */
 def call(Map<String, Object> options = [:]) {
 
@@ -19,13 +16,17 @@ def call(Map<String, Object> options = [:]) {
 	}
 
 	String mattermostChannel = options.get("mattermostChannel")
-	boolean nonGerritOnly = options.get("nonGerritOnly", true)
 
-	if (!nonGerritOnly | (isGerritTriggered() == (env.GERRIT_EVENT_TYPE == "change-merged"))) {
-		mattermostSend(channel: mattermostChannel,
-		               text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
-		               message: "${env.BUILD_URL}",
-		               failOnError: true,
-		               endpoint: "https://chat.bioai.eu/hooks/qrn4j3tx8jfe3dio6esut65tpr")
+	List<Boolean> noSendReasons = [isTriggeredByGerrit() && (env.GERRIT_EVENT_TYPE != "change-merged"),
+	                               isTriggeredByUserAction()]
+
+	if (noSendReasons.any()) {
+		return
 	}
+
+	mattermostSend(channel: mattermostChannel,
+	               text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
+	               message: "${env.BUILD_URL}",
+	               failOnError: true,
+	               endpoint: "https://chat.bioai.eu/hooks/qrn4j3tx8jfe3dio6esut65tpr")
 }
