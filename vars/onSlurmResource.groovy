@@ -49,7 +49,9 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 		throw anything
 	} finally {
 		// Archive slurm slave logs
-		archiveArtifacts(allowEmptyArchive: true, artifacts: "slurm-${slave.jobID}.*")
+		runOnSlave(label: "frontend") {
+			archiveArtifacts(allowEmptyArchive: true, artifacts: "slurm-${slave.jobID}.*")
+		}
 
 		// Slurm controller has to be accessed from a frontend
 		runOnSlave(label: "frontend") {
