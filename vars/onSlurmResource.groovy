@@ -43,6 +43,13 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	try {
 		// Run the content on the upcoming node as soon as it is available
 		runOnSlave(name: "slurm_${slave.jobID.toString()}") {
+			echo("=== DEBUG Output for OOM Errors ===")
+			// Use plain sh for simplicity: We ant to know what happens on the host without any quirks
+			sh("env")
+			sh("ulimit -a")
+			sh("ps uxH")
+			echo("=== End of DEBUG output ===")
+
 			content()
 		}
 	} catch (Throwable anything) {
