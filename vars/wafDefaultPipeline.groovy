@@ -20,7 +20,12 @@
  *                    <li><b>configureInstallOptions</b> (optional): Options passed to the
  *                                                        <code>waf configure install</code> call.
  *                                                        Defaults to <code>""</code>, <code>--test-execnone</code> is always set.
- *                    <li><b>testSlurmResource</b> (optional): Slurm resource definition tests are run on.
+ *                    <li><b>testSlurmResource</b> (optional): List of Slurm resource definitions tests
+ *                                                             are run on. If multiple resources are given,
+ *                                                             tests are executed once on all given
+ *                                                             resources.
+ *                                                             Arguments that are not of type list are
+ *                                                             transformed into a list of length 1.
  *                                                             Defaults to <code>[partition: "jenkins", "cpus-per-task": "8"]</code>
  *                    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
  *                                                       Defaults to <code>"--test-execall"</code>
@@ -31,7 +36,7 @@
 def call(Map<String, Object> options = [:]) {
 	timestamps {
 
-		if (options.containsKey("prePipelineCleanup") | options.containsKey("prePipelineCleanup")){
+		if (options.containsKey("prePipelineCleanup") | options.containsKey("prePipelineCleanup")) {
 			echo "[WARNING] Pipeline cleanup is deprecated! Builds use unique workspaces."
 		}
 
@@ -77,8 +82,18 @@ def call(Map<String, Object> options = [:]) {
 				testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
 			}
 			String configureInstallOptions = options.get("configureInstallOptions", "")
-			Map<String, String> testSlurmResource = (Map<String, String>) options.get("testSlurmResource",
-			                                                                          [partition: "jenkins", "cpus-per-task": "8"])
+
+			List<Map<String, String>> testResources
+			if (options.get("testSlurmResource") instanceof Map) {
+				testResources = [options.get("testSlurmResource")] as List<Map<String, String>>
+			} else if (options.get("testSlurmResource") instanceof List) {
+				testResources = options.get("testSlurmResource") as List<Map<String, String>>
+			} else if (options.get("testSlurmResource") == null) {
+				testResources = [[partition: "jenkins", "cpus-per-task": "8"]]
+			} else {
+				throw new IllegalArgumentException("testSlurmResource argument is malformed.")
+			}
+
 			String testOptions = options.get("testOptions", "--test-execall")
 			String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
 
@@ -91,15 +106,11 @@ def call(Map<String, Object> options = [:]) {
 			withWaf() {
 				// Build and run tests with default target and target="*"
 				for (String wafTargetOption in ["", "--targets='*'"]) {
-					String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
-					testResultDirs.add("build/" + testOutputDir)
-
 					stage("Build ${wafTargetOption}".trim()) {
 						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 							withModules(moduleOptions) {
 								inSingularity(containerOptions) {
 									jesh("waf configure install " +
-									     "--test-xml-summary=${testOutputDir} " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
 									     "${wafTargetOption} ${configureInstallOptions}")
@@ -108,12 +119,18 @@ def call(Map<String, Object> options = [:]) {
 						}
 					}
 
-					// Run tests defined in waf
-					stage("Tests ${wafTargetOption}".trim()) {
-						onSlurmResource(testSlurmResource) {
-							withModules(moduleOptions) {
-								inSingularity(containerOptions) {
-									jesh("waf build ${wafTargetOption} ${testOptions}")
+					// Run tests defined in waf for all given test resources
+					for (Map<String, String> testSlurmResource in testResources) {
+						String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
+						testResultDirs.add(testOutputDir)
+
+						stage("Tests ${wafTargetOption} ${testSlurmResource}".trim()) {
+							onSlurmResource(testSlurmResource) {
+								withModules(moduleOptions) {
+									inSingularity(containerOptions) {
+										jesh("waf build ${wafTargetOption} ${testOptions}")
+										jesh("mv build/test_results ${testOutputDir}")
+									}
 								}
 							}
 						}
@@ -185,13 +202,13 @@ def call(Map<String, Object> options = [:]) {
 					for (String project in projects) {
 						String name = project.split("/")[1]
 
-						publishHTML([allowMissing: false,
-						            alwaysLinkToLastBuild: false,
-						            keepAll: false,
-						            reportDir: project,
-						            reportFiles: 'index.html',
-						            reportName: "Documentation (" + name + ")",
-						            reportTitles: ''])
+						publishHTML([allowMissing         : false,
+						             alwaysLinkToLastBuild: false,
+						             keepAll              : false,
+						             reportDir            : project,
+						             reportFiles          : 'index.html',
+						             reportName           : "Documentation (" + name + ")",
+						             reportTitles         : ''])
 					}
 				}
 			}

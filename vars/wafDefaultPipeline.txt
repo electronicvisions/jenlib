@@ -18,7 +18,9 @@ Available options (see also <code>wafSetup</code>):
     <li><b>configureInstallOptions</b> (optional): Options passed to the
         <code>waf configure install</code> call.
         Defaults to <code>""</code>, <code>--test-execnone</code> is always set.
-    <li><b>testSlurmResource</b> (optional): Slurm resource definition tests are run on.
+    <li><b>testSlurmResource</b> (optional):List of Slurm resource definitions tests are run on.
+        If multiple resources are given, tests are executed once on all given resources.
+        Arguments that are not of type list are transformed into a list of length 1.
         Defaults to <code>[partition: "jenkins", "cpus-per-task": "8"]</code>
     <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
         Defaults to <code>"--test-execall"</code>

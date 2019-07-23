@@ -327,6 +327,15 @@ try {
 			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin")
+			cleanWs()
+
+			// Test a small project on multiple test resources
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   testSlurmResource: [[partition: "jenkins"],
+			                                       [partition: "compile"]],
+			                   notificationChannel: "#jenkins-trashbin")
+			cleanWs()
 
 			// Unsupported command line options
 			assertBuildResult("FAILURE") {
