@@ -21,16 +21,16 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	config.javaHome = "/wang/environment/software/jessie/jdk/8u92"
 	config.jenkinsHostname = "jenviz.skynet.kip.uni-heidelberg.de"
 	config.jenkinsJnlpPort = 8079
-	config.jenkinsKeyfile = "/wang/users/vis_jenkins/swarm_integration/passfile.key"
+	config.jenkinsKeyfile = "/jenkins/home/vis_jenkins/swarm_integration/passfile.key"
 	config.jenkinsUsername = "vis_jenkins"
 	config.jenkinsWebPort = 8080
 	config.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
 	config.mode = SwarmSlaveConfig.SlaveMode.EXCLUSIVE
-	config.slaveJar = "/wang/users/vis_jenkins/swarm_integration/swarm-client-latest.jar"
+	config.slaveJar = "/jenkins/home/vis_jenkins/swarm_integration/swarm-client-latest.jar"
 	config.numExecutors = 1
 
 	// Workspace is overwritten to a shared workspace in runOnSlave
-	config.fsroot = "/jenkins/jenviz_`hostname`/fsroot"
+	config.fsroot = "/jenkins/nodes/`hostname`"
 
 	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurm_args)
 
