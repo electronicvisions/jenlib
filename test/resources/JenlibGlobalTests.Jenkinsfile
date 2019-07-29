@@ -68,6 +68,17 @@ try {
 			assert (currentBuild.currentResult == "SUCCESS")
 		}
 
+		stage('setJobDescriptionTest') {
+			String tmpDescription = getJobDescription()
+			String testDescription = UUID.randomUUID().toString()
+
+			setJobDescription(testDescription)
+			assert (getJobDescription() == testDescription)
+
+			setJobDescription(tmpDescription)
+			assert (getJobDescription() == tmpDescription)
+		}
+
 		stage('jeshTest') {
 			// Basic functionality
 			assert (jesh(script: "hostname", returnStdout: true) == sh(script: "hostname", returnStdout: true))

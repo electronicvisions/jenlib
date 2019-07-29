@@ -1,0 +1,3 @@
+<p>
+    Set the description of the job (not current build) from within a Jenkinsfile.
+</p>
