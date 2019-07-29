@@ -79,7 +79,7 @@ class Waf implements Serializable {
 			this.gerrit_port = options.get('gerrit_port', 22) // default to 22 for ssh, if neither in env nor set.
 		}
 
-		waf_dir = Paths.get(steps.pwd([waf_dir: true]), "jenkins_waf_" + randomUUID().toString()).toString()
+		waf_dir = Paths.get(steps.pwd(tmp: true), "jenkins_waf_" + randomUUID().toString()).toString()
 		path = Paths.get(waf_dir.toString(), "bin").toString()
 	}
 
