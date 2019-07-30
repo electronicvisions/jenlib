@@ -90,7 +90,7 @@ class Waf implements Serializable {
 		if (built) {
 			throw new IllegalStateException("Waf was already built.")
 		}
-		debugShell "mkdir ${waf_dir}"
+		debugShell "mkdir -p ${waf_dir}"
 		debugShell "mkdir ${path}"
 		debugShell "cd ${waf_dir} && " +
 		           "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
