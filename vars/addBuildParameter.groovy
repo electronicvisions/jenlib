@@ -7,14 +7,14 @@ import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
  * Existing parameters will not be changed.
  *
  * This step needs the <a href="https://wiki.jenkins.io/display/JENKINS/Lockable+Resources+Plugin">Lockable Resources Plugin</a>
- * with registered resource {@code JENLIB_BUILD_PARAMETER_UPDATE}.
+ * with registered resource {@code JENLIB_JOB_CONFIGURATION_UPDATE}.
  *
  * @param parameter Build parameter to be added
  */
 void call(ParameterDefinition parameter) {
 	// Build parameter changes are not atomic: Make sure parallel builds do not interfere
-	// NOTE: 'JENLIB_BUILD_PARAMETER_UPDATE' needs to be a registered 'Lockable Resource'!
-	lock("JENLIB_BUILD_PARAMETER_UPDATE") {
+	// NOTE: 'JENLIB_JOB_CONFIGURATION_UPDATE' needs to be a registered 'Lockable Resource'!
+	lock("JENLIB_JOB_CONFIGURATION_UPDATE") {
 		// Get existing parameters
 		List<ParameterDefinition> oldParams = currentBuild.rawBuild.getParent().
 				getProperty(ParametersDefinitionProperty)?.getParameterDefinitions()
