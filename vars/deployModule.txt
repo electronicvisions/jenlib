@@ -3,10 +3,19 @@ Deploy content to module.
 </p>
 
 <p>
+	If <code>deployModule</code> is used in a Job triggered by a non-merge gerrit event, the module's name will be
+	postfixed by "_testing" and the version identifier will encode the triggering patch set.
+	Testing modules are already purged depending on the given list of `cleanupEvents` (gerrit event types).
+	Defaults are <code>["change-merged", "change-abandoned"]</code>.
+</p>
+
+<p>
 Intended usage:
 <pre>
 	inSingularity() {
-		deployModule([name: "ppu", source: "install"])
+		deployModule([name: "ppu",
+	                  source: "install",
+	                  cleanupEvents: ["change-merged", "change-abandoned"]])
 	}
 </pre>
 </p>
@@ -14,4 +23,8 @@ Intended usage:
 <p>
 The content of a source folder and a associated named new modulefile is deployed to specified locations.
 The singularity container name is placed in the help message of the module.
+</p>
+
+<p>
+	<b>returns</b> deployed module including version identifier
 </p>

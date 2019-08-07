@@ -581,43 +581,45 @@ try {
 			jesh "echo '#!/bin/bash\necho bla' > $WORKSPACE/source/bin/test_executable"
 			jesh "chmod +x $WORKSPACE/source/bin/test_executable"
 
+			String moduleAndVersion = "testmodule"
+
 			inSingularity() {
-				deployModule([name      : "testmodule",
-				              moduleRoot: "$WORKSPACE/module",
-				              targetRoot: "$WORKSPACE/install",
-				              source    : "$WORKSPACE/source"])
+				moduleAndVersion = deployModule([name      : "testmodule",
+				                                 moduleRoot: "$WORKSPACE/module",
+				                                 targetRoot: "$WORKSPACE/install",
+				                                 source    : "$WORKSPACE/source"])
 			}
 
 			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
 				assert (jesh(returnStdout: true,
-				             script: "module load testmodule && test_executable").contains("bla"))
+				             script: "module load $moduleAndVersion && test_executable").contains("bla"))
 			}
 
-			withModules(modules: ["testmodule"],
+			withModules(modules: [moduleAndVersion],
 			            prependModulePath: "$WORKSPACE/module") {
 				assert (jesh(returnStdout: true,
-				             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
+				             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/${moduleAndVersion}"))
 			}
 
-			withModules(modules: ["testmodule"],
+			withModules(modules: [moduleAndVersion],
 			            prependModulePath: "$WORKSPACE/module") {
 				inSingularity() {
 					assert (jesh(returnStdout: true,
-					             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/testmodule"))
+					             script: "echo \$LD_LIBRARY_PATH").contains("$WORKSPACE/install/${moduleAndVersion}"))
 				}
 			}
 
 			// test increasing counter of module directory
 			num_before = sish(returnStdout: true,
-			                  script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
+			                  script: "find `dirname $WORKSPACE/install/$moduleAndVersion`/* -maxdepth 0 -type d | wc -l").toInteger()
 			inSingularity() {
-				deployModule([name      : "testmodule",
-				              moduleRoot: "$WORKSPACE/module",
-				              targetRoot: "$WORKSPACE/install",
-				              source    : "$WORKSPACE/source"])
+				moduleAndVersion = deployModule([name      : "testmodule",
+				                                 moduleRoot: "$WORKSPACE/module",
+				                                 targetRoot: "$WORKSPACE/install",
+				                                 source    : "$WORKSPACE/source"])
 			}
 			num_after = sish(returnStdout: true,
-			                 script: "find $WORKSPACE/install/testmodule/* -maxdepth 0 -type d | wc -l").toInteger()
+			                 script: "find `dirname $WORKSPACE/install/$moduleAndVersion`/* -maxdepth 0 -type d | wc -l").toInteger()
 			assert (num_before == 1)
 			assert (num_after == 2)
 
