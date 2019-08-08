@@ -57,6 +57,11 @@ abstract class SwarmSlave {
 		}
 
 		args.add("-jar")
+
+		// OOM Debug (Issue #3272)
+		args.add("-XX:+HeapDumpOnOutOfMemoryError")
+		args.add("-XX:HeapDumpPath=/jenkins/heapdumps/${steps.env.GERRIT_CHANGE_NUMBER}.hprof")
+
 		args.add("\"${config.slaveJar.toString()}\"")
 
 		if (config.slaveName != null) {
