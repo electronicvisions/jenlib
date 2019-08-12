@@ -53,7 +53,7 @@ class SharedWorkspace {
 				continue
 			}
 			steps.echo("[Jenlib SharedWorkspace] Cleanup: Removing '${workspace}'")
-			steps.jesh("rm -rf '${workspace}'")
+			steps.jesh("rm -rf '${workspace}' || echo 'Could not delete ${workspace}, ignoring...'")
 		}
 	}
 
