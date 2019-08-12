@@ -15,15 +15,24 @@ import org.electronicvisions.jenlib.ShellManipulator
  *                          <ul>
  *                              <li>image: [optional, defaults to "/containers/stable/latest"] Singularity container image to be used.
  *                              If the commit being built contains "In-Container: /path/to/image", the default will be change to "/path/to/image".</li>
- *                              <li>app: [optional, defaults to "visionary-defaults"] Singularity container app to be used.</li>
+ *                              <li>app: [optional, defaults to no app] Singularity container app to be used.</li>
  *                              <li>singularityArgs: [optional, defaults to ""] Additional singularity arguments.</li>
  *                          </ul>
  * @param content Code to be executed in the context of a container instance.
  */
 def call(Map<String, String> containerOptions = [:], Closure content) {
 
+	/**
+	 * Argument to be be passed to singularity for specifying the app.
+	 */
+	String appArgument = ""
+
+	if (containerOptions.get("app") != null){
+		appArgument = "--app=${containerOptions.get("app")}"
+	}
+
 	String cmdPrefix = "singularity exec " +
-	                   "--app ${containerOptions.get("app", "visionary-defaults")} " +
+	                   "${appArgument} " +
 	                   "${containerOptions.get("singularityArgs", "")} " +
 	                   "${containerOptions.get("image", (String) getDefaultContainerPath())}"
 
