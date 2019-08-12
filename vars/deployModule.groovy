@@ -29,7 +29,7 @@ String call(Map<String, String> options = [:]) {
 	}
 
 	String moduleRoot = Paths.get(options.get("moduleRoot", "/wang/environment/modules")).toString()
-	String targetRoot = Paths.get(options.get("targetRoot", "/wang/environment/software/jessie")).toString()
+	String targetRoot = Paths.get(options.get("targetRoot", "/wang/environment/software/container")).toString()
 
 	String source = Paths.get(options.get("source")).toString()
 	if (source == null) {
