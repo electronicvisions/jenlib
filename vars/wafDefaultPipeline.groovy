@@ -169,7 +169,7 @@ def call(Map<String, Object> options = [:]) {
 					warnings canComputeNew: false,
 					         canRunOnFailed: true,
 					         consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']],
-					         excludePattern: ".*opt/spack.*,*.dox,${warningsIgnorePattern}",
+					         excludePattern: ".*usr/include.*,.*opt/spack.*,*.dox,${warningsIgnorePattern}",
 					         unstableTotalAll: '0'
 
 					recordIssues(qualityGates: [[threshold: 1,
