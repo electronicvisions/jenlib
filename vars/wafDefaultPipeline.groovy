@@ -170,7 +170,7 @@ def call(Map<String, Object> options = [:]) {
 					                             type     : 'TOTAL',
 					                             unstable : true]],
 					             blameDisabled: true,
-					             excludeFile: ".*usr/include.*,.*opt/spack.*,*.dox,${warningsIgnorePattern}",
+					             filters: [excludeFile(".*usr/include.*,.*opt/spack.*,*.dox,${warningsIgnorePattern}")],
 					             tools: [gcc(id: "gcc_" + UUID.randomUUID().toString(),
 					                         name: "GCC Warnings")]
 					)
