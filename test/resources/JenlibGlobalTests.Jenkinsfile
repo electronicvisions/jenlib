@@ -623,6 +623,20 @@ try {
 			assert (num_before == 1)
 			assert (num_after == 2)
 
+			// test custom version identifier
+			inSingularity() {
+				moduleAndVersion = deployModule([name      : "testmodule",
+				                                 moduleRoot: "$WORKSPACE/module",
+				                                 targetRoot: "$WORKSPACE/install",
+				                                 source    : "$WORKSPACE/source",
+				                                 version   : UUID.randomUUID().toString()],)
+			}
+
+			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
+				assert (jesh(returnStdout: true,
+				             script: "module load $moduleAndVersion && test_executable").contains("bla"))
+			}
+
 			// test fail without being in inSingularity closure
 			assertBuildResult("FAILURE") {
 				deployModule([name      : "testmodule",

@@ -5,17 +5,16 @@ import java.text.SimpleDateFormat
 /**
  * Deploy content to module. Save container name to module's help.
  *
- * If `deployModule` is used in a Job triggered by a non-merge gerrit event, the module's name will be postfixed
- * by "_testing" and the version identifier will encode the triggering patch set.
- * Testing modules are purged depending on the given list of `cleanupEvents` (gerrit event types). Defaults
- * are {@code ["change-merged", "change-abandoned"]}
+ * The deployed module's name has to be given by a 'name'.
+ * The deployed module's version defaults to an enumerated date string (e.g. '2019-08-15-1').
+ * The latter may be overwritten by the 'version' parameter.
  *
  * Example:
  * 	<pre>
  * 	    inSingularity() {
- * 	        deployModule([name: "ppu",
- * 	                      source: "install",
- * 	                      cleanupEvents: ["change-merged", "change-abandoned"]])
+ * 	        deployModule(name: "ppu",
+ * 	                     source: "install",
+ * 	                     version: "c7311p24")
  * 	    }
  * 	</pre>
  *
@@ -41,39 +40,7 @@ String call(Map<String, String> options = [:]) {
 		throw new IllegalStateException("No module name specified.")
 	}
 
-	// List of gerrit events that trigger a cleanup of all previous modules of the respective changeset
-	List<String> cleanupEvents = (List<String>) options.get("cleanupEvents",
-	                                                        ["change-merged", "change-abandoned"])
-
-	String changeIdentifier = ""
-	if (isTriggeredByGerrit()) {
-		runOnSlave(label: "frontend") {
-			// Cleanup of old changesets
-			if (env.GERRIT_EVENT_TYPE in cleanupEvents) {
-				// remove Modulefiles
-				int modFileError = jesh(script: "rm -rf ${moduleRoot}/${moduleName}_testing/*-c${env.GERRIT_CHANGE_NUMBER}p*",
-				                        returnStatus: true)
-
-				// remove deployed data
-				int modDataError = jesh(script: "rm -rf ${targetRoot}/${moduleName}_testing/*-c${env.GERRIT_CHANGE_NUMBER}p*",
-				                        returnStatus: true)
-
-				if (modFileError || modDataError) {
-					throw new RuntimeException("Could not completely remove old module '${moduleName}'")
-				}
-			}
-
-			if (env.GERRIT_EVENT_TYPE != "change-merged") {
-				changeIdentifier = "-c${env.GERRIT_CHANGE_NUMBER}p${env.GERRIT_PATCHSET_NUMBER}"
-			}
-		}
-	}
-
-
-	// Postpend module name by "_testing" for non-merge gerrit changes
-	if (isTriggeredByGerrit() && (env.GERRIT_EVENT_TYPE != "change-merged")) {
-		moduleName = moduleName + "_testing"
-	}
+	String version = options.get("version")
 
 	String targetDir = Paths.get(targetRoot, moduleName).toString()
 	String moduleDir = Paths.get(moduleRoot, moduleName).toString()
@@ -81,23 +48,19 @@ String call(Map<String, String> options = [:]) {
 	String moduleFileTemplate = libraryResource 'org/electronicvisions/modulefile'
 	String moduleVersionTemplate = libraryResource 'org/electronicvisions/.version'
 
-	// Version identifier for the deployed module
-	String version = ""
-
 	runOnSlave(label: "frontend") {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
-		String date = formatter.format(Date.from(Instant.now()))
+		if (version == null) {
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
+			String date = formatter.format(Date.from(Instant.now()))
 
-		// Version name without increment
-		String rawVersion = "$date$changeIdentifier"
+			String num = jesh(returnStdout: true,
+			                  script: "num=1 && " +
+			                          "while [[ -e \"$targetDir/$date-\$num\" ]]; " +
+			                          "do let num++; done && " +
+			                          "echo \$num").trim()
 
-		String num = jesh(returnStdout: true,
-		                  script: "num=1 && " +
-		                          "while [[ -e \"$targetDir/$rawVersion-\$num\" ]]; " +
-		                          "do let num++; done && " +
-		                          "echo \$num").trim()
-
-		version = "$rawVersion-$num"
+			version = "$date-$num"
+		}
 
 		// Create module directories, if they do not exist
 		jesh "mkdir -p ${targetDir}"

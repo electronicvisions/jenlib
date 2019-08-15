@@ -3,19 +3,18 @@ Deploy content to module.
 </p>
 
 <p>
-	If <code>deployModule</code> is used in a Job triggered by a non-merge gerrit event, the module's name will be
-	postfixed by "_testing" and the version identifier will encode the triggering patch set.
-	Testing modules are already purged depending on the given list of `cleanupEvents` (gerrit event types).
-	Defaults are <code>["change-merged", "change-abandoned"]</code>.
+	The deployed module's name has to be given by a 'name'.
+	The deployed module's version defaults to an enumerated date string (e.g. '2019-08-15-1').
+	The latter may be overwritten by the 'version' parameter.
 </p>
 
 <p>
 Intended usage:
 <pre>
 	inSingularity() {
-		deployModule([name: "ppu",
-	                  source: "install",
-	                  cleanupEvents: ["change-merged", "change-abandoned"]])
+		deployModule(name: "ppu",
+		             source: "install",
+		             version: "c7311p24")
 	}
 </pre>
 </p>
