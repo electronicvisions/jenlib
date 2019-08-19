@@ -31,6 +31,8 @@
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
+ *                    <li><b>wafTargetOptions</b> (optional): List of targets to be built.
+ *                                                            Defaults to <code>[""]</code>, representing only the default target set.
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
@@ -104,8 +106,7 @@ def call(Map<String, Object> options = [:]) {
 			LinkedList<String> testResultDirs = new LinkedList<String>()
 
 			withWaf() {
-				// Build and run tests with default target and target="*"
-				for (String wafTargetOption in ["", "--targets='*'"]) {
+				for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
 					stage("Build ${wafTargetOption}".trim()) {
 						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 							withModules(moduleOptions) {
