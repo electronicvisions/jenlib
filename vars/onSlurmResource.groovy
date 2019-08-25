@@ -45,8 +45,6 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 		runOnSlave(name: "slurm_${slave.jobID.toString()}") {
 			content()
 		}
-	} catch (Throwable anything) {
-		throw anything
 	} finally {
 		// Slurm controller has to be accessed from a frontend
 		runOnSlave(label: "frontend") {
