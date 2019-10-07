@@ -310,6 +310,28 @@ try {
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
 
+		stage("deployDocumentationRemoteTest") {
+			repositoryUrl = "ssh://hudson@brainscales-r.kip.uni-heidelberg.de:29418/jenlib"
+			upstreamBranch = "sandbox/hudson/deploy_documentation_test"
+			jesh "mkdir upstream"
+			dir ("upstream") {
+				jesh "git init"
+				jesh "git commit --allow-empty -m 'Documentation'"
+				jesh "git push -f ${repositoryUrl} HEAD:${upstreamBranch}"
+			}
+			jesh "mkdir docu"
+			content = jesh(script: "echo -n 'my docu ' \$(date)", returnStdout: true)
+			jesh "echo -n '${content}' > docu/docu.txt"
+			deployDocumentationRemote([folders: ["docu"],
+			                          repositoryUrl: repositoryUrl,
+			                          upstreamBranch: upstreamBranch])
+			jesh "git clone --branch ${upstreamBranch} ${repositoryUrl}"
+			assert fileExists("jenlib/docu/docu.txt")
+			String docu_content = jesh(script: "cat jenlib/docu/docu.txt", returnStdout: true)
+			assert docu_content.contains(content)
+			jesh "rm -rf docu jenlib upstream"
+		}
+
 		stage('withWafTest') {
 			withWaf() {
 				stdout = jesh(returnStdout: true, script: "waf --help")

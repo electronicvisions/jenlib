@@ -99,6 +99,15 @@ def call(Map<String, Object> options = [:]) {
 			String testOptions = options.get("testOptions", "--test-execall")
 			String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
 
+			if (options.get("deployDocumentationRemoteOptions") != null) {
+				deployDocumentationRemoteOptions = options.get("deployDocumentationRemoteOptions") as Map<String, Object>
+				if (deployDocumentationRemoteOptions.containsKey("folders")) {
+					throw new IllegalArgumentException("folders-argument in deployDocumentationRemoteOptions would be overwritten.")
+				}
+			} else {
+				deployDocumentationRemoteOptions = null
+			}
+
 			// Directories test-result XML files are written to
 			LinkedList<String> testResultDirs = new LinkedList<String>()
 
@@ -217,6 +226,17 @@ def call(Map<String, Object> options = [:]) {
 						             reportFiles          : 'index.html',
 						             reportName           : "Documentation (" + name + ")",
 						             reportTitles         : ''])
+					}
+
+					if (deployDocumentationRemoteOptions) {
+						if (env.GERRIT_EVENT_TYPE == "change-merged") {
+							if (currentBuild.currentResult == "SUCCESS") {
+								deployDocumentationRemoteOptions.put("folders", projects)
+								deployDocumentationRemote(deployDocumentationRemoteOptions)
+							} else {
+								echo("Documentation deployment skipped: Unstable build.")
+							}
+						}
 					}
 				}
 			}

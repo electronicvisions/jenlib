@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>API Documentation for <%=folders.join(", ")%></title>
+</head>
+<body>
+<ul>
+<% for(int i = 0; i < folders.size(); i+=1) { %>
+    <li><a href=<%=folders.get(i)%>/index.html>Documentation for <%=folders.get(i)%></a></li>
+<% } %>
+</ul>
+</body>
+</html>

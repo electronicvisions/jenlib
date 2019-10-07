@@ -1,0 +1,11 @@
+<p>
+    Deploy a list of folders to a specified git repository.
+</p>
+
+Available options:
+<ul>
+    <li><b>repositoryUrl:</b> URL of the repository to deploy tor</li>
+    <li><b>upstreamBranch:</b> Upstream branch name</li>
+    <li><b>keyFile:</b> SSH keyfile</li>
+    <li><b>folders:</b> List of folders to deploy</li>
+</ul>
