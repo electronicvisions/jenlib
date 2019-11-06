@@ -310,6 +310,24 @@ try {
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
 
+		stage('withWafTest') {
+			withWaf() {
+				stdout = jesh(returnStdout: true, script: "waf --help")
+				assert (stdout.contains("waf [commands] [options]"))
+
+				// nested withWaf
+				withWaf() {
+					stdout = jesh(returnStdout: true, script: "waf --help")
+					assert (stdout.contains("waf [commands] [options]"))
+				}
+
+				inSingularity {
+					stdout_singularity = jesh(returnStdout: true, script: "waf --help")
+				}
+				assert (stdout_singularity.contains("waf [commands] [options]"))
+			}
+		}
+
 		stage("wafSetupTest") {
 			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
 			wafSetup(projects: ["frickel-dls@v3testing"])
@@ -548,18 +566,6 @@ try {
 						}
 					}
 				}
-			}
-		}
-
-		stage('withWafTest') {
-			withWaf() {
-				stdout = jesh(returnStdout: true, script: "waf --help")
-				assert (stdout.contains("waf [commands] [options]"))
-
-				inSingularity {
-					stdout_singularity = jesh(returnStdout: true, script: "waf --help")
-				}
-				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
 		}
 

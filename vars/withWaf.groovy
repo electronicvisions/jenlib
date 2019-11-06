@@ -13,12 +13,22 @@ import org.electronicvisions.jenlib.Waf
  * @param options Map of options to provide to Waf class.
  */
 def call(Closure content) {
+	if (env.JENLIB_WITH_WAF?.toBoolean()) {
+		content()
+		return
+	}
+
 	Waf waf
 	runOnSlave(label: "frontend") {
 		waf = new Waf(this, false)
 		waf.build()
 	}
 	withEnv(["PATH+WAF=${waf.path}", "SINGULARITYENV_PREPEND_PATH+WAF=${waf.path}"]) {
-		content()
+		env.JENLIB_WITH_WAF = true
+		try {
+			content()
+		} finally {
+			env.JENLIB_WITH_WAF = false
+		}
 	}
 }
