@@ -10,7 +10,7 @@ import static java.util.UUID.randomUUID
  * The class can be used as follows:
  * Manual Resource Management (works in Jenkins' Groovy dialect)
  * <pre>
- * 	waf = new Waf(this, [gerrit_changes: "GERRIT_CHANGES", gerrit_host: "GERRIT_HOST", gerrit_port: "GERRIT_PORT", gerrit_user: "GERRIT_USER"])
+ * 	waf = new Waf(this, true)
  * 	waf.build()
  *	withEnv(["PATH+WAF=" + waf.path]) {
  *		jesh "waf do_something"
@@ -64,19 +64,19 @@ class Waf implements Serializable {
 	 * Constructor for {@link Waf}
 	 *
 	 * @param steps Pipeline steps, to be passed as {@code this} from the calling pipeline
-	 * @param options Map of options for waf build
+	 * @param debug Enable debug output
 	 */
-	Waf(steps, Map<String, Object> options = [:]) {
+	Waf(steps, boolean debug=false) {
 		this.steps = steps
-		this.debug = options.get('debug', false)
+		this.debug = debug
 
-		this.gerrit_changes = options.get('gerrit_changes', steps.env.GERRIT_CHANGE_NUMBER)
-		this.gerrit_host = options.get('gerrit_host', steps.env.GERRIT_HOST)
+		this.gerrit_changes = steps.env.GERRIT_CHANGE_NUMBER
+		this.gerrit_host = steps.env.GERRIT_HOST
 
 		if (steps.env.GERRIT_PORT != null) { // needed because parseInt can't parse 'null'
-			this.gerrit_port = options.get('gerrit_port', Integer.parseInt(steps.env.GERRIT_PORT))
+			this.gerrit_port = Integer.parseInt(steps.env.GERRIT_PORT)
 		} else {
-			this.gerrit_port = options.get('gerrit_port', 22) // default to 22 for ssh, if neither in env nor set.
+			this.gerrit_port = 22 // default to 22 for ssh, if not in in env.
 		}
 
 		waf_dir = Paths.get(steps.pwd(tmp: true), "jenkins_waf_" + randomUUID().toString()).toString()
@@ -136,14 +136,14 @@ class Waf implements Serializable {
 	}
 
 	/**
-	 * Shell wrapper that cuts all stdout if {@link Waf#debug} is <code>false</code>
+	 * Shell wrapper that cuts all stdout/stderr if {@link Waf#debug} is <code>false</code>
 	 */
 	private void debugShell(String command) {
 		if (debug) {
 			steps.jesh command
 		} else {
-			command.replace("&&", "> /dev/null &&")
-			command += "> /dev/null"
+			command.replace("&&", "&> /dev/null &&")
+			command += "&> /dev/null"
 			steps.jesh "${command}"
 		}
 	}

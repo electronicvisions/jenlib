@@ -561,11 +561,6 @@ try {
 				}
 				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
-
-			withWaf(gerrit_changes: "3981") {
-				stdout = jesh(returnStdout: true, script: "waf --help")
-				assert (stdout.contains("waf [commands] [options]"))
-			}
 		}
 
 		stage("fillTemplateTest") {

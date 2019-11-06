@@ -5,12 +5,12 @@ Provide the waf build tool.
 <p>
 Intended usage:
 <pre>
-	withWaf(gerrit_changes: 'x') {
+	withWaf() {
 		jesh "waf setup --project some_project"
 	}
 </pre>
 </p>
 
 <p>
-The (customized) waf build tool is available within the closure in shell scripts as 'waf'. Specific gerrit options for waf can be specified.
+The (customized) waf build tool is available within the closure in shell scripts as 'waf'.
 </p>

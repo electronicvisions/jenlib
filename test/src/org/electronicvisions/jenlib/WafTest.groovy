@@ -68,7 +68,7 @@ class WafTest extends GroovyTestCase {
 		pipeline.env.GERRIT_HOST = "brainscales-r.kip.uni-heidelberg.de"
 		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
 
-		Waf waf = new Waf(pipeline, [debug: true])
+		Waf waf = new Waf(pipeline, true)
 		waf.build()
 
 		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
@@ -94,7 +94,7 @@ class WafTest extends GroovyTestCase {
 
 		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
 
-		Waf waf = new Waf(pipeline, [debug: true])
+		Waf waf = new Waf(pipeline, true)
 		waf.build()
 
 		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
@@ -169,7 +169,7 @@ class WafTest extends GroovyTestCase {
 		releaseWaf.clean()
 		assertFalse(pipeline.stdout_accumulated.length() > 0)
 
-		Waf debugWaf = new Waf(pipeline, [debug: true])
+		Waf debugWaf = new Waf(pipeline, true)
 		debugWaf.build()
 		debugWaf.clean()
 		assertTrue(pipeline.stdout_accumulated.contains("adding waflib"))

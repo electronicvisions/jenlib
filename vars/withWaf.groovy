@@ -12,10 +12,10 @@ import org.electronicvisions.jenlib.Waf
  *
  * @param options Map of options to provide to Waf class.
  */
-def call(Map<String, Object> options = [:], Closure content) {
+def call(Closure content) {
 	Waf waf
 	runOnSlave(label: "frontend") {
-		waf = new Waf(this, options)
+		waf = new Waf(this, false)
 		waf.build()
 	}
 	withEnv(["PATH+WAF=${waf.path}", "SINGULARITYENV_PREPEND_PATH+WAF=${waf.path}"]) {
