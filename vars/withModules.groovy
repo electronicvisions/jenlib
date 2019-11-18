@@ -19,7 +19,7 @@ def call(Map<String, Object> options = [:], Closure content) {
 		throw new IllegalArgumentException("modules have to be a list.")
 	}
 
-	if (!(options.get("purge", true) instanceof Boolean)) {
+	if (!(options.get("purge", false) instanceof Boolean)) {
 		throw new IllegalArgumentException("purge has to be boolean.")
 	}
 
