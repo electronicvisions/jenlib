@@ -591,9 +591,8 @@ try {
 				                                 source    : "$WORKSPACE/source"])
 			}
 
-			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
-				assert (jesh(returnStdout: true,
-				             script: "module load $moduleAndVersion && test_executable").contains("bla"))
+			withModules(modules: [moduleAndVersion], prependModulePath: "$WORKSPACE/module") {
+				assert (jesh(returnStdout: true, script: "test_executable").contains("bla"))
 			}
 
 			withModules(modules: [moduleAndVersion],
@@ -633,9 +632,8 @@ try {
 				                                 version   : UUID.randomUUID().toString()],)
 			}
 
-			withEnv(["MODULEPATH+LOCAL=$WORKSPACE/module"]) {
-				assert (jesh(returnStdout: true,
-				             script: "module load $moduleAndVersion && test_executable").contains("bla"))
+			withModules(modules: [moduleAndVersion], prependModulePath: "$WORKSPACE/module") {
+				assert (jesh(returnStdout: true, script: "test_executable").contains("bla"))
 			}
 
 			// test fail without being in inSingularity closure
