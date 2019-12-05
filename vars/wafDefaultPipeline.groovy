@@ -99,13 +99,13 @@ def call(Map<String, Object> options = [:]) {
 			String testOptions = options.get("testOptions", "--test-execall")
 			String warningsIgnorePattern = options.get("warningsIgnorePattern", "")
 
-			// Setup and build the project
-			wafSetup(options)
-
 			// Directories test-result XML files are written to
 			LinkedList<String> testResultDirs = new LinkedList<String>()
 
 			withWaf() {
+				// Setup and build the project
+				wafSetup(options)
+
 				for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
 					stage("Build ${wafTargetOption}".trim()) {
 						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
