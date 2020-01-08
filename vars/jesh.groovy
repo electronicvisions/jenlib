@@ -12,8 +12,6 @@ import org.electronicvisions.jenlib.ShellManipulator
  * @return Whatever the {@code sh} pipeline step returns
  */
 def call(Map<String, Object> options = [:]) {
-	jenlibRecurrentActions()
-
 	if (!options.get("script")) {
 		throw new IllegalArgumentException("Argument 'script' is mandatory.")
 	}

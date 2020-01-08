@@ -1,0 +1,30 @@
+@Library("jenlib") _
+
+import org.electronicvisions.jenlib.SharedWorkspace
+
+/*
+ * This Jenkinsfile defines a pipeline with periodically executed jenlib actions. This
+ * pipeline is mainly used to ensure periodical cleanup.
+ *
+ * NOTE: Since this Jenkinsfile loads <code>jenlib@master</code>, changes to recurrent
+ *       actions are not covered by gerrit-triggered verification builds!
+ */
+
+try {
+	runOnSlave(label: "frontend") {
+		stage("Workspace Cleanup") {
+			SharedWorkspace.cleanup(this)
+		}
+
+		stage("Stuck slurm slaves/jobs") {
+			jenlibCleanSlurmNodes()
+		}
+	}
+} catch (Throwable t) {
+	notifyFailure(mattermostChannel: "#softies")
+	throw t
+}
+
+if (currentBuild.currentResult != "SUCCESS") {
+	notifyFailure(mattermostChannel: "#softies")
+}

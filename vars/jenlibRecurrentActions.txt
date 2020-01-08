@@ -1,1 +1,0 @@
-Actions that may be done in all jenkins jobs on an irregular basis.
