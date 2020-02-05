@@ -102,15 +102,15 @@ def call(Map<String, Object> options = [:]) {
 			// Directories test-result XML files are written to
 			LinkedList<String> testResultDirs = new LinkedList<String>()
 
-			withWaf() {
-				// Setup and build the project
-				wafSetup(options)
+			inSingularity(containerOptions) {
+				withWaf() {
+					// Setup and build the project
+					wafSetup(options)
 
-				for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
-					stage("Build ${wafTargetOption}".trim()) {
-						onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
-							withModules(moduleOptions) {
-								inSingularity(containerOptions) {
+					for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
+						stage("Build ${wafTargetOption}".trim()) {
+							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+								withModules(moduleOptions) {
 									jesh("waf configure install " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
@@ -118,17 +118,15 @@ def call(Map<String, Object> options = [:]) {
 								}
 							}
 						}
-					}
 
-					// Run tests defined in waf for all given test resources
-					for (Map<String, String> testSlurmResource in testResources) {
-						String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
-						testResultDirs.add(testOutputDir)
+						// Run tests defined in waf for all given test resources
+						for (Map<String, String> testSlurmResource in testResources) {
+							String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
+							testResultDirs.add(testOutputDir)
 
-						stage("Tests ${wafTargetOption} ${testSlurmResource}".trim()) {
-							onSlurmResource(testSlurmResource) {
-								withModules(moduleOptions) {
-									inSingularity(containerOptions) {
+							stage("Tests ${wafTargetOption} ${testSlurmResource}".trim()) {
+								onSlurmResource(testSlurmResource) {
+									withModules(moduleOptions) {
 										jesh("waf build ${wafTargetOption} ${testOptions}")
 										jesh("mv build/test_results ${testOutputDir}")
 									}
@@ -174,7 +172,7 @@ def call(Map<String, Object> options = [:]) {
 					             filters: [excludeFile(".*usr/include.*"),
 					                       excludeFile(".*opt/spack.*"),
 					                       excludeFile(".*\\.dox\b")] +
-					                       warningsIgnorePattern.split(",").collect({param -> return excludeFile(param) }),
+					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
 					             tools: [gcc(id: "gcc_" + UUID.randomUUID().toString(),
 					                         name: "GCC Warnings")]
 					)
