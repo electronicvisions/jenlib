@@ -31,8 +31,10 @@ void call(Map options = [:], Closure content) {
 	}
 
 	ccachePath = options.get("ccachePath", "/usr/lib/ccache")
-	ccacheDir = options.get("ccacheDir", "/scratch/jenkins/ccache/$JOB_BASE_NAME")
-	ccacheTmpdir = options.get("ccacheTmpdir", "/scratch/jenkins/$JOB_BASE_NAME")
+	ccacheDir = options.get("ccacheDir",
+	                        isAsicJenkins() ? "/jenkins/ccache_s5/$JOB_BASE_NAME" :
+	                                          "/jenkins/ccache_f9/$JOB_BASE_NAME")
+	ccacheTmpdir = options.get("ccacheTmpdir", "$ccacheDir/tmp")
 	ccacheBasedir = options.get("ccacheBasedir", defaultBasedir)
 	ccacheMaxsize = options.get("ccacheMaxsize", "25.0G")
 	ccacheNoHashDir = options.get("ccacheNoHashDir", true)
