@@ -200,6 +200,9 @@ def call(Map<String, Object> options = [:]) {
 					if (projects_return == 0) {
 						String projects_string = jesh(script: "ls -d doc/*/html", returnStdout: true)
 						projects = projects_string.split()
+
+						// save documentation into artifact
+						archiveArtifacts artifacts: "doc/**/*", onlyIfSuccessful: true
 					} else {
 						echo("No documentation found to deploy.")
 					}
