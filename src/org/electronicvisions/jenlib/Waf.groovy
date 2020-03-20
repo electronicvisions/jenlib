@@ -93,7 +93,7 @@ class Waf implements Serializable {
 		debugShell "mkdir -p ${waf_dir}"
 		debugShell "mkdir ${path}"
 		debugShell "cd ${waf_dir} && " +
-		           "git clone git@gitviz.kip.uni-heidelberg.de:waf.git -b symwaf2ic symwaf2ic"
+		           "git clone ssh://gerrit.bioai.eu:29418/waf -b symwaf2ic symwaf2ic"
 		debugShell "cd ${waf_dir}/symwaf2ic && " +
 		           "make"
 		if (gerrit_changes != null) {

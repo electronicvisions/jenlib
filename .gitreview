@@ -1,5 +1,5 @@
 [gerrit]
-host=brainscales-r.kip.uni-heidelberg.de
+host=gerrit.bioai.eu
 port=29418
 project=jenlib
 defaultbranch=master

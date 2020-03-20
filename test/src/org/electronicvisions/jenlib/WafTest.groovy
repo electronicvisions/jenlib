@@ -65,7 +65,7 @@ class WafTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 
 		pipeline.env.GERRIT_PORT = "29418"
-		pipeline.env.GERRIT_HOST = "brainscales-r.kip.uni-heidelberg.de"
+		pipeline.env.GERRIT_HOST = "gerrit.bioai.eu"
 		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
 
 		Waf waf = new Waf(pipeline, true)
