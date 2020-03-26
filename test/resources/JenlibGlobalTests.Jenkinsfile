@@ -95,6 +95,17 @@ try {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 
+		stage("pipelineFromMarkdownTest") {
+			String tempFilePath = ""
+			runOnSlave(label: "frontend") {
+				tempFilePath = "${WORKSPACE}/${UUID.randomUUID().toString()}"
+				writeFile(file: tempFilePath,
+				          text: libraryResource("org/electronicvisions/MarkdownScriptExtractorTest.md"))
+			}
+
+			pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell")
+		}
+
 		stage('isWeekendTest') {
 			boolean bashIsWeekend = jesh(script: "[[ \$(date +%u) -lt 6 ]]", returnStatus: true)
 			boolean jenlibIsWeekend = isWeekend()

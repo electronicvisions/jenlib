@@ -1,0 +1,16 @@
+<p>
+    Generate a collection of pipeline stages from a given Markdown file.
+</p>
+
+<p>
+    The content of each code block is executed in a single shell step.
+</p>
+
+Options:
+<ul>
+    <li><b>markdownFilePath:</b> Path to the evaluated Markdown file.</li>
+    <li><b>blockType:</b> Block type to be extracted. Since all content is executed in a shell step, you'll most
+        probably want to use "shell" or "bash" here.
+    </li>
+</ul>
+
