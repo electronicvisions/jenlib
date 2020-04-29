@@ -363,10 +363,10 @@ try {
 
 		stage("wafSetupTest") {
 			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
-			wafSetup(projects: ["frickel-dls@v3testing"])
+			wafSetup(projects: ["hate"])
 
 			// Multiple projects
-			wafSetup(projects: ["frickel-dls@v3testing", "hicann-dls-scripts@v3testing"])
+			wafSetup(projects: ["hate", "code-format"])
 
 			// Setup in subfolder
 			String subfolder = UUID.randomUUID().toString()
@@ -380,7 +380,7 @@ try {
 				wafSetup()
 			}
 			assertBuildResult("FAILURE") {
-				wafSetup(projects: "frickel-dls")
+				wafSetup(projects: "hate")
 			}
 		}
 
@@ -464,7 +464,7 @@ try {
 
 		stage("wafDefaultPipelineTest") {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
-			wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+			wafDefaultPipeline(projects: ["hate"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin")
 			cleanWs()
@@ -484,12 +484,12 @@ try {
 			}
 			assertBuildResult("FAILURE") {
 				// 'projects' has to be of type List<String>
-				wafDefaultPipeline(projects: "frickel-dls",
+				wafDefaultPipeline(projects: "hate",
 				                   notificationChannel: "#jenkins-trashbin")
 			}
 			assertBuildResult("FAILURE") {
 				// container app has to be specified
-				wafDefaultPipeline(projects: ["frickel-dls"],
+				wafDefaultPipeline(projects: ["hate"],
 				                   notificationChannel: "#jenkins-trashbin")
 			}
 			assertBuildResult("FAILURE") {
@@ -499,21 +499,21 @@ try {
 			}
 			assertBuildResult("FAILURE") {
 				// Target may not be modified, the pipeline runs for default and '*' internally
-				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				wafDefaultPipeline(projects: ["hate"],
 				                   container: [app: "visionary-dls"],
 				                   notificationChannel: "#jenkins-trashbin",
 				                   configureInstallOptions: "--target='*'")
 			}
 			assertBuildResult("FAILURE") {
 				// Target may not be modified, the pipeline runs for default and '*' internally
-				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				wafDefaultPipeline(projects: ["hate"],
 				                   container: [app: "visionary-dls"],
 				                   notificationChannel: "#jenkins-trashbin",
 				                   testOptions: "--target='*'")
 			}
 			assertBuildResult("FAILURE") {
 				// Test handling may not be modified, the pipeline does it internally
-				wafDefaultPipeline(projects: ["frickel-dls@v3testing"],
+				wafDefaultPipeline(projects: ["hate"],
 				                   container: [app: "visionary-dls"],
 				                   notificationChannel: "#jenkins-trashbin",
 				                   configureInstallOptions: "--test-execnone")
