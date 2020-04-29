@@ -111,11 +111,6 @@ class SlurmSwarmSlave extends SwarmSlave {
 	 */
 	private String buildSlaveStartScript() {
 		return "#!/bin/sh\n" +
-		       "echo '=== DEBUG Output for OOM Errors ==='\n" +
-		       "env\n" +
-		       "ulimit -a\n" +
-		       "ps uxH\n" +
-		       "echo '=== End of DEBUG output ==='\n" +
 		       "${buildSlaveStartCommand()}"
 	}
 

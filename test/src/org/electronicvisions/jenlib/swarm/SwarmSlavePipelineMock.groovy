@@ -12,9 +12,6 @@ abstract class SwarmSlavePipelineMock {
 		this.setParameters = setParameters
 	}
 
-	// OOM Debug (Issue #3272)
-	Map env = [GERRIT_CHANGE_NUMBER: 6443]
-
 	void sh(String command) {
 		if (command.contains("java -jar")) {  // This is a slave startup command!
 
