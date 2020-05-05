@@ -3,7 +3,7 @@
 </p>
 
 <p>
-    Existing parameters will not be changed.
+    Existing parameters will not be changed, existing default values will be overwritten unless <code>overwriteDefault=false</code>.
 </p>
 
 <p>

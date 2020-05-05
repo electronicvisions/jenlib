@@ -154,6 +154,11 @@ try {
 			addBuildParameter(string(name: parameterName, defaultValue: parameterValue))
 			assert (params.get(parameterName) == parameterValue): "Build parameter was not added."
 
+			// Check parameters can be added without touching the default
+			String otherParameterValue = UUID.randomUUID().toString()
+			addBuildParameter(string(name: parameterName, defaultValue: otherParameterValue), false)
+			assert (params.get(parameterName) == parameterValue): "Default value was overwritten."
+
 			// Cleanup: Remove all build parameters: This pipeline is not supposed to have any
 			removeAllBuildParameters()
 		}
