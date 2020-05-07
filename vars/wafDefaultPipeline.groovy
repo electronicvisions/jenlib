@@ -116,6 +116,11 @@ def call(Map<String, Object> options = [:]) {
 			// Directories test-result XML files are written to
 			LinkedList<String> testResultDirs = new LinkedList<String>()
 
+			// Annotate the build description with the commit message for gerrit builds
+			if (env.GERRIT_CHANGE_COMMIT_MESSAGE != null) {
+				currentBuild.description = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE)
+			}
+
 			inSingularity(containerOptions) {
 				withWaf() {
 					// Setup and build the project
