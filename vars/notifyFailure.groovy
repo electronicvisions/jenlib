@@ -25,7 +25,8 @@ def call(Map<String, Object> options = [:]) {
 	}
 
 	mattermostSend(channel: mattermostChannel,
-	               text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
+	               text: "@channel Jenkins build `${env.JOB_NAME}` encountered build state " +
+	                     "${currentBuild.currentResult}!",
 	               message: "${env.BUILD_URL}",
 	               failOnError: true,
 	               endpoint: "https://chat.bioai.eu/hooks/qrn4j3tx8jfe3dio6esut65tpr")
