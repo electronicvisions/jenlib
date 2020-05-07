@@ -478,7 +478,7 @@ try {
 			wafDefaultPipeline(projects: ["hate"],
 			                   container: [app: "visionary-dls"],
 			                   testSlurmResource: [[partition: "jenkins"],
-			                                       [partition: "compile"]],
+			                                       [partition: "interactive"]],
 			                   notificationChannel: "#jenkins-trashbin")
 			cleanWs()
 
