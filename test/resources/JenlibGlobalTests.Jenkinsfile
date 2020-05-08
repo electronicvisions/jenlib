@@ -482,6 +482,23 @@ try {
 			                   notificationChannel: "#jenkins-trashbin")
 			cleanWs()
 
+			// Test injection of pre/post test hooks does not fail
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   notificationChannel: "#jenkins-trashbin",
+			                   preTestHook: { jesh("hostname") },
+			                   postTestHook: { jesh("hostname") })
+			cleanWs()
+
+			// Test injection of test hooks has an effect: if 'build' is deleted, reconfiguration is necessary.
+			assertBuildResult("FAILURE") {
+				wafDefaultPipeline(projects: ["hate"],
+				                   container: [app: "visionary-dls"],
+				                   notificationChannel: "#jenkins-trashbin",
+				                   preTestHook: { jesh("rm -rf build/") })
+			}
+			cleanWs()
+
 			// Unsupported command line options
 			assertBuildResult("FAILURE") {
 				// No pipeline without projects

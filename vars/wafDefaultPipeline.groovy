@@ -36,8 +36,8 @@ import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
  *                                                            Defaults to <code>[""]</code>, representing only the default target set.
  *                    <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
                                                                Defaults to <code>true</code>.
- *                    <li><b>enableClangFormatFullDiff</b> (optional): Enable full diff for clang-format checks of non-Gerrit triggered builds.
- *                                                                     Defaults to <code>false</code>.
+ *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
+ *                    <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
@@ -113,6 +113,10 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
+			// Pre/post test execution hooks
+			Closure preTestHook = (Closure) options.get("preTestHook", {})
+			Closure postTestHook = (Closure) options.get("preTestHook", {})
+
 			// Directories test-result XML files are written to
 			LinkedList<String> testResultDirs = new LinkedList<String>()
 
@@ -146,8 +150,10 @@ def call(Map<String, Object> options = [:]) {
 							stage("Tests ${wafTargetOption} ${testSlurmResource}".trim()) {
 								onSlurmResource(testSlurmResource) {
 									withModules(moduleOptions) {
+										preTestHook()
 										jesh("waf build ${wafTargetOption} ${testOptions}")
 										jesh("mv build/test_results ${testOutputDir}")
+										postTestHook()
 									}
 								}
 							}
