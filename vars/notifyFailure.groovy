@@ -24,9 +24,14 @@ def call(Map<String, Object> options = [:]) {
 		return
 	}
 
+	// notifyFailure *always* indicates failure. If the current result is 'SUCCESS', we don't know why.
+	String failInfo = ""
+	if (currentBuild.currentResult != "SUCCESS") {
+		failInfo += "Result: ${currentBuild.currentResult}"
+	}
+
 	mattermostSend(channel: mattermostChannel,
-	               text: "@channel Jenkins build `${env.JOB_NAME}` encountered build state " +
-	                     "${currentBuild.currentResult}!",
+	               text: "@channel Jenkins build `${env.JOB_NAME}` was not successful. ${failInfo}".strip(),
 	               message: "${env.BUILD_URL}",
 	               failOnError: true,
 	               endpoint: "https://chat.bioai.eu/hooks/qrn4j3tx8jfe3dio6esut65tpr")
