@@ -73,6 +73,7 @@ try {
 	testNotifyFailure()
 	testOnSlurmResource()
 	testRunOnSlave()
+	testConfigureHxCubeBitfile()
 	testFillTemplate()
 	testDeployModule()
 
@@ -993,6 +994,21 @@ void testRunOnSlave() {
 						}
 					}
 				}
+			}
+		}
+	}
+}
+
+void testConfigureHxCubeBitfile() {
+	conditionalStage(name: "testConfigureHxCubeBitfile", skip: isAsicJenkins()) {
+		onSlurmResource(partition: "cube", wafer: 62, "fpga-without-aout": 3) {
+			configureHxCubeBitfile()
+		}
+
+		// Should not run without hardware allocation
+		assertBuildResult("FAILURE") {
+			runOnSlave(label: "frontend") {
+				configureHxCubeBitfile()
 			}
 		}
 	}

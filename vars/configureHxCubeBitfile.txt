@@ -1,0 +1,17 @@
+<p>
+    Reconfigure a HX-Cube Kintex7 FPGA with a given bitfile using Xilinx SmartLynq.
+    The step needs to run within a SLURM allocation on the to-be-configured cube setup.
+</p>
+
+<p>
+    The to be configured bitfile defaults to the latest stable bitfile for the corresponding chip revision, it may be
+    overwritten by the build parameter <code>OVERWRITE_HX_CUBE_BITFILE</code> ot the commit message key
+    <code>HX-Cube-Bitfile</code>.
+</p>
+
+Available options:
+<ul>
+    <li><b>bitfilePath</b> (optional): Override the default bitfile path and flash a different one.
+        This path should point to a directory containing the bitfile.
+    </li>
+</ul>
