@@ -1,0 +1,19 @@
+<p>
+    Get the the default path to a fixture in the file system.
+</p>
+
+<p>
+    This function generates the path to a fixture based on three parameters:
+</p>
+
+<ul>
+    <li> A plain default path, given as string. E.g. <code>/containers/stable/latest</code></li>
+    <li> A magic key/value pair in the commit message as passed by gerrit, e.g. <code>In-Container:
+        /my/personal/container</code></li>
+    <li> A build parameter, e.g. <code>OVERWRITE_DEFAULT_CONTAINER_PATH=/my/other/container</code></li>
+</ul>
+
+<p>
+    Mandatory keys to the <code>option</code>s map are <code>defaultPathCanonical</code>, <code>commitKey</code>,
+    <code>parameterName</code>.
+</p>

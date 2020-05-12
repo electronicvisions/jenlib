@@ -248,13 +248,18 @@ try {
 			}
 		}
 
-		stage("getDefaultContainerPathTest") {
-			// Default without "In-Container:" in commit message
+		stage("getDefaultFixturePathTest") {
+			String canonicalDefault = "/default/path"
+			String commitKey = "SomeKey"
+
+			// Default without key commit message
 			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
-				assert getDefaultContainerPath() == "/containers/stable/latest"
+				assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+				                             commitKey: commitKey,
+				                             parameterName: "UNUSED") == canonicalDefault
 			}
 
-			// "In-Container:" specified in commit message
+			// Special key specified in commit message
 			String pathCustomImage = "/foo/bar/path"
 
 			// NOTE; additional white-space in the commit-messages is intended
@@ -264,7 +269,7 @@ try {
 
 				Here be dragons!
 
-				In-Container: ${pathCustomImage}
+				${commitKey}: ${pathCustomImage}
 
 				Change-Id: 12345678
 				""",
@@ -274,7 +279,7 @@ try {
 
 				Here be dragons!
 
-				In-Container:${pathCustomImage}     
+				${commitKey}:${pathCustomImage}     
 
 				Change-Id: 12345678
 				""",
@@ -283,7 +288,7 @@ try {
 				Fake commit message subject
 
 				Change-Id: 12345678
-				In-Container:       ${pathCustomImage}     
+				${commitKey}:       ${pathCustomImage}     
 				"""
 			]
 
@@ -291,7 +296,9 @@ try {
 				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
 
 				withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=$encodedFakeCommitMessage"]) {
-					String containerPath = getDefaultContainerPath()
+					String containerPath = getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+					                                             commitKey: commitKey,
+					                                             parameterName: "UNUSED")
 					assert containerPath == pathCustomImage:
 							"Expected $pathCustomImage, but container path is $containerPath."
 				}
@@ -301,10 +308,10 @@ try {
 					"""
 				Fake commit message subject
 
-				Here be dragons! And multiple In-Container statements!
+				Here be dragons! And multiple ${commitKey} statements!
 
-				In-Container:${pathCustomImage}     
-				In-Container: ${pathCustomImage}
+				${commitKey}:${pathCustomImage}     
+				${commitKey}: ${pathCustomImage}
 
 				Change-Id: 12345678
 				""",
@@ -315,9 +322,23 @@ try {
 
 				assertBuildResult("FAILURE") {
 					withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
-						getDefaultContainerPath()
+						getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+						                      commitKey: commitKey,
+						                      parameterName: "UNUSED")
 					}
 				}
+			}
+		}
+
+		stage("getDefaultContainerPathTest") {
+			// Default path is as expected
+			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
+				assert getDefaultContainerPath() == "/containers/stable/latest"
+			}
+
+			// Key in commit message is correct
+			withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodeBase64("In-Container: /somewhere")]) {
+				assert getDefaultContainerPath() == "/somewhere"
 			}
 		}
 
