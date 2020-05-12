@@ -31,7 +31,7 @@ def call(Map<String, Object> options = [:]) {
 	}
 
 	mattermostSend(channel: mattermostChannel,
-	               text: "@channel Jenkins build `${env.JOB_NAME}` was not successful. ${failInfo}".strip(),
+	               text: "Jenkins build `${env.JOB_NAME}` was not successful. ${failInfo}".strip(),
 	               message: "${env.BUILD_URL}",
 	               failOnError: true,
 	               endpoint: "https://chat.bioai.eu/hooks/qrn4j3tx8jfe3dio6esut65tpr")
