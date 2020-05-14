@@ -218,6 +218,16 @@ def call(Map<String, Object> options = [:]) {
 				}
 			}
 
+			stage("Test clang-tidy") {
+				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+					inSingularity(containerOptions) {
+						// Issue #3979: Script should be installed in PATH.
+						// (mis-)use PYTHONHOME to get the app's root directory
+						jesh("python \$PYTHONHOME/share/clang/run-clang-tidy.py -j8 -p . &> clang-tidy.txt || true")
+					}
+				}
+			}
+
 			// Scan for compiler and linting warnings
 			stage("Compiler/Linting Warnings") {
 				runOnSlave(label: "frontend") {
@@ -259,6 +269,16 @@ def call(Map<String, Object> options = [:]) {
 						                              name: "Cppcheck Warnings", pattern: "cppcheck.xml")]
 						)
 					}
+
+					recordIssues(blameDisabled: true,
+					             filters: [excludeFile(".*usr/include.*"),
+					                       excludeFile(".*opt/spack.*"),
+					                       excludeFile(".*\\.dox\$")] +
+					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
+					             tools: [clangTidy(id: "clang_tidy_" + UUID.randomUUID().toString(),
+					                               name: "Clang-Tidy Warnings", pattern: "clang-tidy.txt")]
+					)
+
 				}
 			}
 
