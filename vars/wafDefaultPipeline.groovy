@@ -122,7 +122,7 @@ def call(Map<String, Object> options = [:]) {
 
 			// Annotate the build description with the commit message for gerrit builds
 			if (env.GERRIT_CHANGE_COMMIT_MESSAGE != null) {
-				currentBuild.description = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE)
+				currentBuild.description = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE).split("\n")[0].trim()
 			}
 
 			inSingularity(containerOptions) {
