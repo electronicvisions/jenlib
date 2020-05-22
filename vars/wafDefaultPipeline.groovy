@@ -130,7 +130,9 @@ def call(Map<String, Object> options = [:]) {
 					// Setup and build the project
 					wafSetup(options)
 
-					jesh("waf repos-log > repos_log.txt")
+					runOnSlave(label: "frontend") {
+						jesh("waf repos-log > repos_log.txt")
+					}
 
 					for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
 						stage("Build ${wafTargetOption}".trim()) {
