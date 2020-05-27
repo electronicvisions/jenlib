@@ -21,10 +21,10 @@ try {
 		}
 	}
 } catch (Throwable t) {
-	notifyFailure(mattermostChannel: "#softies")
+	notifyFailure(mattermostChannel: "#spack")
 	throw t
 }
 
 if (currentBuild.currentResult != "SUCCESS") {
-	notifyFailure(mattermostChannel: "#softies")
+	notifyFailure(mattermostChannel: "#spack")
 }
