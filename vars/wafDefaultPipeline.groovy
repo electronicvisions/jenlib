@@ -138,7 +138,7 @@ def call(Map<String, Object> options = [:]) {
 						stage("Build ${wafTargetOption}".trim()) {
 							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 								withModules(moduleOptions) {
-									jesh("bear waf configure install " +
+									jesh("waf configure install " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
 									     "${wafTargetOption} ${configureInstallOptions}")
@@ -209,17 +209,6 @@ def call(Map<String, Object> options = [:]) {
 				}
 			}
 
-			stage("Test cppcheck") {
-				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
-					inSingularity(containerOptions) {
-						// FIXME: Issue #3537 cppcheck needs local copy of cfg directory
-						jesh("cp -r /opt/spack_views/visionary-wafer/cfg/ .")
-						jesh("cppcheck --xml --project=compile_commands.json -j\$(nproc) --suppress=syntaxError:* " +
-						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml")
-					}
-				}
-			}
-
 			// Scan for compiler and linting warnings
 			stage("Compiler/Linting Warnings") {
 				runOnSlave(label: "frontend") {
@@ -246,19 +235,6 @@ def call(Map<String, Object> options = [:]) {
 					                          id: "pep8_" + UUID.randomUUID().toString(),
 					                          name: "PEP8 Warnings")]
 					)
-
-					recordIssues(qualityGates: [[threshold: 1,
-					                             type     : 'TOTAL',
-					                             unstable : true]],
-					             blameDisabled: true,
-					             filters: [excludeFile(".*usr/include.*"),
-					                       excludeFile(".*opt/spack.*"),
-					                       excludeFile(".*\\.dox\$")] +
-					                      warningsIgnorePattern.split(",").collect({excludeFile(it)}),
-					             tools: [cppCheck(id: "cppcheck_" + UUID.randomUUID().toString(),
-					                              name: "Cppcheck Warnings", pattern: "cppcheck.xml")]
-					)
-
 				}
 			}
 
