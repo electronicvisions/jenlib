@@ -64,6 +64,7 @@ String call(Map<String, String> options = [:]) {
 
 		// Create module directories, if they do not exist
 		jesh "mkdir -p ${targetDir}"
+		jesh "mkdir -p ${Paths.get(targetDir, version).toString()}"
 		jesh "mkdir -p ${moduleDir}"
 		jesh "cp -a $source ${Paths.get(targetDir, version).toString()}"
 

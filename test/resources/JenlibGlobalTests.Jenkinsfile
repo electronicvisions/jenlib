@@ -750,7 +750,7 @@ try {
 				moduleAndVersion = deployModule([name      : "testmodule",
 				                                 moduleRoot: "$WORKSPACE/module",
 				                                 targetRoot: "$WORKSPACE/install",
-				                                 source    : "$WORKSPACE/source"])
+				                                 source    : "$WORKSPACE/source/*"])
 			}
 
 			withModules(modules: [moduleAndVersion], prependModulePath: "$WORKSPACE/module") {
@@ -778,7 +778,7 @@ try {
 				moduleAndVersion = deployModule([name      : "testmodule",
 				                                 moduleRoot: "$WORKSPACE/module",
 				                                 targetRoot: "$WORKSPACE/install",
-				                                 source    : "$WORKSPACE/source"])
+				                                 source    : "$WORKSPACE/source/*"])
 			}
 			num_after = sish(returnStdout: true,
 			                 script: "find `dirname $WORKSPACE/install/$moduleAndVersion`/* -maxdepth 0 -type d | wc -l").toInteger()
@@ -790,7 +790,7 @@ try {
 				moduleAndVersion = deployModule([name      : "testmodule",
 				                                 moduleRoot: "$WORKSPACE/module",
 				                                 targetRoot: "$WORKSPACE/install",
-				                                 source    : "$WORKSPACE/source",
+				                                 source    : "$WORKSPACE/source/*",
 				                                 version   : UUID.randomUUID().toString()],)
 			}
 
@@ -803,7 +803,7 @@ try {
 				deployModule([name      : "testmodule",
 				              moduleRoot: "$WORKSPACE/module",
 				              targetRoot: "$WORKSPACE/install",
-				              source    : "$WORKSPACE/source"])
+				              source    : "$WORKSPACE/source/*"])
 			}
 			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
 		}
