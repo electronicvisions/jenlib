@@ -2,14 +2,17 @@ package org.electronicvisions.jenlib.swarm
 
 class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 
-	static List<String> getMandatorySlaveParameters() {
+	@Override
+	List<String> getMandatorySlaveParameters() {
 		return ["slaveJar"]
 	}
 
-	static List<String> getProhibitedSlaveParameters() {
+	@Override
+	List<String> getProhibitedSlaveParameters() {
 		return ["slaveName"]
 	}
 
+	@Override
 	SwarmSlave generateSwarmSlave(List<String> configuredParameters, SwarmSlaveConfig config) {
 		return new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(configuredParameters), config, [partition: "compile"])
 	}
