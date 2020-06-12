@@ -1,0 +1,17 @@
+<p>
+    Run a closure conditionally in a timeout step.
+</p>
+
+<p>
+    <b>options:</b> Map of options:
+</p>
+<ul>
+    <li><b>enable</b> (mandatory): Enable the timeout
+    <li><b><i>others</i></b> (mandatory): See
+        https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#timeout-enforce-time-limit.
+</ul>
+
+<p>
+    <b>content:</b> Code to be run
+</p>
+

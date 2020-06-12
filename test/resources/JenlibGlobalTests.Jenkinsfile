@@ -68,6 +68,31 @@ try {
 			assert (currentBuild.currentResult == "SUCCESS")
 		}
 
+		stage('conditionalTimeoutTest') {
+			Map<String, Object> timeoutOptions = [enable: false, time: 5, unit: "SECONDS"]
+			Map<String, Object> oldTimeoutOptions = timeoutOptions.clone()
+
+			// timeout still works
+			conditionalTimeout(timeoutOptions) {
+				sleep(time: 10, unit: "SECONDS")
+			}
+
+			// Map of options unchanged
+			assert (timeoutOptions == oldTimeoutOptions): "Map of timeout options has changed!"
+
+			// timeout can be disabled
+			assertBuildResult("FAILURE") {
+				conditionalTimeout(enable: true, time: 5, unit: "SECONDS") {
+					sleep(time: 10, unit: "SECONDS")
+				}
+			}
+
+			// 'enable' is mandatory
+			assertBuildResult("FAILURE") {
+				conditionalTimeout(time: 5, unit: "SECONDS") {}
+			}
+		}
+
 		stage('setJobDescriptionTest') {
 			String tmpDescription = getJobDescription()
 			String testDescription = UUID.randomUUID().toString()
