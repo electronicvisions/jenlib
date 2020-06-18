@@ -3,6 +3,11 @@
 </p>
 
 <p>
+    Upon first call, the realpath of the fixture is evaluated and from there on used for all subsequent calls with the
+    same set of options.
+</p>
+
+<p>
     This function generates the path to a fixture based on three parameters:
 </p>
 

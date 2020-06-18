@@ -274,18 +274,25 @@ try {
 		}
 
 		stage("getDefaultFixturePathTest") {
-			String canonicalDefault = "/default/path"
+			String canonicalDefault = "/lib"
 			String commitKey = "SomeKey"
 
 			// Default without key commit message
 			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
 				assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
 				                             commitKey: commitKey,
-				                             parameterName: "UNUSED") == canonicalDefault
+				                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
+			}
+
+			// Result does not change within the same build
+			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64(commitKey + ': /usr/lib')}"]) {
+				assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+				                             commitKey: commitKey,
+				                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
 			}
 
 			// Special key specified in commit message
-			String pathCustomImage = "/foo/bar/path"
+			String pathCustomImage = "/bin"
 
 			// NOTE; additional white-space in the commit-messages is intended
 			List<String> commitMessagesSuccess = [
@@ -317,13 +324,14 @@ try {
 				"""
 			]
 
-			for (String fakeCommitMessage : commitMessagesSuccess) {
+			commitMessagesSuccess.eachWithIndex { fakeCommitMessage, i ->
 				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
 
 				withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=$encodedFakeCommitMessage"]) {
+					// Generate new options per message to disable caching
 					String containerPath = getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
 					                                             commitKey: commitKey,
-					                                             parameterName: "UNUSED")
+					                                             parameterName: "UNUSED_${i}")
 					assert containerPath == pathCustomImage:
 							"Expected $pathCustomImage, but container path is $containerPath."
 				}
@@ -342,14 +350,14 @@ try {
 				""",
 			]
 
-			for (String fakeCommitMessage : commitMessagesFail) {
+			commitMessagesFail.eachWithIndex { fakeCommitMessage, i ->
 				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
 
 				assertBuildResult("FAILURE") {
 					withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
-						getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+						getDefaultFixturePath(defaultPathCanonical: "/lib",
 						                      commitKey: commitKey,
-						                      parameterName: "UNUSED")
+						                      parameterName: "UNUSED_${i + commitMessagesSuccess.size()}")
 					}
 				}
 			}
@@ -358,12 +366,10 @@ try {
 		stage("getDefaultContainerPathTest") {
 			// Default path is as expected
 			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
-				assert getDefaultContainerPath() == "/containers/stable/latest"
-			}
-
-			// Key in commit message is correct
-			withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodeBase64("In-Container: /somewhere")]) {
-				assert getDefaultContainerPath() == "/somewhere"
+				String defaultPathResult = getDefaultContainerPath()
+				String defaultPathReference = jesh(script: "readlink -f /containers/stable/latest",
+				                                   returnStdout: true).trim()
+				assert defaultPathResult == defaultPathReference, "${defaultPathResult} != ${defaultPathReference}"
 			}
 		}
 

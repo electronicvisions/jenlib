@@ -6,6 +6,9 @@ import java.util.regex.Pattern
 /**
  * Get the the default path to a fixture in the file system.
  *
+ * Upon first call, the realpath of the fixture is evaluated and from there on used for all subsequent calls with the
+ * same set of options.
+ *
  * This function generates the path to a fixture based on three parameters:
  * <ul>
  *     <li> A plain default path, given as string. E.g. <code>/containers/stable/latest</code></li>
@@ -17,7 +20,23 @@ import java.util.regex.Pattern
  * @param options Map of options, mandatory keys are <code>defaultPathCanonical</code>, <code>commitKey</code>,
  *                <code>parameterName</code>.
  */
-String call(Map<String, Object> options) {
+String call(Map<String, String> options) {
+	String optionCacheKey = "FIXTURE_PATH_CACHE-" + options.values().join()
+
+	if (env[optionCacheKey] != null) {
+		return env[optionCacheKey]
+	}
+
+	// We need to be on a node to resolve the realpath to our fixture.
+	// Here we assume that a frontend has all mount points.
+	runOnSlave(label: "frontend") {
+		env[optionCacheKey] = jesh(script: "readlink -f ${getDefaultPath(options)}",
+		                           returnStdout: true).trim()
+	}
+	return env[optionCacheKey]
+}
+
+private String getDefaultPath(Map<String, String> options) {
 	String defaultPathCanonical = options["defaultPathCanonical"]
 	String commitKey = options["commitKey"]
 	String parameterName = options["parameterName"]
