@@ -31,10 +31,16 @@ def call(Map<String, String> containerOptions = [:], Closure content) {
 		appArgument = "--app=${containerOptions.get("app")}"
 	}
 
+	// Lazy evaluate getDefaultContainerPath: Computing it is not necessary if an image argument is given
+	String containerImage = containerOptions.get("image")
+	if (containerImage == null) {
+		containerImage = getDefaultContainerPath()
+	}
+
 	String cmdPrefix = "singularity exec " +
 	                   "${appArgument} " +
 	                   "${containerOptions.get("singularityArgs", "")} " +
-	                   "${containerOptions.get("image", (String) getDefaultContainerPath())}"
+	                   "${containerImage}"
 
 	ShellManipulator manipulator = new ShellManipulator(this)
 	manipulator.add(cmdPrefix, "")
