@@ -33,6 +33,8 @@ String call(Map<String, String> options) {
 		env[optionCacheKey] = jesh(script: "readlink -f ${getDefaultPath(options)}",
 		                           returnStdout: true).trim()
 	}
+
+	echo("[Jenlib] Using fixture: '${env[optionCacheKey]}'")
 	return env[optionCacheKey]
 }
 
