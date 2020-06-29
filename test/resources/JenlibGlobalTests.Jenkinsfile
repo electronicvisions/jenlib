@@ -562,11 +562,6 @@ try {
 				                   notificationChannel: "#jenkins-trashbin")
 			}
 			assertBuildResult("FAILURE") {
-				// container app has to be specified
-				wafDefaultPipeline(projects: ["hate"],
-				                   notificationChannel: "#jenkins-trashbin")
-			}
-			assertBuildResult("FAILURE") {
 				// No pipeline without projects
 				wafDefaultPipeline(projects: [],
 				                   notificationChannel: "#jenkins-trashbin")

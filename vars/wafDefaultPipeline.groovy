@@ -79,10 +79,6 @@ def call(Map<String, Object> options = [:]) {
 				containerOptions = (LinkedHashMap<String, String>) options.get("container")
 			}
 
-			if (containerOptions.get("app") == null) {
-				throw new IllegalArgumentException("Container app needs to be specified.")
-			}
-
 			Map<String, Object> moduleOptions = (Map<String, Object>) options.get("moduleOptions", [modules: []])
 			String testTimeout = ""
 			if (options.get("testTimeout") != null) {
