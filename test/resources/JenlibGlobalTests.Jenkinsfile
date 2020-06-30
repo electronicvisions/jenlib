@@ -152,7 +152,8 @@ try {
 
 		stage('isAsicJenkinsTest') {
 			// This file can only run on F9 jenkins
-			assert isAsicJenkins() == false: "ASIC Jenkins detected, but running on Softie Jenkins."
+			assert isAsicJenkins() == nodesByLabel("frontend").contains("ome"):
+					"Wrong Jenkins instance detected! Frontend nodes: ${nodesByLabel("frontend")}."
 		}
 
 		stage('withCcacheTest') {
@@ -391,8 +392,9 @@ try {
 		}
 
 		stage("deployDocumentationRemoteTest") {
+			String groupId = isAsicJenkins() ? "s5" : "f9"
 			repositoryUrl = "ssh://hudson@brainscales-r.kip.uni-heidelberg.de:29418/jenlib"
-			upstreamBranch = "sandbox/hudson/deploy_documentation_test"
+			upstreamBranch = "sandbox/hudson/deploy_documentation_test_${groupId}"
 			jesh "mkdir upstream"
 			dir ("upstream") {
 				jesh "git init"
@@ -413,43 +415,59 @@ try {
 		}
 
 		stage('withWafTest') {
-			withWaf() {
-				stdout = jesh(returnStdout: true, script: "waf --help")
-				assert (stdout.contains("waf [commands] [options]"))
+			List<String> requiredModules = []
+			if (isAsicJenkins()) {
+				requiredModules.add("python")
+				requiredModules.add("git")
+			}
 
-				// nested withWaf
+			withModules(modules: requiredModules) {
 				withWaf() {
 					stdout = jesh(returnStdout: true, script: "waf --help")
 					assert (stdout.contains("waf [commands] [options]"))
-				}
 
-				inSingularity {
-					stdout_singularity = jesh(returnStdout: true, script: "waf --help")
+					// nested withWaf
+					withWaf() {
+						stdout = jesh(returnStdout: true, script: "waf --help")
+						assert (stdout.contains("waf [commands] [options]"))
+					}
+
+					inSingularity {
+						stdout_singularity = jesh(returnStdout: true, script: "waf --help")
+					}
+					assert (stdout_singularity.contains("waf [commands] [options]"))
 				}
-				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
 		}
 
 		stage("wafSetupTest") {
-			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
-			wafSetup(projects: ["hate"])
+			List<String> requiredModules = []
+			if (isAsicJenkins()) {
+				requiredModules.add("python")
+				requiredModules.add("git")
+			}
 
-			// Multiple projects
-			wafSetup(projects: ["hate", "code-format"])
-
-			// Setup in subfolder
-			String subfolder = UUID.randomUUID().toString()
-			dir(subfolder) {
+			withModules(modules: requiredModules) {
+				// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
 				wafSetup(projects: ["hate"])
-			}
-			assert fileExists("${subfolder}/wscript")
 
-			// Unsupported command line options
-			assertBuildResult("FAILURE") {
-				wafSetup()
-			}
-			assertBuildResult("FAILURE") {
-				wafSetup(projects: "hate")
+				// Multiple projects
+				wafSetup(projects: ["hate", "code-format"])
+
+				// Setup in subfolder
+				String subfolder = UUID.randomUUID().toString()
+				dir(subfolder) {
+					wafSetup(projects: ["hate"])
+				}
+				assert fileExists("${subfolder}/wscript")
+
+				// Unsupported command line options
+				assertBuildResult("FAILURE") {
+					wafSetup()
+				}
+				assertBuildResult("FAILURE") {
+					wafSetup(projects: "hate")
+				}
 			}
 		}
 
@@ -531,7 +549,7 @@ try {
 			jesh "rm -rf good_repo bad_repo"
 		}
 
-		stage("wafDefaultPipelineTest") {
+		conditionalStage(name: "wafDefaultPipelineTest", skip: isAsicJenkins()) {
 			// Test build a seldom altered project with minimal dependencies and a stable CI flow
 			wafDefaultPipeline(projects: ["hate"],
 			                   container: [app: "visionary-dls"],
@@ -610,32 +628,37 @@ try {
 		}
 
 		stage("withModulesTest") {
+			// Module available on F9 as well as S5 nodes
+			String alwaysAvailableModule = "xilinx"
+
 			noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 
-			withModules(modules: ["localdir"]) {
-				localdirPath = jesh(script: 'echo $PATH', returnStdout: true)
+			withModules(modules: [alwaysAvailableModule]) {
+				withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 			}
-			assert (noModulePath != localdirPath): "$noModulePath should not be $localdirPath"
+			assert (noModulePath != withModulePath): "$noModulePath should not be $withModulePath"
 
-			withModules(modules: ["localdir"]) {
+			withModules(modules: [alwaysAvailableModule]) {
 				withModules(purge: true, modules: []) {
-					purgedLocaldirPath = jesh(script: 'echo $PATH', returnStdout: true)
+					purgedModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 				}
 			}
-			assert (noModulePath == purgedLocaldirPath): "$noModulePath should be $purgedLocaldirPath"
+			assert (noModulePath == purgedModulePath): "$noModulePath should be $purgedModulePath"
 
 			withModules(modules: [], prependModulePath: "foo/bar") {
 				assert (jesh(script: "echo \$MODULEPATH", returnStdout: true).contains("foo/bar"))
 			}
 
 			// Test module load in container
-			inSingularity {
-				noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+			if (!isAsicJenkins()) {  // module load inside singularity is not supported on ASIC, c.f. issue #3582
+				inSingularity {
+					noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 
-				withModules(modules: ["localdir"]) {
-					localdirPath = jesh(script: 'echo $PATH', returnStdout: true)
+					withModules(modules: [alwaysAvailableModule]) {
+						withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+					}
+					assert (noModulePath != withModulePath): "$noModulePath should not be $withModulePath"
 				}
-				assert (noModulePath != localdirPath): "$noModulePath should not be $localdirPath"
 			}
 
 			// Fail if module load does not succeed
@@ -646,11 +669,11 @@ try {
 			// Fail early on bad input
 			assertBuildResult("FAILURE") {
 				// 'modules' has to be of type List<String>
-				withModules(modules: "git") {}
+				withModules(modules: alwaysAvailableModule) {}
 			}
 			assertBuildResult("FAILURE") {
 				// 'purge' has to be of type boolean
-				withModules(purge: "git") {}
+				withModules(purge: alwaysAvailableModule) {}
 			}
 			assertBuildResult("FAILURE") {
 				// 'moduleInitPath' has to be of type String
@@ -684,7 +707,7 @@ try {
 			}
 		}
 
-		stage("onSlurmResourceTest") {
+		conditionalStage(name: "onSlurmResourceTest", skip: isAsicJenkins()) {
 			onSlurmResource(partition: "jenkins") {
 				assert (env.NODE_LABELS.contains("swarm"))
 			}
@@ -745,7 +768,8 @@ try {
 
 			// Make sure the workspace fulfills the expected pattern
 			runOnSlave(name: env.NODE_NAME) {
-				assert (WORKSPACE ==~ /(?!.*__.+$)^\/jenkins\/jenlib_workspaces_f9\/.+$/):
+				String groupId = isAsicJenkins() ? "s5" : "f9"
+				assert (WORKSPACE ==~ /(?!.*__.+$)^\/jenkins\/jenlib_workspaces_${groupId}\/.+$/):
 						"Workspace '$WORKSPACE' not matching the expected pattern."
 			}
 
