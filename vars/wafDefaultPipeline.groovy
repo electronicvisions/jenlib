@@ -1,4 +1,3 @@
-import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 /**
  * Pipeline for verifying "typical" waf projects:
  * <ul>
@@ -188,20 +187,15 @@ def call(Map<String, Object> options = [:]) {
 			}
 
 			// Check C/C++ source formatting
-			stage("Test clang-format") {
-				Boolean enableClangFormat = options.get("enableClangFormat", true)
-				if (enableClangFormat) {
-					runOnSlave(label: "frontend") {
-						inSingularity(containerOptions) {
-							Boolean enableClangFormatFullDiff = options.get("enableClangFormatFullDiff", false)
-							for (String project in options.get("projects")) {
-								checkClangFormat([folder: project.split("@")[0],
-								                  fullDiff: (enableClangFormatFullDiff && !isTriggeredByGerrit())])
-							}
+			conditionalStage(name: "Test clang-format", skip: !options.get("enableClangFormat", true)) {
+				runOnSlave(label: "frontend") {
+					inSingularity(containerOptions) {
+						Boolean enableClangFormatFullDiff = options.get("enableClangFormatFullDiff", false)
+						for (String project in options.get("projects")) {
+							checkClangFormat([folder  : project.split("@")[0],
+							                  fullDiff: (enableClangFormatFullDiff && !isTriggeredByGerrit())])
 						}
 					}
-				} else {
-					Utils.markStageSkippedForConditional(env.STAGE_NAME)
 				}
 			}
 

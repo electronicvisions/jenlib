@@ -1,0 +1,16 @@
+<p>
+    Declare a stage which conditionally skips execution.
+</p>
+
+<p>
+    <b>options:</b> Map of options:
+</p>
+<ul>
+    <li><b>skip</b> (mandatory): Skip execution of the content.</li>
+    <li><i>others</i> (mandatory): See https://www.jenkins.io/doc/pipeline/steps/pipeline-stage-step/</li>
+</ul>
+
+<p>
+    <b>content:</b> Code to be run
+</p>
+

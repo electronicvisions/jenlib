@@ -41,6 +41,18 @@ try {
 	}
 
 	runOnSlave(label: "frontend") {
+		stage('conditionalStageTest') {
+			conditionalStage(name: "NotExecuted", skip: true) {
+				env.JenlibConditionalStageTest = "foobar"
+			}
+			assert env.JenlibConditionalStageTest == null, "Environment has been modified in skipped stage!"
+
+			conditionalStage(name: "Executed", skip: false) {
+				env.JenlibConditionalStageTest = "foobar"
+			}
+			assert env.JenlibConditionalStageTest == "foobar", "Environment has not been modified in non-skipped stage!"
+		}
+
 		stage('setBuildStateTest') {
 			for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
 				assert (currentBuild.currentResult == "SUCCESS")
