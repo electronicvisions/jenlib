@@ -52,8 +52,8 @@ def call(Map<String, Object> options = [:], Closure content) {
 		}
 	}
 
-	// For runs in container, use module command from spack
-	prefixCommands.add("[ -f /opt/spack/bin/spack ] && " +
+	// If a singularity container provides module initialization, use it
+	prefixCommands.add("[ -f /opt/init/modules.sh ] && " +
 	                   "source /opt/init/modules.sh || true")
 
 	// Keep module command alive if it's not yet exported. Don't fail if it's not a function.
