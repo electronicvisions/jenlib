@@ -35,6 +35,8 @@
  *                                                            Defaults to <code>[""]</code>, representing only the default target set.
  *                    <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
                                                                Defaults to <code>true</code>.
+ *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
+                                                               Defaults to <code>true</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
  *                    <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
  *                </ul>
@@ -108,6 +110,8 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
+			Boolean enableCppcheck = options.get("enableCppcheck", true)
+
 			// Pre/post test execution hooks
 			Closure preTestHook = (Closure) options.get("preTestHook", {})
 			Closure postTestHook = (Closure) options.get("preTestHook", {})
@@ -133,7 +137,7 @@ def call(Map<String, Object> options = [:]) {
 						stage("Build ${wafTargetOption}".trim()) {
 							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 								withModules(moduleOptions) {
-									jesh("waf configure install " +
+									jesh("${enableCppcheck ? "bear " : ""}waf configure install " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
 									     "${wafTargetOption} ${configureInstallOptions}")
@@ -199,6 +203,17 @@ def call(Map<String, Object> options = [:]) {
 				}
 			}
 
+			conditionalStage(name: "Test cppcheck", skip: !enableCppcheck) {
+				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+					inSingularity(containerOptions) {
+						// FIXME: Issue #3537 cppcheck needs local copy of cfg directory
+						jesh("cp -r /opt/spack_views/visionary-wafer/cfg/ .")
+						jesh("cppcheck --xml --project=compile_commands.json -j\$(nproc) --suppress=syntaxError:* " +
+						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml")
+					}
+				}
+			}
+
 			// Scan for compiler and linting warnings
 			stage("Compiler/Linting Warnings") {
 				runOnSlave(label: "frontend") {
@@ -225,6 +240,19 @@ def call(Map<String, Object> options = [:]) {
 					                          id: "pep8_" + UUID.randomUUID().toString(),
 					                          name: "PEP8 Warnings")]
 					)
+
+					if (enableCppcheck) {
+						recordIssues(qualityGates: [[threshold: 1,
+						                             type     : 'TOTAL',
+						                             unstable : true]],
+						             blameDisabled: true,
+						             filters: [excludeFile(".*usr/include.*"),
+						                       excludeFile(".*opt/spack.*")] +
+						                      warningsIgnorePattern.split(",").collect({excludeFile(it)}),
+						             tools: [cppCheck(id: "cppcheck_" + UUID.randomUUID().toString(),
+						                              name: "Cppcheck Warnings", pattern: "cppcheck.xml")]
+						)
+					}
 				}
 			}
 

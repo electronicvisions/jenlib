@@ -28,6 +28,8 @@ Available options (see also <code>wafSetup</code>):
     <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
     <li><b>wafTargetOptions</b> (optional): List of targets to be built.
         Defaults to <code>[""]</code>, representing only the default target set.
+    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
+                                          Defaults to <code>true</code>.
     <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
     <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
 </ul>
