@@ -9,7 +9,6 @@ import org.electronicvisions.jenlib.ShellManipulator
  *                      <ul>
  *                          <li>modules: List of modules to be loaded (e.g. {@code ["git/2.6.2"]})</li>
  *                          <li>purge: [optional, defaults to {@code false}] Purge existing module before loading new ones.</li>
- *                          <li>moduleInitPath: [optional] Path to sourceable file that provides the {@code module} command.</li>
  *                          <li>prependModulePath: [optional] Path to prepended to {@code MODULEPATH}.</li>
  *                      </ul>
  * @param content Code to be executed in the context of some modules.
@@ -18,75 +17,60 @@ def call(Map<String, Object> options = [:], Closure content) {
 	if (!(options.get("modules") instanceof List)) {
 		throw new IllegalArgumentException("modules have to be a list.")
 	}
+	List<String> modules = options.get("modules") as List<String>
 
 	if (!(options.get("purge", false) instanceof Boolean)) {
 		throw new IllegalArgumentException("purge has to be boolean.")
 	}
-
-	if (!(options.get("moduleInitPath", "") instanceof CharSequence)) {
-		throw new IllegalArgumentException("moduleInitPath has to be a string.")
-	}
+	Boolean purge = options.get("purge")
 
 	if (!(options.get("prependModulePath", "") instanceof CharSequence)) {
 		throw new IllegalArgumentException("prependModulePath has to be a string.")
 	}
+	String prependModulePath = options.get("prependModulePath")
 
-	// Default non-container module init path, different on ASIC machines vs. F9 cluster
-	String moduleInitPath = isAsicJenkins() ?
-	                        "/usr/local/Modules/current/init/bash" :
-	                        "/wang/environment/software/Modules/bashrc"
-
+	/**
+	 * 'Builder' for the final (long...) command prepended to every shell call.
+	 */
 	List<String> prefixCommands = new ArrayList()
 
-	// Get module command
-	if (((String) options.get("moduleInitPath"))?.length()) {
-		prefixCommands.add("source ${options.get("moduleInitPath")}")
-	} else {
-		if (jesh(script: "which module >/dev/null 2>&1", returnStatus: true)) {
-			// We don't already have a module command, try to get one
-			if (!fileExists(moduleInitPath)) {
-				throw new InternalError("Expected file $moduleInitPath not found on host $hostname.")
-			}
+	// More sanity for the shell...
+	prefixCommands.add('set -euo pipefail')
 
-			prefixCommands.add("source $moduleInitPath")
-		}
+	// Sanity check: MODULESHOME must be defined.
+	prefixCommands.add('[ -n "${MODULESHOME:-}" ] || ' +
+	                   '{ echo MODULESHOME is not defined or empty. Check environment.>&2; exit 1; }')
+
+	// Get 'module' command for the current shell
+	prefixCommands.add('source "$MODULESHOME"/init/$(readlink -f /proc/$$/exe | xargs basename)')
+
+	// Module command may not yet be exported. Don't fail if it's not a function.
+	prefixCommands.add('export -f module || true')
+
+	if (prependModulePath.length() > 0) {
+		// Set MODULEPATH, don't add a colon if it had been empty
+		prefixCommands.add("export MODULEPATH=\"${prependModulePath}\${MODULEPATH:+:\$MODULEPATH}\"")
 	}
 
-	// If a singularity container provides module initialization, use it
-	prefixCommands.add("[ -f /opt/init/modules.sh ] && " +
-	                   "source /opt/init/modules.sh || true")
-
-	// Keep module command alive if it's not yet exported. Don't fail if it's not a function.
-	prefixCommands.add("export -f module || true")
-
-	if (options.get("prependModulePath")?.length()) {
-		prefixCommands.add("export MODULEPATH=${options.get("prependModulePath")}\${MODULEPATH:+:\${MODULEPATH}}")
+	if (purge) {
+		prefixCommands.add('module purge')
 	}
 
-	if ((boolean) options.get("purge", false)) {
-		prefixCommands.add("module purge")
-	}
-
-	for (String module in (List<String>) options.get("modules")) {
+	for (String module in modules) {
 		prefixCommands.add("module load $module")
+	}
+
+	// Sanity check: Loaded modules must be in list of loaded modules
+	for (module in modules) {
+		prefixCommands.add("module list |& grep \"${module}\" >/dev/null || " +
+		                   "{ echo Module ${module} did not load correctly.>&2; exit 1; }")
 	}
 
 	ShellManipulator manipulator = new ShellManipulator(this)
 	manipulator.add(prefixCommands.join(" && ") + " &&", "")
 
-	// module load sometimes fails with exit code 0, make sure all modules load correctly
-	String modules = jesh(script: "module list 2>&1", returnStdout: true)
-	for (String module in (List<String>) options.get("modules")) {
-		if (!modules.contains(module)) {
-			manipulator.restore()
-			throw new IllegalStateException("[withModules] module load was not successful! $module is missing.")
-		}
-	}
-
 	try {
 		content()
-	} catch (Throwable anything) {
-		throw anything
 	} finally {
 		manipulator.restore()
 	}

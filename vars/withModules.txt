@@ -10,6 +10,5 @@ Available options:
 <ul>
     <li>modules: List of modules to be loaded (e.g. <code>["git/2.6.2"]</code>)</li>
     <li>purge: [optional, defaults to {@code false}] Purge existing modules before loading new ones.</li>
-    <li>moduleInitPath: [optional] Path to sourecable file that provides the <code>module</code> command.</li>
     <li>prependModulePath: [optional] Path to prepended to <code>MODULEPATH</code>.</li>
 </ul>

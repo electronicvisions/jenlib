@@ -444,23 +444,27 @@ try {
 			requiredModules.add("git")
 		}
 
-		runOnSlave(label: "frontend && singularity") {  // Issue #3250
-			withModules(modules: requiredModules) {
-				withWaf() {
+		withModules(modules: requiredModules) {
+			withWaf() {
+				runOnSlave(label: "frontend") {
 					stdout = jesh(returnStdout: true, script: "waf --help")
 					assert (stdout.contains("waf [commands] [options]"))
+				}
 
-					// nested withWaf
-					withWaf() {
+				// nested withWaf
+				withWaf() {
+					runOnSlave(label: "frontend") {
 						stdout = jesh(returnStdout: true, script: "waf --help")
 						assert (stdout.contains("waf [commands] [options]"))
 					}
+				}
 
-					inSingularity {
+				inSingularity {
+					runOnSlave(label: "frontend && singularity") {
 						stdout_singularity = jesh(returnStdout: true, script: "waf --help")
 					}
-					assert (stdout_singularity.contains("waf [commands] [options]"))
 				}
+				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
 		}
 	}
@@ -472,28 +476,28 @@ try {
 			requiredModules.add("git")
 		}
 
-		runOnSlave(label: "frontend") { // Issue #3250
-			withModules(modules: requiredModules) {
-				// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
-				wafSetup(projects: ["hate"])
+		withModules(modules: requiredModules) {
+			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
+			wafSetup(projects: ["hate"])
 
-				// Multiple projects
-				wafSetup(projects: ["hate", "code-format"])
+			// Multiple projects
+			wafSetup(projects: ["hate", "code-format"])
 
-				// Setup in subfolder
+			// Setup in subfolder
+			runOnSlave(label: "frontend") {
 				String subfolder = UUID.randomUUID().toString()
 				dir(subfolder) {
 					wafSetup(projects: ["hate"])
 				}
 				assert fileExists("${subfolder}/wscript")
+			}
 
-				// Unsupported command line options
-				assertBuildResult("FAILURE") {
-					wafSetup()
-				}
-				assertBuildResult("FAILURE") {
-					wafSetup(projects: "hate")
-				}
+			// Unsupported command line options
+			assertBuildResult("FAILURE") {
+				wafSetup()
+			}
+			assertBuildResult("FAILURE") {
+				wafSetup(projects: "hate")
 			}
 		}
 	}
@@ -667,59 +671,71 @@ try {
 	}
 
 	stage("withModulesTest") {
-		runOnSlave(label: "frontend && singularity") { // Issue #3250
+		// Module available on F9 as well as S5 nodes
+		String alwaysAvailableModule = "xilinx"
 
-			// Module available on F9 as well as S5 nodes
-			String alwaysAvailableModule = "xilinx"
-
+		runOnSlave(label: "frontend") {
 			noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+		}
 
-			withModules(modules: [alwaysAvailableModule]) {
+		withModules(modules: [alwaysAvailableModule]) {
+			runOnSlave(label: "frontend") {
 				withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 			}
-			assert (noModulePath != withModulePath): "$noModulePath should not be $withModulePath"
+		}
+		assert (noModulePath != withModulePath): "$noModulePath should not be $withModulePath"
 
-			withModules(modules: [alwaysAvailableModule]) {
-				withModules(purge: true, modules: []) {
+		withModules(modules: [alwaysAvailableModule]) {
+			withModules(purge: true, modules: []) {
+				runOnSlave(label: "frontend") {
 					purgedModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 				}
 			}
-			assert (noModulePath == purgedModulePath): "$noModulePath should be $purgedModulePath"
+		}
+		assert (noModulePath == purgedModulePath): "$noModulePath should be $purgedModulePath"
 
-			withModules(modules: [], prependModulePath: "foo/bar") {
+		withModules(modules: [], prependModulePath: "foo/bar") {
+			runOnSlave(label: "frontend") {
 				assert (jesh(script: "echo \$MODULEPATH", returnStdout: true).contains("foo/bar"))
 			}
+		}
 
-			// Test module load in container
-			if (!isAsicJenkins()) {  // module load inside singularity is not supported on ASIC, c.f. issue #3582
-				inSingularity {
-					noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+		// Test module load in container
+		inSingularity {
+			runOnSlave(label: "frontend") {
+				noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
+			}
 
-					withModules(modules: [alwaysAvailableModule]) {
-						withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
-					}
-					assert (noModulePath != withModulePath): "$noModulePath should not be $withModulePath"
+			withModules(modules: [alwaysAvailableModule]) {
+				runOnSlave(label: "frontend") {
+					withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 				}
 			}
+			assert (noModulePath != withModulePath): "$noModulePath should not be $withModulePath"
+		}
 
-			// Fail if module load does not succeed
-			assertBuildResult("FAILURE") {
-				withModules(modules: ["jenlibNonExistingModule"]) {}
+		// Fail if module load does not succeed
+		// Failure needs to happen upon the first jesh call, since the final environment is not known before.
+		withModules(modules: ["jenlibNonExistingModule"]) {
+			runOnSlave(label: "frontend") {
+				assertBuildResult("FAILURE") {
+					jesh("exit 0")
+				}
 			}
+		}
 
-			// Fail early on bad input
-			assertBuildResult("FAILURE") {
-				// 'modules' has to be of type List<String>
-				withModules(modules: alwaysAvailableModule) {}
-			}
-			assertBuildResult("FAILURE") {
-				// 'purge' has to be of type boolean
-				withModules(purge: alwaysAvailableModule) {}
-			}
-			assertBuildResult("FAILURE") {
-				// 'moduleInitPath' has to be of type String
-				withModules(moduleInitPath: true) {}
-			}
+		// Fail early on bad input
+		assertBuildResult("FAILURE") {
+			// 'modules' has to be of type List<String>
+			withModules(modules: alwaysAvailableModule) {}
+		}
+		assertBuildResult("FAILURE") {
+			// 'purge' has to be of type boolean
+			withModules(purge: alwaysAvailableModule) {}
+		}
+		assertBuildResult("FAILURE") {
+			// 'moduleInitPath' has to be of type String
+			withModules(moduleInitPath: true) {}
 		}
 	}
 
