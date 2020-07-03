@@ -40,7 +40,7 @@ try {
 		}
 	}
 
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "frontend && singularity") {
 		stage('conditionalStageTest') {
 			conditionalStage(name: "NotExecuted", skip: true) {
 				env.JenlibConditionalStageTest = "foobar"
