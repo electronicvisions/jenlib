@@ -36,7 +36,7 @@
  *                    <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
                                                                Defaults to <code>true</code>.
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
-                                                               Defaults to <code>true</code>.
+                                                               Defaults to <code>false</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
  *                    <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
  *                </ul>
@@ -110,7 +110,7 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
-			Boolean enableCppcheck = options.get("enableCppcheck", true)
+			Boolean enableCppcheck = options.get("enableCppcheck", false)
 
 			// Pre/post test execution hooks
 			Closure preTestHook = (Closure) options.get("preTestHook", {})
