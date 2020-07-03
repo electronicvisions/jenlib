@@ -40,83 +40,83 @@ try {
 		}
 	}
 
-	runOnSlave(label: "frontend && singularity") {
-		stage('conditionalStageTest') {
-			conditionalStage(name: "NotExecuted", skip: true) {
-				env.JenlibConditionalStageTest = "foobar"
-			}
-			assert env.JenlibConditionalStageTest == null, "Environment has been modified in skipped stage!"
-
-			conditionalStage(name: "Executed", skip: false) {
-				env.JenlibConditionalStageTest = "foobar"
-			}
-			assert env.JenlibConditionalStageTest == "foobar", "Environment has not been modified in non-skipped stage!"
+	stage('conditionalStageTest') {
+		conditionalStage(name: "NotExecuted", skip: true) {
+			env.JenlibConditionalStageTest = "foobar"
 		}
+		assert env.JenlibConditionalStageTest == null, "Environment has been modified in skipped stage!"
 
-		stage('setBuildStateTest') {
-			for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
-				assert (currentBuild.currentResult == "SUCCESS")
+		conditionalStage(name: "Executed", skip: false) {
+			env.JenlibConditionalStageTest = "foobar"
+		}
+		assert env.JenlibConditionalStageTest == "foobar", "Environment has not been modified in non-skipped stage!"
+	}
+
+	stage('setBuildStateTest') {
+		for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
+			assert (currentBuild.currentResult == "SUCCESS")
+			setBuildState(result)
+			assert (currentBuild.currentResult == result)
+			setBuildState("SUCCESS")
+		}
+	}
+
+	stage('assertBuildResultTest') {
+		assert (currentBuild.currentResult == "SUCCESS")
+
+		// Check if all supported states work
+		for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
+			assertBuildResult(result) {
 				setBuildState(result)
-				assert (currentBuild.currentResult == result)
-				setBuildState("SUCCESS")
 			}
 		}
+		assert (currentBuild.currentResult == "SUCCESS")
 
-		stage('assertBuildResultTest') {
-			assert (currentBuild.currentResult == "SUCCESS")
+		// Expected exceptions should be catched
+		assertBuildResult("FAILURE") {
+			jesh "exit 1"
+		}
+		assert (currentBuild.currentResult == "SUCCESS")
+	}
 
-			// Check if all supported states work
-			for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
-				assertBuildResult(result) {
-					setBuildState(result)
-				}
-			}
-			assert (currentBuild.currentResult == "SUCCESS")
+	stage('conditionalTimeoutTest') {
+		Map<String, Object> timeoutOptions = [enable: false, time: 5, unit: "SECONDS"]
+		Map<String, Object> oldTimeoutOptions = timeoutOptions.clone()
 
-			// Expected exceptions should be catched
-			assertBuildResult("FAILURE") {
-				jesh "exit 1"
-			}
-			assert (currentBuild.currentResult == "SUCCESS")
+		// timeout still works
+		conditionalTimeout(timeoutOptions) {
+			sleep(time: 10, unit: "SECONDS")
 		}
 
-		stage('conditionalTimeoutTest') {
-			Map<String, Object> timeoutOptions = [enable: false, time: 5, unit: "SECONDS"]
-			Map<String, Object> oldTimeoutOptions = timeoutOptions.clone()
+		// Map of options unchanged
+		assert (timeoutOptions == oldTimeoutOptions): "Map of timeout options has changed!"
 
-			// timeout still works
-			conditionalTimeout(timeoutOptions) {
+		// timeout can be disabled
+		assertBuildResult("FAILURE") {
+			conditionalTimeout(enable: true, time: 5, unit: "SECONDS") {
 				sleep(time: 10, unit: "SECONDS")
 			}
-
-			// Map of options unchanged
-			assert (timeoutOptions == oldTimeoutOptions): "Map of timeout options has changed!"
-
-			// timeout can be disabled
-			assertBuildResult("FAILURE") {
-				conditionalTimeout(enable: true, time: 5, unit: "SECONDS") {
-					sleep(time: 10, unit: "SECONDS")
-				}
-			}
-
-			// 'enable' is mandatory
-			assertBuildResult("FAILURE") {
-				conditionalTimeout(time: 5, unit: "SECONDS") {}
-			}
 		}
 
-		stage('setJobDescriptionTest') {
-			String tmpDescription = getJobDescription()
-			String testDescription = UUID.randomUUID().toString()
-
-			setJobDescription(testDescription)
-			assert (getJobDescription() == testDescription)
-
-			setJobDescription(tmpDescription)
-			assert (getJobDescription() == tmpDescription)
+		// 'enable' is mandatory
+		assertBuildResult("FAILURE") {
+			conditionalTimeout(time: 5, unit: "SECONDS") {}
 		}
+	}
 
-		stage('jeshTest') {
+	stage('setJobDescriptionTest') {
+		String tmpDescription = getJobDescription()
+		String testDescription = UUID.randomUUID().toString()
+
+		setJobDescription(testDescription)
+		assert (getJobDescription() == testDescription)
+
+		setJobDescription(tmpDescription)
+		assert (getJobDescription() == tmpDescription)
+	}
+
+	stage('jeshTest') {
+		runOnSlave(label: "frontend") {
 			// Basic functionality
 			assert (jesh(script: "hostname", returnStdout: true) == sh(script: "hostname", returnStdout: true))
 
@@ -131,90 +131,97 @@ try {
 
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
+	}
 
-		stage("pipelineFromMarkdownTest") {
-			String tempFilePath = ""
-			runOnSlave(label: "frontend") {
-				tempFilePath = "${WORKSPACE}/${UUID.randomUUID().toString()}"
-				writeFile(file: tempFilePath,
-				          text: libraryResource("org/electronicvisions/MarkdownScriptExtractorTest.md"))
-			}
-
-			pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell")
+	stage("pipelineFromMarkdownTest") {
+		String tempFilePath = ""
+		runOnSlave(label: "frontend") {
+			tempFilePath = "${WORKSPACE}/${UUID.randomUUID().toString()}"
+			writeFile(file: tempFilePath,
+			          text: libraryResource("org/electronicvisions/MarkdownScriptExtractorTest.md"))
 		}
 
-		stage('isWeekendTest') {
-			boolean bashIsWeekend = jesh(script: "[[ \$(date +%u) -lt 6 ]]", returnStatus: true)
-			boolean jenlibIsWeekend = isWeekend()
-			assert (jenlibIsWeekend == bashIsWeekend): "Bash says weekend: ${bashIsWeekend}, " +
-			                                           "jenlib: ${jenlibIsWeekend}"
-		}
+		pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell")
+	}
 
-		stage('isAsicJenkinsTest') {
-			// This file can only run on F9 jenkins
-			assert isAsicJenkins() == nodesByLabel("frontend").contains("ome"):
-					"Wrong Jenkins instance detected! Frontend nodes: ${nodesByLabel("frontend")}."
+	stage('isWeekendTest') {
+		boolean bashIsWeekend = null
+		runOnSlave(label: "frontend") {
+			bashIsWeekend = jesh(script: "[[ \$(date +%u) -lt 6 ]]", returnStatus: true)
 		}
+		boolean jenlibIsWeekend = isWeekend()
+		assert (jenlibIsWeekend == bashIsWeekend): "Bash says weekend: ${bashIsWeekend}, " +
+		                                           "jenlib: ${jenlibIsWeekend}"
+	}
 
-		stage('withCcacheTest') {
-			withCcache() {
-				inSingularity(app: "visionary-wafer") {
+	stage('isAsicJenkinsTest') {
+		// This file can only run on F9 jenkins
+		assert isAsicJenkins() == nodesByLabel("frontend").contains("ome"):
+				"Wrong Jenkins instance detected! Frontend nodes: ${nodesByLabel("frontend")}."
+	}
+
+	stage('withCcacheTest') {
+		withCcache() {
+			inSingularity(app: "visionary-wafer") {
+				runOnSlave(label: "frontend && singularity") {
 					jesh(script: "ln -s \$(which gcc) ccache")
 					ccacheVersion = jesh(script: "./ccache --version | head -n1", returnStdout: true)
 					jesh(script: "rm -f ccache")
 					assert (ccacheVersion.contains("ccache")): "$ccacheVersion does not contain 'ccache'"
 				}
 			}
-
-			// Fail if ccacheNoHashDir is not boolean
-			assertBuildResult("FAILURE") {
-				withCcache(ccacheNoHashDir: "no") {}
-			}
 		}
 
-		stage("isTriggeredByGerritTest") {
-			// We assume that this pipeline is never triggered from an upstream job, otherwise this test will fail!
-			assert (isTriggeredByGerrit() == (env.GERRIT_CHANGE_NUMBER ? true : false))
+		// Fail if ccacheNoHashDir is not boolean
+		assertBuildResult("FAILURE") {
+			withCcache(ccacheNoHashDir: "no") {}
 		}
+	}
 
-		stage("isTriggeredByUserActionTest") {
-			// We assume that this pipeline is never triggered manually, otherwise this test will fail!
-			assert (isTriggeredByUserAction() == false):
-					"Manual trigger detected, disable 'isTriggeredByUserActionTest' when running this pipeline manually!"
-		}
+	stage("isTriggeredByGerritTest") {
+		// We assume that this pipeline is never triggered from an upstream job, otherwise this test will fail!
+		assert (isTriggeredByGerrit() == (env.GERRIT_CHANGE_NUMBER ? true : false))
+	}
 
-		stage("addBuildParameterTest") {
-			String parameterName = UUID.randomUUID().toString()
-			String parameterValue = UUID.randomUUID().toString()
-			assert (params.get(parameterName) == null)
+	stage("isTriggeredByUserActionTest") {
+		// We assume that this pipeline is never triggered manually, otherwise this test will fail!
+		assert (isTriggeredByUserAction() == false):
+				"Manual trigger detected, disable 'isTriggeredByUserActionTest' when running this pipeline manually!"
+	}
 
-			// Check parameters can be added
-			addBuildParameter(string(name: parameterName, defaultValue: parameterValue))
-			assert (params.get(parameterName) == parameterValue): "Build parameter was not added."
+	stage("addBuildParameterTest") {
+		String parameterName = UUID.randomUUID().toString()
+		String parameterValue = UUID.randomUUID().toString()
+		assert (params.get(parameterName) == null)
 
-			// Check parameters can be added without touching the default
-			String otherParameterValue = UUID.randomUUID().toString()
-			addBuildParameter(string(name: parameterName, defaultValue: otherParameterValue), false)
-			assert (params.get(parameterName) == parameterValue): "Default value was overwritten."
+		// Check parameters can be added
+		addBuildParameter(string(name: parameterName, defaultValue: parameterValue))
+		assert (params.get(parameterName) == parameterValue): "Build parameter was not added."
 
-			// Cleanup: Remove all build parameters: This pipeline is not supposed to have any
-			removeAllBuildParameters()
-		}
+		// Check parameters can be added without touching the default
+		String otherParameterValue = UUID.randomUUID().toString()
+		addBuildParameter(string(name: parameterName, defaultValue: otherParameterValue), false)
+		assert (params.get(parameterName) == parameterValue): "Default value was overwritten."
 
-		stage("removeAllBuildParametersTest") {
-			// Add some parameter
-			addBuildParameter(string(name: "foo", defaultValue: "bar"))
-			assert (params.foo == "bar"): "Could not add build parameter."
+		// Cleanup: Remove all build parameters: This pipeline is not supposed to have any
+		removeAllBuildParameters()
+	}
 
-			// Remove all parameters, this pipeline is not supposed to have any
-			removeAllBuildParameters()
-			assert (params.foo == null): "Build parameter survived removal."
+	stage("removeAllBuildParametersTest") {
+		// Add some parameter
+		addBuildParameter(string(name: "foo", defaultValue: "bar"))
+		assert (params.foo == "bar"): "Could not add build parameter."
 
-			// Make sure removal works if none were present
-			removeAllBuildParameters()
-		}
+		// Remove all parameters, this pipeline is not supposed to have any
+		removeAllBuildParameters()
+		assert (params.foo == null): "Build parameter survived removal."
 
-		stage('checkPatternInFileTest') {
+		// Make sure removal works if none were present
+		removeAllBuildParameters()
+	}
+
+	stage('checkPatternInFileTest') {
+		runOnSlave(label: "frontend") {
 			String testFile = UUID.randomUUID().toString()
 			writeFile(file: testFile, text: "foo\tbar")
 
@@ -231,8 +238,10 @@ try {
 				checkPatternInFile("^foo bar\$", testFile)
 			}
 		}
+	}
 
-		stage('checkPatternNotInFileTest') {
+	stage('checkPatternNotInFileTest') {
+		runOnSlave(label: "frontend") {
 			String testFile = UUID.randomUUID().toString()
 			writeFile(file: testFile, text: "foo\tbar")
 
@@ -249,22 +258,27 @@ try {
 			// Pattern does not match, no effect on build
 			checkPatternNotInFile("^foo bar\$", testFile)
 		}
+	}
 
-		stage('decodeBase64Test') {
-			assert (decodeBase64("Zm9vYmFy") == "foobar")
-		}
+	stage('decodeBase64Test') {
+		assert (decodeBase64("Zm9vYmFy") == "foobar")
+	}
 
-		stage('encodeBase64Test') {
-			assert (encodeBase64("barfoo") == "YmFyZm9v")
-		}
+	stage('encodeBase64Test') {
+		assert (encodeBase64("barfoo") == "YmFyZm9v")
+	}
 
-		stage('inSingularityTest') {
-			// jesh-shell steps are executed in containers
-			inSingularity {
+	stage('inSingularityTest') {
+		// No node needed for block declaration
+		inSingularity {
+			runOnSlave(label: "frontend && singularity") {
+				// jesh-shell steps are executed in containers
 				String containerEnv = jesh(script: "env", returnStdout: true)
 				assert (containerEnv.contains("SINGULARITY_CONTAINER"))
 			}
+		}
 
+		runOnSlave(label: "frontend && singularity") {
 			// Clearing the environment works
 			String shellEnv = jesh(script: "env", returnStdout: true)
 			assert (!shellEnv.contains("SINGULARITY_CONTAINER"))
@@ -285,31 +299,32 @@ try {
 				assert (shOutput == jeshOutput): "sh: $shOutput != jesh: $jeshOutput"
 			}
 		}
+	}
 
-		stage("getDefaultFixturePathTest") {
-			String canonicalDefault = "/lib"
-			String commitKey = "SomeKey"
+	stage("getDefaultFixturePathTest") {
+		String canonicalDefault = "/lib"
+		String commitKey = "SomeKey"
 
-			// Default without key commit message
-			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
-				assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
-				                             commitKey: commitKey,
-				                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
-			}
+		// Default without key commit message
+		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
+			assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+			                             commitKey: commitKey,
+			                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
+		}
 
-			// Result does not change within the same build
-			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64(commitKey + ': /usr/lib')}"]) {
-				assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
-				                             commitKey: commitKey,
-				                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
-			}
+		// Result does not change within the same build
+		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64(commitKey + ': /usr/lib')}"]) {
+			assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+			                             commitKey: commitKey,
+			                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
+		}
 
-			// Special key specified in commit message
-			String pathCustomImage = "/bin"
+		// Special key specified in commit message
+		String pathCustomImage = "/bin"
 
-			// NOTE; additional white-space in the commit-messages is intended
-			List<String> commitMessagesSuccess = [
-					"""
+		// NOTE; additional white-space in the commit-messages is intended
+		List<String> commitMessagesSuccess = [
+				"""
 				Fake commit message subject
 
 				Here be dragons!
@@ -319,7 +334,7 @@ try {
 				Change-Id: 12345678
 				""",
 
-					"""
+				"""
 				Fake commit message subject
 
 				Here be dragons!
@@ -329,29 +344,29 @@ try {
 				Change-Id: 12345678
 				""",
 
-					"""
+				"""
 				Fake commit message subject
 
 				Change-Id: 12345678
 				${commitKey}:       ${pathCustomImage}     
 				"""
-			]
+		]
 
-			commitMessagesSuccess.eachWithIndex { fakeCommitMessage, i ->
-				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
+		commitMessagesSuccess.eachWithIndex { fakeCommitMessage, i ->
+			String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
 
-				withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=$encodedFakeCommitMessage"]) {
-					// Generate new options per message to disable caching
-					String containerPath = getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
-					                                             commitKey: commitKey,
-					                                             parameterName: "UNUSED_${i}")
-					assert containerPath == pathCustomImage:
-							"Expected $pathCustomImage, but container path is $containerPath."
-				}
+			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=$encodedFakeCommitMessage"]) {
+				// Generate new options per message to disable caching
+				String containerPath = getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+				                                             commitKey: commitKey,
+				                                             parameterName: "UNUSED_${i}")
+				assert containerPath == pathCustomImage:
+						"Expected $pathCustomImage, but container path is $containerPath."
 			}
+		}
 
-			List<String> commitMessagesFail = [
-					"""
+		List<String> commitMessagesFail = [
+				"""
 				Fake commit message subject
 
 				Here be dragons! And multiple ${commitKey} statements!
@@ -361,42 +376,49 @@ try {
 
 				Change-Id: 12345678
 				""",
-			]
+		]
 
-			commitMessagesFail.eachWithIndex { fakeCommitMessage, i ->
-				String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
+		commitMessagesFail.eachWithIndex { fakeCommitMessage, i ->
+			String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
 
-				assertBuildResult("FAILURE") {
-					withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
-						getDefaultFixturePath(defaultPathCanonical: "/lib",
-						                      commitKey: commitKey,
-						                      parameterName: "UNUSED_${i + commitMessagesSuccess.size()}")
-					}
+			assertBuildResult("FAILURE") {
+				withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
+					getDefaultFixturePath(defaultPathCanonical: "/lib",
+					                      commitKey: commitKey,
+					                      parameterName: "UNUSED_${i + commitMessagesSuccess.size()}")
 				}
 			}
 		}
+	}
 
-		stage("getDefaultContainerPathTest") {
-			// Default path is as expected
-			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
-				String defaultPathResult = getDefaultContainerPath()
-				String defaultPathReference = jesh(script: "readlink -f /containers/stable/latest",
-				                                   returnStdout: true).trim()
-				assert defaultPathResult == defaultPathReference, "${defaultPathResult} != ${defaultPathReference}"
-			}
+	stage("getDefaultContainerPathTest") {
+		String defaultPathExpected = null
+		runOnSlave(label: "frontend") {
+			defaultPathExpected = jesh(script: "readlink -f /containers/stable/latest",
+			                           returnStdout: true).trim()
 		}
 
-		stage("getContainerAppsTest") {
+		// Default path is as expected
+		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
+			String defaultPathResult = getDefaultContainerPath()
+			assert defaultPathResult == defaultPathExpected, "${defaultPathResult} != ${defaultPathExpected}"
+		}
+	}
+
+	stage("getContainerAppsTest") {
+		runOnSlave(label: "frontend && singularity") {
 			assert getContainerApps().contains("visionary-dls")
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
+	}
 
-		stage("deployDocumentationRemoteTest") {
+	stage("deployDocumentationRemoteTest") {
+		runOnSlave(label: "frontend") {
 			String groupId = isAsicJenkins() ? "s5" : "f9"
 			repositoryUrl = "ssh://hudson@brainscales-r.kip.uni-heidelberg.de:29418/jenlib"
 			upstreamBranch = "sandbox/hudson/deploy_documentation_test_${groupId}"
 			jesh "mkdir upstream"
-			dir ("upstream") {
+			dir("upstream") {
 				jesh "git init"
 				jesh "git commit --allow-empty -m 'Documentation'"
 				jesh "git push -f ${repositoryUrl} HEAD:${upstreamBranch}"
@@ -404,23 +426,25 @@ try {
 			jesh "mkdir docu"
 			content = jesh(script: "echo -n 'my docu ' \$(date)", returnStdout: true)
 			jesh "echo -n '${content}' > docu/docu.txt"
-			deployDocumentationRemote([folders: ["docu"],
-			                          repositoryUrl: repositoryUrl,
-			                          upstreamBranch: upstreamBranch])
+			deployDocumentationRemote([folders       : ["docu"],
+			                           repositoryUrl : repositoryUrl,
+			                           upstreamBranch: upstreamBranch])
 			jesh "git clone --branch ${upstreamBranch} ${repositoryUrl}"
 			assert fileExists("jenlib/docu/docu.txt")
 			String docu_content = jesh(script: "cat jenlib/docu/docu.txt", returnStdout: true)
 			assert docu_content.contains(content)
 			jesh "rm -rf docu jenlib upstream"
 		}
+	}
 
-		stage('withWafTest') {
-			List<String> requiredModules = []
-			if (isAsicJenkins()) {
-				requiredModules.add("python")
-				requiredModules.add("git")
-			}
+	stage('withWafTest') {
+		List<String> requiredModules = []
+		if (isAsicJenkins()) {
+			requiredModules.add("python")
+			requiredModules.add("git")
+		}
 
+		runOnSlave(label: "frontend && singularity") {  // Issue #3250
 			withModules(modules: requiredModules) {
 				withWaf() {
 					stdout = jesh(returnStdout: true, script: "waf --help")
@@ -439,14 +463,16 @@ try {
 				}
 			}
 		}
+	}
 
-		stage("wafSetupTest") {
-			List<String> requiredModules = []
-			if (isAsicJenkins()) {
-				requiredModules.add("python")
-				requiredModules.add("git")
-			}
+	stage("wafSetupTest") {
+		List<String> requiredModules = []
+		if (isAsicJenkins()) {
+			requiredModules.add("python")
+			requiredModules.add("git")
+		}
 
+		runOnSlave(label: "frontend") { // Issue #3250
 			withModules(modules: requiredModules) {
 				// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
 				wafSetup(projects: ["hate"])
@@ -470,9 +496,11 @@ try {
 				}
 			}
 		}
+	}
 
-		stage('checkClangFormatTest') {
-			dir ("good_repo") {
+	stage('checkClangFormatTest') {
+		runOnSlave(label: "frontend && singularity") {
+			dir("good_repo") {
 				jesh "git init"
 				jesh "echo initial > initial && git add ."
 				jesh "git commit -m='first'"
@@ -493,7 +521,7 @@ try {
 				}
 			}
 
-			dir ("no_change_repo") {
+			dir("no_change_repo") {
 				jesh "git init"
 				jesh "echo initial > initial && git add ."
 				jesh "git commit -m='first'"
@@ -514,7 +542,7 @@ try {
 				}
 			}
 
-			dir ("bad_repo") {
+			dir("bad_repo") {
 				jesh "git init"
 				jesh "echo initial > initial && git add ."
 				jesh "git commit -m='first'"
@@ -548,86 +576,99 @@ try {
 
 			jesh "rm -rf good_repo bad_repo"
 		}
+	}
 
-		conditionalStage(name: "wafDefaultPipelineTest", skip: isAsicJenkins()) {
-			// Test build a seldom altered project with minimal dependencies and a stable CI flow
-			wafDefaultPipeline(projects: ["hate"],
-			                   container: [app: "visionary-dls"],
-			                   notificationChannel: "#jenkins-trashbin")
-			cleanWs()
-
-			// Test a small project on multiple test resources
-			wafDefaultPipeline(projects: ["hate"],
-			                   container: [app: "visionary-dls"],
-			                   testSlurmResource: [[partition: "jenkins"],
-			                                       [partition: "interactive"]],
-			                   notificationChannel: "#jenkins-trashbin")
-			cleanWs()
-
-			// Test injection of pre/post test hooks does not fail
-			wafDefaultPipeline(projects: ["hate"],
-			                   container: [app: "visionary-dls"],
-			                   notificationChannel: "#jenkins-trashbin",
-			                   preTestHook: { jesh("hostname") },
-			                   postTestHook: { jesh("hostname") })
-			cleanWs()
-
-			// Test injection of test hooks has an effect: if 'build' is deleted, reconfiguration is necessary.
-			assertBuildResult("FAILURE") {
-				wafDefaultPipeline(projects: ["hate"],
-				                   container: [app: "visionary-dls"],
-				                   notificationChannel: "#jenkins-trashbin",
-				                   preTestHook: { jesh("rm -rf build/") })
-			}
-			cleanWs()
-
-			// Unsupported command line options
-			assertBuildResult("FAILURE") {
-				// No pipeline without projects
-				wafDefaultPipeline(notificationChannel: "#jenkins-trashbin")
-			}
-			assertBuildResult("FAILURE") {
-				// 'projects' has to be of type List<String>
-				wafDefaultPipeline(projects: "hate",
-				                   notificationChannel: "#jenkins-trashbin")
-			}
-			assertBuildResult("FAILURE") {
-				// No pipeline without projects
-				wafDefaultPipeline(projects: [],
-				                   notificationChannel: "#jenkins-trashbin")
-			}
-			assertBuildResult("FAILURE") {
-				// Target may not be modified, the pipeline runs for default and '*' internally
-				wafDefaultPipeline(projects: ["hate"],
-				                   container: [app: "visionary-dls"],
-				                   notificationChannel: "#jenkins-trashbin",
-				                   configureInstallOptions: "--target='*'")
-			}
-			assertBuildResult("FAILURE") {
-				// Target may not be modified, the pipeline runs for default and '*' internally
-				wafDefaultPipeline(projects: ["hate"],
-				                   container: [app: "visionary-dls"],
-				                   notificationChannel: "#jenkins-trashbin",
-				                   testOptions: "--target='*'")
-			}
-			assertBuildResult("FAILURE") {
-				// Test handling may not be modified, the pipeline does it internally
-				wafDefaultPipeline(projects: ["hate"],
-				                   container: [app: "visionary-dls"],
-				                   notificationChannel: "#jenkins-trashbin",
-				                   configureInstallOptions: "--test-execnone")
-			}
-
-			// Test a small project without clang-format test
-			wafDefaultPipeline(projects: ["hate"],
-			                   container: [app: "visionary-dls"],
-			                   testSlurmResource: [partition: "jenkins"],
-			                   notificationChannel: "#jenkins-trashbin",
-			                   enableClangFormat: false)
+	conditionalStage(name: "wafDefaultPipelineTest", skip: isAsicJenkins()) {
+		// Test build a seldom altered project with minimal dependencies and a stable CI flow
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   notificationChannel: "#jenkins-trashbin")
+		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
 
-		stage("withModulesTest") {
+		// Test a small project on multiple test resources
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   testSlurmResource: [[partition: "jenkins"],
+		                                       [partition: "interactive"]],
+		                   notificationChannel: "#jenkins-trashbin")
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
+		// Test injection of pre/post test hooks does not fail
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   preTestHook: { jesh("hostname") },
+		                   postTestHook: { jesh("hostname") })
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
+		// Test injection of test hooks has an effect: if 'build' is deleted, reconfiguration is necessary.
+		assertBuildResult("FAILURE") {
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   notificationChannel: "#jenkins-trashbin",
+			                   preTestHook: { jesh("rm -rf build/") })
+		}
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
+		// Unsupported command line options
+		assertBuildResult("FAILURE") {
+			// No pipeline without projects
+			wafDefaultPipeline(notificationChannel: "#jenkins-trashbin")
+		}
+		assertBuildResult("FAILURE") {
+			// 'projects' has to be of type List<String>
+			wafDefaultPipeline(projects: "hate",
+			                   notificationChannel: "#jenkins-trashbin")
+		}
+		assertBuildResult("FAILURE") {
+			// No pipeline without projects
+			wafDefaultPipeline(projects: [],
+			                   notificationChannel: "#jenkins-trashbin")
+		}
+		assertBuildResult("FAILURE") {
+			// Target may not be modified, the pipeline runs for default and '*' internally
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   notificationChannel: "#jenkins-trashbin",
+			                   configureInstallOptions: "--target='*'")
+		}
+		assertBuildResult("FAILURE") {
+			// Target may not be modified, the pipeline runs for default and '*' internally
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   notificationChannel: "#jenkins-trashbin",
+			                   testOptions: "--target='*'")
+		}
+		assertBuildResult("FAILURE") {
+			// Test handling may not be modified, the pipeline does it internally
+			wafDefaultPipeline(projects: ["hate"],
+			                   container: [app: "visionary-dls"],
+			                   notificationChannel: "#jenkins-trashbin",
+			                   configureInstallOptions: "--test-execnone")
+		}
+
+		// Test a small project without clang-format test
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   testSlurmResource: [partition: "jenkins"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   enableClangFormat: false)
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+	}
+
+	stage("withModulesTest") {
+		runOnSlave(label: "frontend && singularity") { // Issue #3250
+
 			// Module available on F9 as well as S5 nodes
 			String alwaysAvailableModule = "xilinx"
 
@@ -680,8 +721,10 @@ try {
 				withModules(moduleInitPath: true) {}
 			}
 		}
+	}
 
-		stage("getGerritUsernameTest") {
+	stage("getGerritUsernameTest") {
+		runOnSlave(label: "frontend") {
 			// We expect this to be hudson in the general case
 			assert (getGerritUsername().equals("hudson"))
 
@@ -697,62 +740,65 @@ try {
 
 			// Global config not testable without interfering with other builds
 		}
+	}
 
-		stage("notifyFailureTest") {
-			notifyFailure(mattermostChannel: "jenkins-trashbin")
+	stage("notifyFailureTest") {
+		notifyFailure(mattermostChannel: "jenkins-trashbin")
 
-			// mattermostChannel is mandatory
-			assertBuildResult("FAILURE") {
-				notifyFailure()
-			}
+		// mattermostChannel is mandatory
+		assertBuildResult("FAILURE") {
+			notifyFailure()
+		}
+	}
+
+	conditionalStage(name: "onSlurmResourceTest", skip: isAsicJenkins()) {
+		onSlurmResource(partition: "jenkins") {
+			assert (env.NODE_LABELS.contains("swarm"))
 		}
 
-		conditionalStage(name: "onSlurmResourceTest", skip: isAsicJenkins()) {
+		// PWD stays the same
+		runOnSlave(label: "frontend") {
+			frontendPwd = pwd()
 			onSlurmResource(partition: "jenkins") {
-				assert (env.NODE_LABELS.contains("swarm"))
-			}
-
-			// PWD stays the same
-			runOnSlave(label: "frontend") {
-				frontendPwd = pwd()
-				onSlurmResource(partition: "jenkins") {
-					slavePwd = pwd()
-					assert (slavePwd == frontendPwd): "slavePwd: $slavePwd, frontendPwd: $frontendPwd"
-				}
-			}
-
-			// Workspace stays the same
-			runOnSlave(label: "frontend") {
-				frontendWs = WORKSPACE
-				onSlurmResource(partition: "jenkins") {
-					slaveWs = WORKSPACE
-					assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
-				}
-			}
-
-			assertBuildResult("FAILURE") {
-				// Too many tasks for a single node
-				onSlurmResource(partition: "jenkins", ntasks: 32) {
-					jesh "hostname"
-				}
+				slavePwd = pwd()
+				assert (slavePwd == frontendPwd): "slavePwd: $slavePwd, frontendPwd: $frontendPwd"
 			}
 		}
 
-		stage("runOnSlaveTest") {
-			// Raise for bad user options
-			bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
-			              [name: "hel", label: "frontend"],
-			              [naame: "hel", label: "frontend"],
-			              [name: "hel", laabel: "frontend"],
-			              [name: "hel", label: "frontend", foo: "bar"]]
-
-			for (input in bad_inputs) {
-				assertBuildResult("FAILURE") {
-					runOnSlave(input) {}
-				}
+		// Workspace stays the same
+		runOnSlave(label: "frontend") {
+			frontendWs = WORKSPACE
+			onSlurmResource(partition: "jenkins") {
+				slaveWs = WORKSPACE
+				assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
 			}
+		}
 
-			// Pipeline runs on a node => switching to master should be possible
+		assertBuildResult("FAILURE") {
+			// Too many tasks for a single node
+			onSlurmResource(partition: "jenkins", ntasks: 32) {
+				jesh "hostname"
+			}
+		}
+	}
+
+	stage("runOnSlaveTest") {
+		// Raise for bad user options
+		bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
+		              [name: "hel", label: "frontend"],
+		              [naame: "hel", label: "frontend"],
+		              [name: "hel", laabel: "frontend"],
+		              [name: "hel", label: "frontend", foo: "bar"]]
+
+		for (input in bad_inputs) {
+			assertBuildResult("FAILURE") {
+				runOnSlave(input) {}
+			}
+		}
+
+		runOnSlave(label: "frontend") {
+
+			// Switching to master should be possible
 			runOnSlave(name: "master") {
 				assert (env.NODE_NAME == "master")
 			}
@@ -792,14 +838,16 @@ try {
 				}
 			}
 		}
+	}
 
-		stage("fillTemplateTest") {
-			template = 'Hello <% out.print firstname %> ${lastname}'
-			result = fillTemplate(template, [firstname: "Jenkins", lastname: "Hudson"])
-			assert (result == 'Hello Jenkins Hudson'): result
-		}
+	stage("fillTemplateTest") {
+		template = 'Hello <% out.print firstname %> ${lastname}'
+		result = fillTemplate(template, [firstname: "Jenkins", lastname: "Hudson"])
+		assert (result == 'Hello Jenkins Hudson'): result
+	}
 
-		stage('deployModuleTest') {
+	stage('deployModuleTest') {
+		runOnSlave(label: "frontend && singularity") {
 			jesh "mkdir -p $WORKSPACE/source"
 			jesh "mkdir -p $WORKSPACE/source/bin"
 			jesh "mkdir -p $WORKSPACE/source/lib"
@@ -895,7 +943,5 @@ void post_all_build_action() {
 }
 
 void post_error_build_action() {
-	node(label: "frontend") {
-		notifyFailure(mattermostChannel: "#softies")
-	}
+	notifyFailure(mattermostChannel: "#softies")
 }
