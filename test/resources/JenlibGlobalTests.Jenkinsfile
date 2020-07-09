@@ -298,6 +298,25 @@ try {
 				}
 				assert (shOutput == jeshOutput): "sh: $shOutput != jesh: $jeshOutput"
 			}
+
+			// Nested singularity calls, only available for the F9 installation
+			if (!isAsicJenkins()) {
+				// App shall not be propagated
+				inSingularity(app: "dls") {
+					inSingularity() {
+						jesh("env | grep 'SINGULARITY_APPNAME=\$'")
+					}
+				}
+
+				// Environment modifications are passed to the nested container
+				withEnv(["SINGULARITYENV_PREPEND_PATH=foobar"]) {
+					inSingularity(app: "dls") {
+						inSingularity() {
+							jesh("env | grep '^PATH=foobar'")
+						}
+					}
+				}
+			}
 		}
 	}
 

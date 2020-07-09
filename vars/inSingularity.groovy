@@ -4,6 +4,8 @@ import org.electronicvisions.jenlib.ShellManipulator
  * Run a section of code within a specified singularity container.
  * This makes {@code jesh} steps being executed inside a bash within the given singularity container.
  *
+ * If supported by your singularity installation, nested {@code inSingularity} contexts are allowed.
+ *
  *  The order of which singularity image is invoked is the following:
  *  <ul>
  *      <li>If nothing is specified -> use /container/stable/latest</li>
@@ -27,7 +29,7 @@ def call(Map<String, String> containerOptions = [:], Closure content) {
 	 */
 	String appArgument = ""
 
-	if (containerOptions.get("app") != null){
+	if (containerOptions.get("app") != null) {
 		appArgument = "--app=${containerOptions.get("app")}"
 	}
 
@@ -37,13 +39,21 @@ def call(Map<String, String> containerOptions = [:], Closure content) {
 		containerImage = getDefaultContainerPath()
 	}
 
-	String cmdPrefix = "singularity exec " +
+	List<String> prefixCommands = new ArrayList()
+
+	// Parent app shall not be propagated in nested singularity calls
+	prefixCommands.add('unset SINGULARITY_APPNAME')
+
+	// SINGULARITY_ENV environment modifiers shall be kept inside the container to allow for nested calls
+	prefixCommands.add('for param in "${!SINGULARITYENV_@}"; do export "SINGULARITYENV_$param"="${!param}"; done')
+
+	prefixCommands.add("singularity exec " +
 	                   "${appArgument} " +
 	                   "${containerOptions.get("singularityArgs", "")} " +
-	                   "${containerImage}"
+	                   "${containerImage}")
 
 	ShellManipulator manipulator = new ShellManipulator(this)
-	manipulator.add(cmdPrefix, "")
+	manipulator.add(prefixCommands.join(" && "), "")
 
 	try {
 		content()

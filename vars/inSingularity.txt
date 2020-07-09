@@ -4,6 +4,10 @@
 </p>
 
 <p>
+    If supported by your singularity installation, nested <code>inSingularity</code> contexts are allowed.
+</p>
+
+<p>
     The order of which singularity image is invoked is the following:
 </p>
 <ul>
