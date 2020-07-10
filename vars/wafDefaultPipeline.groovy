@@ -114,7 +114,7 @@ def call(Map<String, Object> options = [:]) {
 
 			// Pre/post test execution hooks
 			Closure preTestHook = (Closure) options.get("preTestHook", {})
-			Closure postTestHook = (Closure) options.get("preTestHook", {})
+			Closure postTestHook = (Closure) options.get("postTestHook", {})
 
 			// Directories test-result XML files are written to
 			LinkedList<String> testResultDirs = new LinkedList<String>()
