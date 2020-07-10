@@ -40,7 +40,66 @@ try {
 		}
 	}
 
-	stage('conditionalStageTest') {
+	// Reflection does not seem to play nicely with Jenkins CPS, this nevertheless needs beautification
+	testConditionalStage()
+	testSetBuildState()
+	testAssertBuildResult()
+	testConditionalTimeout()
+	testSetJobDescription()
+	testJesh()
+	testPipelineFromMarkdown()
+	testIsWeekend()
+	testIsAsicJenkins()
+	testWithCcache()
+	testIsTriggeredByGerrit()
+	testIsTriggeredByUserAction()
+	testAddBuildParameter()
+	testRemoveAllBuildParameters()
+	testCheckPatternInFile()
+	testCheckPatternNotInFile()
+	testDecodeBase64()
+	testEncodeBase64()
+	testInSingularity()
+	testGetDefaultFixturePath()
+	testGetDefaultContainerPath()
+	testGetContainerApps()
+	testDeployDocumentationRemote()
+	testWithWaf()
+	testWafSetup()
+	testCheckClangFormat()
+	testWafDefaultPipeline()
+	testWithModules()
+	testGetGerritUsername()
+	testNotifyFailure()
+	testOnSlurmResource()
+	testRunOnSlave()
+	testFillTemplate()
+	testDeployModule()
+
+} catch (Throwable t) {
+	notifyFailure(mattermostChannel: "#softies")
+	node(label: "frontend") {
+		cleanWs()
+	}
+	throw t
+} finally {
+	node(label: "frontend") {
+		cleanWs()
+	}
+}
+
+// Some Jenkins steps fail a build without raising (e.g. archiveArtifacts)
+if (currentBuild.currentResult != "SUCCESS") {
+	post_error_build_action()
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                 TEST METHODS                                                       //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void testConditionalStage() {
+	stage('testConditionalStage') {
 		conditionalStage(name: "NotExecuted", skip: true) {
 			env.JenlibConditionalStageTest = "foobar"
 		}
@@ -51,8 +110,10 @@ try {
 		}
 		assert env.JenlibConditionalStageTest == "foobar", "Environment has not been modified in non-skipped stage!"
 	}
+}
 
-	stage('setBuildStateTest') {
+void testSetBuildState() {
+	stage('testSetBuildState') {
 		for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
 			assert (currentBuild.currentResult == "SUCCESS")
 			setBuildState(result)
@@ -60,8 +121,10 @@ try {
 			setBuildState("SUCCESS")
 		}
 	}
+}
 
-	stage('assertBuildResultTest') {
+void testAssertBuildResult() {
+	stage('testAssertBuildResult') {
 		assert (currentBuild.currentResult == "SUCCESS")
 
 		// Check if all supported states work
@@ -78,8 +141,10 @@ try {
 		}
 		assert (currentBuild.currentResult == "SUCCESS")
 	}
+}
 
-	stage('conditionalTimeoutTest') {
+void testConditionalTimeout() {
+	stage('testConditionalTimeout') {
 		Map<String, Object> timeoutOptions = [enable: false, time: 5, unit: "SECONDS"]
 		Map<String, Object> oldTimeoutOptions = timeoutOptions.clone()
 
@@ -103,8 +168,10 @@ try {
 			conditionalTimeout(time: 5, unit: "SECONDS") {}
 		}
 	}
+}
 
-	stage('setJobDescriptionTest') {
+void testSetJobDescription() {
+	stage('testSetJobDescription') {
 		String tmpDescription = getJobDescription()
 		String testDescription = UUID.randomUUID().toString()
 
@@ -114,8 +181,10 @@ try {
 		setJobDescription(tmpDescription)
 		assert (getJobDescription() == tmpDescription)
 	}
+}
 
-	stage('jeshTest') {
+void testJesh() {
+	stage('testJesh') {
 		runOnSlave(label: "frontend") {
 			// Basic functionality
 			assert (jesh(script: "hostname", returnStdout: true) == sh(script: "hostname", returnStdout: true))
@@ -132,8 +201,10 @@ try {
 			// For Singularity tests, see stage 'inSingularityTest'
 		}
 	}
+}
 
-	stage("pipelineFromMarkdownTest") {
+void testPipelineFromMarkdown() {
+	stage("testPipelineFromMarkdown") {
 		String tempFilePath = ""
 		runOnSlave(label: "frontend") {
 			tempFilePath = "${WORKSPACE}/${UUID.randomUUID().toString()}"
@@ -143,8 +214,10 @@ try {
 
 		pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell")
 	}
+}
 
-	stage('isWeekendTest') {
+void testIsWeekend() {
+	stage('testIsWeekend') {
 		boolean bashIsWeekend = null
 		runOnSlave(label: "frontend") {
 			bashIsWeekend = jesh(script: "[[ \$(date +%u) -lt 6 ]]", returnStatus: true)
@@ -153,14 +226,18 @@ try {
 		assert (jenlibIsWeekend == bashIsWeekend): "Bash says weekend: ${bashIsWeekend}, " +
 		                                           "jenlib: ${jenlibIsWeekend}"
 	}
+}
 
-	stage('isAsicJenkinsTest') {
+void testIsAsicJenkins() {
+	stage('testIsAsicJenkins') {
 		// This file can only run on F9 jenkins
 		assert isAsicJenkins() == nodesByLabel("frontend").contains("ome"):
 				"Wrong Jenkins instance detected! Frontend nodes: ${nodesByLabel("frontend")}."
 	}
+}
 
-	stage('withCcacheTest') {
+void testWithCcache() {
+	stage('testWithCcache') {
 		withCcache() {
 			inSingularity(app: "visionary-wafer") {
 				runOnSlave(label: "frontend && singularity") {
@@ -177,19 +254,25 @@ try {
 			withCcache(ccacheNoHashDir: "no") {}
 		}
 	}
+}
 
-	stage("isTriggeredByGerritTest") {
+void testIsTriggeredByGerrit() {
+	stage("testIsTriggeredByGerrit") {
 		// We assume that this pipeline is never triggered from an upstream job, otherwise this test will fail!
 		assert (isTriggeredByGerrit() == (env.GERRIT_CHANGE_NUMBER ? true : false))
 	}
+}
 
-	stage("isTriggeredByUserActionTest") {
+void testIsTriggeredByUserAction() {
+	stage("testIsTriggeredByUserAction") {
 		// We assume that this pipeline is never triggered manually, otherwise this test will fail!
 		assert (isTriggeredByUserAction() == false):
 				"Manual trigger detected, disable 'isTriggeredByUserActionTest' when running this pipeline manually!"
 	}
+}
 
-	stage("addBuildParameterTest") {
+void testAddBuildParameter() {
+	stage("testAddBuildParameter") {
 		String parameterName = UUID.randomUUID().toString()
 		String parameterValue = UUID.randomUUID().toString()
 		assert (params.get(parameterName) == null)
@@ -206,8 +289,10 @@ try {
 		// Cleanup: Remove all build parameters: This pipeline is not supposed to have any
 		removeAllBuildParameters()
 	}
+}
 
-	stage("removeAllBuildParametersTest") {
+void testRemoveAllBuildParameters() {
+	stage("testRemoveAllBuildParameters") {
 		// Add some parameter
 		addBuildParameter(string(name: "foo", defaultValue: "bar"))
 		assert (params.foo == "bar"): "Could not add build parameter."
@@ -219,8 +304,10 @@ try {
 		// Make sure removal works if none were present
 		removeAllBuildParameters()
 	}
+}
 
-	stage('checkPatternInFileTest') {
+void testCheckPatternInFile() {
+	stage('testCheckPatternInFile') {
 		runOnSlave(label: "frontend") {
 			String testFile = UUID.randomUUID().toString()
 			writeFile(file: testFile, text: "foo\tbar")
@@ -239,8 +326,10 @@ try {
 			}
 		}
 	}
+}
 
-	stage('checkPatternNotInFileTest') {
+void testCheckPatternNotInFile() {
+	stage('testCheckPatternNotInFile') {
 		runOnSlave(label: "frontend") {
 			String testFile = UUID.randomUUID().toString()
 			writeFile(file: testFile, text: "foo\tbar")
@@ -259,16 +348,22 @@ try {
 			checkPatternNotInFile("^foo bar\$", testFile)
 		}
 	}
+}
 
-	stage('decodeBase64Test') {
+void testDecodeBase64() {
+	stage('testDecodeBase64') {
 		assert (decodeBase64("Zm9vYmFy") == "foobar")
 	}
+}
 
-	stage('encodeBase64Test') {
+void testEncodeBase64() {
+	stage('testEncodeBase64') {
 		assert (encodeBase64("barfoo") == "YmFyZm9v")
 	}
+}
 
-	stage('inSingularityTest') {
+void testInSingularity() {
+	stage('testInSingularity') {
 		// No node needed for block declaration
 		inSingularity {
 			runOnSlave(label: "frontend && singularity") {
@@ -319,8 +414,10 @@ try {
 			}
 		}
 	}
+}
 
-	stage("getDefaultFixturePathTest") {
+void testGetDefaultFixturePath() {
+	stage("testGetDefaultFixturePath") {
 		String canonicalDefault = "/lib"
 		String commitKey = "SomeKey"
 
@@ -409,8 +506,10 @@ try {
 			}
 		}
 	}
+}
 
-	stage("getDefaultContainerPathTest") {
+void testGetDefaultContainerPath() {
+	stage("testGetDefaultContainerPath") {
 		String defaultPathExpected = null
 		runOnSlave(label: "frontend") {
 			defaultPathExpected = jesh(script: "readlink -f /containers/stable/latest",
@@ -423,15 +522,19 @@ try {
 			assert defaultPathResult == defaultPathExpected, "${defaultPathResult} != ${defaultPathExpected}"
 		}
 	}
+}
 
-	stage("getContainerAppsTest") {
+void testGetContainerApps() {
+	stage("testGetContainerApps") {
 		runOnSlave(label: "frontend && singularity") {
 			assert getContainerApps().contains("visionary-dls")
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
 	}
+}
 
-	stage("deployDocumentationRemoteTest") {
+void testDeployDocumentationRemote() {
+	stage("testDeployDocumentationRemote") {
 		runOnSlave(label: "frontend") {
 			String groupId = isAsicJenkins() ? "s5" : "f9"
 			repositoryUrl = "ssh://hudson@brainscales-r.kip.uni-heidelberg.de:29418/jenlib"
@@ -455,8 +558,10 @@ try {
 			jesh "rm -rf docu jenlib upstream"
 		}
 	}
+}
 
-	stage('withWafTest') {
+void testWithWaf() {
+	stage('testWithWaf') {
 		List<String> requiredModules = []
 		if (isAsicJenkins()) {
 			requiredModules.add("python")
@@ -487,8 +592,10 @@ try {
 			}
 		}
 	}
+}
 
-	stage("wafSetupTest") {
+void testWafSetup() {
+	stage("testWafSetup") {
 		List<String> requiredModules = []
 		if (isAsicJenkins()) {
 			requiredModules.add("python")
@@ -520,8 +627,10 @@ try {
 			}
 		}
 	}
+}
 
-	stage('checkClangFormatTest') {
+void testCheckClangFormat() {
+	stage('testCheckClangFormat') {
 		runOnSlave(label: "frontend && singularity") {
 			dir("good_repo") {
 				jesh "git init"
@@ -600,8 +709,11 @@ try {
 			jesh "rm -rf good_repo bad_repo"
 		}
 	}
+}
 
-	conditionalStage(name: "wafDefaultPipelineTest", skip: isAsicJenkins()) {
+void testWafDefaultPipeline() {
+
+	conditionalStage(name: "testWafDefaultPipeline", skip: isAsicJenkins()) {
 		// Test build a seldom altered project with minimal dependencies and a stable CI flow
 		wafDefaultPipeline(projects: ["hate"],
 		                   container: [app: "visionary-dls"],
@@ -688,8 +800,10 @@ try {
 			cleanWs()
 		}
 	}
+}
 
-	stage("withModulesTest") {
+void testWithModules() {
+	stage("testWithModules") {
 		// Module available on F9 as well as S5 nodes
 		String alwaysAvailableModule = "xilinx"
 
@@ -757,8 +871,10 @@ try {
 			withModules(moduleInitPath: true) {}
 		}
 	}
+}
 
-	stage("getGerritUsernameTest") {
+void testGetGerritUsername() {
+	stage("testGetGerritUsername") {
 		runOnSlave(label: "frontend") {
 			// We expect this to be hudson in the general case
 			assert (getGerritUsername().equals("hudson"))
@@ -776,8 +892,10 @@ try {
 			// Global config not testable without interfering with other builds
 		}
 	}
+}
 
-	stage("notifyFailureTest") {
+void testNotifyFailure() {
+	stage("testNotifyFailure") {
 		notifyFailure(mattermostChannel: "jenkins-trashbin")
 
 		// mattermostChannel is mandatory
@@ -785,8 +903,10 @@ try {
 			notifyFailure()
 		}
 	}
+}
 
-	conditionalStage(name: "onSlurmResourceTest", skip: isAsicJenkins()) {
+void testOnSlurmResource() {
+	conditionalStage(name: "testOnSlurmResource", skip: isAsicJenkins()) {
 		onSlurmResource(partition: "jenkins") {
 			assert (env.NODE_LABELS.contains("swarm"))
 		}
@@ -816,8 +936,10 @@ try {
 			}
 		}
 	}
+}
 
-	stage("runOnSlaveTest") {
+void testRunOnSlave() {
+	stage("testRunOnSlave") {
 		// Raise for bad user options
 		bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
 		              [name: "hel", label: "frontend"],
@@ -874,14 +996,18 @@ try {
 			}
 		}
 	}
+}
 
-	stage("fillTemplateTest") {
+void testFillTemplate() {
+	stage("testFillTemplate") {
 		template = 'Hello <% out.print firstname %> ${lastname}'
 		result = fillTemplate(template, [firstname: "Jenkins", lastname: "Hudson"])
 		assert (result == 'Hello Jenkins Hudson'): result
 	}
+}
 
-	stage('deployModuleTest') {
+void testDeployModule() {
+	stage('testDeployModule') {
 		runOnSlave(label: "frontend && singularity") {
 			jesh "mkdir -p $WORKSPACE/source"
 			jesh "mkdir -p $WORKSPACE/source/bin"
@@ -953,30 +1079,4 @@ try {
 			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
 		}
 	}
-} catch (Throwable t) {
-	post_error_build_action()
-	throw t
-} finally {
-	post_all_build_action()
-}
-
-// Some Jenkins steps fail a build without raising (e.g. archiveArtifacts)
-if (currentBuild.currentResult != "SUCCESS") {
-	post_error_build_action()
-}
-
-
-/*
-/* HELPER FUNCTIONS
-*/
-
-void post_all_build_action() {
-	// Always clean the workspace
-	node(label: "frontend") {
-		cleanWs()
-	}
-}
-
-void post_error_build_action() {
-	notifyFailure(mattermostChannel: "#softies")
 }
