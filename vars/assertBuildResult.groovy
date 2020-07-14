@@ -23,8 +23,7 @@ def call(String expected_result, Closure content) {
 		content()
 	} catch (Throwable t) {
 		if (expected_result == "FAILURE") {
-			echo "${t.toString()} was raised, expected failure occured."
-			setBuildState("SUCCESS")
+			setBuildState(state: "SUCCESS", reason: "${t.toString()} was raised, expected failure occured.")
 			return
 		} else {
 			throw t
@@ -36,5 +35,5 @@ def call(String expected_result, Closure content) {
 			"Current build status should be '${expected_result}' (is: ${currentBuild.currentResult})"
 
 	// If we didn't raise so far, everything's good
-	setBuildState("SUCCESS")
+	setBuildState(state: "SUCCESS", reason: "Build result assertion was met, resetting the state.")
 }

@@ -117,9 +117,17 @@ void testSetBuildState() {
 	stage('testSetBuildState') {
 		for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
 			assert (currentBuild.currentResult == "SUCCESS")
-			setBuildState(result)
+			setBuildState(state: result, reason: "testSetBuildState: set tested state")
 			assert (currentBuild.currentResult == result)
-			setBuildState("SUCCESS")
+			setBuildState(state: "SUCCESS", reason: "testSetBuildState: clear old state")
+		}
+
+		// 'state' and 'reason' arguments are mandatory
+		assertBuildResult("FAILURE") {
+			setBuildState(state: "SUCCESS")
+		}
+		assertBuildResult("FAILURE") {
+			setBuildState(reason: "testSetBuildState")
 		}
 	}
 }
@@ -131,7 +139,7 @@ void testAssertBuildResult() {
 		// Check if all supported states work
 		for (result in ["NOT_BUILT", "UNSTABLE", "SUCCESS", "FAILURE", "ABORTED"]) {
 			assertBuildResult(result) {
-				setBuildState(result)
+				setBuildState(state: result, reason: "testAssertBuildResult: result assertion")
 			}
 		}
 		assert (currentBuild.currentResult == "SUCCESS")

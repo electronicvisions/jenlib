@@ -71,8 +71,7 @@ def call(Map<String, Object> options = [:]) {
 
 			if (!(diff.contains("clang-format did not modify any files") ||
 			    diff.contains("no modified files to format") || diff == "")) {
-				echo "Clang-Format check failed, setting build state to UNSTABLE."
-				setBuildState("UNSTABLE")
+				setBuildState(state: "UNSTABLE", reason: "clang-format check failed.")
 			}
 
 			filename = "clang-format-diff-" + folder.replaceAll('/','-')
