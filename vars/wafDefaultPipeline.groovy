@@ -174,7 +174,7 @@ def call(Map<String, Object> options = [:]) {
 					archiveArtifacts xmlResultPattern
 
 					// Parse test results
-					step([$class       : 'XUnitBuilder',
+					step([$class       : 'XUnitPublisher',
 					      thresholdMode: 1,
 					      thresholds   : [[$class           : 'FailedThreshold',
 					                       unstableThreshold: '0'],
