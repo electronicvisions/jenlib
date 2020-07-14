@@ -96,6 +96,9 @@ class SlurmSwarmSlave extends SwarmSlave {
 		// Make sure exactly one node is allocated
 		args.add("--nodes=1-1")
 
+		// Add a default job name, user supplied options will override
+		args.add("--job-name=\"${this.steps.env.JOB_NAME}#${this.steps.env.BUILD_NUMBER}\"")
+
 		for (String key in slurm_args.keySet()) {
 			args.add("--$key")
 			args.add(slurm_args.get(key).toString())

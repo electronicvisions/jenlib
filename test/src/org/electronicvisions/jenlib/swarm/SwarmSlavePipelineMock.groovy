@@ -8,6 +8,11 @@ abstract class SwarmSlavePipelineMock {
 
 	List<String> setParameters
 
+	public Map env = [
+			JOB_NAME: "my_job",
+			BUILD_NUMBER: 42,
+	]
+
 	SwarmSlavePipelineMock(List<String> setParameters) {
 		this.setParameters = setParameters
 	}
