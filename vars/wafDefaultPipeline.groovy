@@ -83,6 +83,8 @@ def call(Map<String, Object> options = [:]) {
 			Map<String, Object> moduleOptions = (Map<String, Object>) options.get("moduleOptions", [modules: []])
 			String testTimeout = ""
 			if (options.get("testTimeout") != null) {
+				echo("WARNING: The 'testTimeout' option in 'wafDefaultPipeline' is deprecated! " +
+				     "Timeouts should be annotated in the respective wscript.")
 				testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
 			}
 			String configureInstallOptions = options.get("configureInstallOptions", "")
