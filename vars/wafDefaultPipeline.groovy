@@ -38,7 +38,9 @@
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
                                                                Defaults to <code>false</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
+ *                                                       Values returned by this Hook are passed as a single argument to postTestHook.
  *                    <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
+ *                                                        Receives the value returned by preTestHook as its only parameter.
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
@@ -155,10 +157,10 @@ def call(Map<String, Object> options = [:]) {
 							stage("Tests ${wafTargetOption} ${testSlurmResource}".trim()) {
 								onSlurmResource(testSlurmResource) {
 									withModules(moduleOptions) {
-										preTestHook()
+										def preTestHookResult = preTestHook()
 										jesh("waf build ${wafTargetOption} ${testOptions}")
 										jesh("mv build/test_results ${testOutputDir}")
-										postTestHook()
+										postTestHook(preTestHookResult)
 									}
 								}
 							}

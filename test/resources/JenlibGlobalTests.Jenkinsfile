@@ -754,6 +754,29 @@ void testWafDefaultPipeline() {
 			cleanWs()
 		}
 
+		// Only injecting a post hook does not fail
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   postTestHook: { jesh("hostname") })
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
+		// Value passing between test hooks works
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   preTestHook: { return jesh(script: "hostname", returnStdout: true) },
+		                   postTestHook: { String preHookHostname ->
+			                   assert preHookHostname == jesh(script: "hostname", returnStdout: true),
+					                   "preTestHook hostname ('${preHookHostname}') did not match current hostname!"
+		                   }
+		)
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
 		// Unsupported command line options
 		assertBuildResult("FAILURE") {
 			// No pipeline without projects
