@@ -33,34 +33,32 @@ void call(Map<String, Object> options = [:]) {
 		}
 	}
 
-	inSingularity() {
-		runOnSlave(label: "frontend") {
-			String tmpDir = Paths.get(steps.pwd(tmp: true), "jenkins_docu_" + randomUUID().toString()).toString()
+	runOnSlave(label: "frontend") {
+		String tmpDir = Paths.get(steps.pwd(tmp: true), "jenkins_docu_" + randomUUID().toString()).toString()
 
-			upstreamBranch = options.get("upstreamBranch")
-			repositoryUrl = options.get("repositoryUrl")
-			folders = options.get("folders")
+		upstreamBranch = options.get("upstreamBranch")
+		repositoryUrl = options.get("repositoryUrl")
+		folders = options.get("folders")
 
-			jesh("git clone --branch $upstreamBranch $repositoryUrl $tmpDir")
-			dir(tmpDir) {
-				jesh("git rm -r --ignore-unmatch .")
-			}
-			for (String folder in folders) {
-				jesh("cp -a $folder $tmpDir")
-			}
-			String indexTemplate = libraryResource 'org/electronicvisions/documentationIndex'
-			String index = fillTemplate(indexTemplate, [folders: folders])
-			writeFile(file: Paths.get(tmpDir, "index.html").toString(), text: index, encoding: "UTF-8")
-			List<String> env_options = keyFile != null ? ["GIT_SSH_COMMAND=ssh -i $keyFile"] : []
-			withEnv(env_options) {
-				dir(tmpDir) {
-					jesh("git add .")
-					jesh("git commit --no-edit -m 'Automatic deployment for Jenkins Build ${env.BUILD_NUMBER}'")
-					jesh("git push origin $upstreamBranch")
-				}
-			}
-
-			jesh("rm -rf $tmpDir")
+		jesh("git clone --branch $upstreamBranch $repositoryUrl $tmpDir")
+		dir(tmpDir) {
+			jesh("git rm -r --ignore-unmatch .")
 		}
+		for (String folder in folders) {
+			jesh("cp -a $folder $tmpDir")
+		}
+		String indexTemplate = libraryResource 'org/electronicvisions/documentationIndex'
+		String index = fillTemplate(indexTemplate, [folders: folders])
+		writeFile(file: Paths.get(tmpDir, "index.html").toString(), text: index, encoding: "UTF-8")
+		List<String> env_options = keyFile != null ? ["GIT_SSH_COMMAND=ssh -i $keyFile"] : []
+		withEnv(env_options) {
+			dir(tmpDir) {
+				jesh("git add .")
+				jesh("git commit --no-edit -m 'Automatic deployment for Jenkins Build ${env.BUILD_NUMBER}'")
+				jesh("git push origin $upstreamBranch")
+			}
+		}
+
+		jesh("rm -rf $tmpDir")
 	}
 }
