@@ -16,7 +16,7 @@ import static java.util.UUID.randomUUID
  */
 void call(Map<String, Object> options = [:]) {
 	if (jesh(script: "env | grep \"SLURM_JOB_PARTITION=cube\"", returnStatus: true) != 0) {
-		raise new IllegalStateException("'configureHxCubeBitfile' must be called within an allocation on the 'cube' " +
+		throw new IllegalStateException("'configureHxCubeBitfile' must be called within an allocation on the 'cube' " +
 		                                "partition!")
 	}
 	Map<String, Object> internalOptions = (Map<String, Object>) options.clone()

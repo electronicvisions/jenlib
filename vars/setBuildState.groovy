@@ -14,12 +14,12 @@ import hudson.model.Result
 def call(Map<String, Object> options) {
 	String state = options.get("state")
 	if (state == null) {
-		raise new IllegalArgumentException("'state' argument is mandatory.")
+		throw new IllegalArgumentException("'state' argument is mandatory.")
 	}
 
 	String reason = options.get("reason")
 	if (reason == null) {
-		raise new IllegalArgumentException("'reason' argument is mandatory.")
+		throw new IllegalArgumentException("'reason' argument is mandatory.")
 	}
 
 	echo("[jenlib] Setting build state to '${state}'. Reason: ${reason}")
