@@ -867,12 +867,12 @@ void testWithModules() {
 
 		// Test module load in container
 		inSingularity {
-			runOnSlave(label: "frontend") {
+			runOnSlave(label: "frontend && singularity") {
 				noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 			}
 
 			withModules(modules: [alwaysAvailableModule]) {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "frontend && singularity") {
 					withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 				}
 			}
