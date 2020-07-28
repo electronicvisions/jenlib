@@ -227,7 +227,8 @@ def call(Map<String, Object> options = [:]) {
 					             blameDisabled: true,
 					             filters: [excludeFile(".*usr/include.*"),
 					                       excludeFile(".*opt/spack.*"),
-					                       excludeFile(".*\\.dox\$")] +
+					                       excludeFile(".*\\.dox\$"),
+					                       excludeMessage('^\\(doxygen\\) ')] +
 					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
 					             tools: [gcc(id: "gcc_" + UUID.randomUUID().toString(),
 					                         name: "GCC Warnings")]
