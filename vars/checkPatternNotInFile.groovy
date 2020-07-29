@@ -17,7 +17,7 @@ void call(String regexPattern, String filename) {
 	switch (grepRetcode) {
 		case 0:
 			// Pattern found
-			setBuildState(state: "UNSTABLE", reason: "Message '$regexPattern' found in file: '$filename'.")
+			unstable("Message '$regexPattern' found in file: '$filename', marking build 'UNSTABLE'.")
 			break
 		case 1:
 			// Pattern not found

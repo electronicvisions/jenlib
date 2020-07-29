@@ -20,7 +20,7 @@ void call(String regexPattern, String filename) {
 			break
 		case 1:
 			// Pattern not found
-			setBuildState(state: "UNSTABLE", reason: "Message '$regexPattern' not found in file: '$filename'.")
+			unstable("Message '$regexPattern' not found in file: '$filename', marking build 'UNSTABLE'.")
 			break
 		default:
 			error("An unhandled error has occurred during pattern matching.")
