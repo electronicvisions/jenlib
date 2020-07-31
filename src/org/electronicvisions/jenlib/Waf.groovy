@@ -143,7 +143,7 @@ class Waf implements Serializable {
 			steps.jesh command
 		} else {
 			command.replace("&&", "&> /dev/null &&")
-			command += "&> /dev/null"
+			command += "> /dev/null"
 			steps.jesh "${command}"
 		}
 	}
