@@ -1,0 +1,22 @@
+<p>
+    Create a 'stable' or 'testing' deployment directory at a given deploymentRoot path (e.g. <code>/my/files</code>).
+</p>
+
+<p>
+    Non-merge builds triggered by gerrit will result in a <code>testing/</code> subfolder containing directories named
+    after the triggering change- and patchset as well as the current date.
+</p>
+
+<p>
+    Merge-triggered builds as well as non-gerrit triggered builds will result in a <code>stable/</code> subfolder
+    containing directories named after the current date.
+</p>
+
+Parameters:
+<ul>
+    <li><b>deploymentRoot:</b> Folder path, <code>testing/</code> as well as <code>stable/</code> subdirectories will be
+        created there.
+    </li>
+</ul>
+
+<b>Returns</b> the absolute path to the deployment directory that has been created.

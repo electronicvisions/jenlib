@@ -46,6 +46,7 @@ try {
 	testAssertBuildResult()
 	testConditionalTimeout()
 	testCreateEnumeratedDirectory()
+	testCreateDeploymentDirectory()
 	testSetJobDescription()
 	testJesh()
 	testPipelineFromMarkdown()
@@ -198,6 +199,30 @@ void testCreateEnumeratedDirectory() {
 				assert (jesh(script: "[ -d '${result}' ]", returnStatus: true) == 0): "'${result}' is not a directory."
 				assert (result.endsWith("${baseDirectory}/${incrementedDirectory}_${index + 1}")):
 						"'${result}' Does not match the expected pattern."
+			}
+		}
+	}
+}
+
+void testCreateDeploymentDirectory() {
+	stage('testCreateDeploymentDirectory') {
+		String deploymentRoot = UUID.randomUUID().toString()
+
+		runOnSlave(label: "frontend") {
+			final String result = createDeploymentDirectory("${WORKSPACE}/${deploymentRoot}")
+			assert result.contains(deploymentRoot): "'${result}' does not contain '${deploymentRoot}'."
+			assert (jesh(script: "[ -d '${result}' ]", returnStatus: true) == 0): "'${result}' is not a directory."
+
+			final String date = jesh(returnStdout: true, script: "date --iso").trim()
+			if (isTriggeredByGerrit() && env.GERRIT_EVENT_TYPE != "change-merged") {
+				assert result.contains("testing")
+				assert result.contains(date), "Current date not in deployed folder. " +
+				                              "This test is known to be racy on date changes. Check test time!"
+				assert result.contains((String) env.GERRIT_CHANGE_NUMBER)
+				assert result.contains((String) env.GERRIT_PATCHSET_NUMBER)
+			} else {
+				assert result.contains("stable")
+				assert result.contains(date)
 			}
 		}
 	}
