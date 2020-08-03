@@ -1,0 +1,11 @@
+<p>
+    Based on a plain path (e.g. <code>/my/directory</code>), find the first non-existing directory postfixed by an
+    integer and create it (e.g. <code>/my/directory_7</code>).
+</p>
+
+Parameters:
+<ul>
+    <li><b>notIncrementedPath:</b> Folder path to be enumerated, e.g. <code>/my/directory</code>.</li>
+</ul>
+
+<b>Returns</b> the absolute path to the enumerated directory that has been created, e.g. <code>/my/directory_7</code>.

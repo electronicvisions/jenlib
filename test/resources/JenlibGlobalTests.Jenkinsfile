@@ -45,6 +45,7 @@ try {
 	testSetBuildState()
 	testAssertBuildResult()
 	testConditionalTimeout()
+	testCreateEnumeratedDirectory()
 	testSetJobDescription()
 	testJesh()
 	testPipelineFromMarkdown()
@@ -175,6 +176,29 @@ void testConditionalTimeout() {
 		// 'enable' is mandatory
 		assertBuildResult("FAILURE") {
 			conditionalTimeout(time: 5, unit: "SECONDS") {}
+		}
+	}
+}
+
+void testCreateEnumeratedDirectory() {
+	stage('testCreateEnumeratedDirectory') {
+		String baseDirectory = UUID.randomUUID().toString()
+		String incrementedDirectory = UUID.randomUUID().toString()
+
+		runOnSlave(label: "frontend") {
+			String firstResult = createEnumeratedDirectory("${WORKSPACE}/${baseDirectory}/${incrementedDirectory}")
+			String secondResult = createEnumeratedDirectory("${WORKSPACE}/${baseDirectory}/${incrementedDirectory}")
+
+			[firstResult, secondResult].eachWithIndex { String result, int index ->
+				assert (jesh(script: "basename '${result}'", returnStdout: true).contains(incrementedDirectory)):
+						"'${result}' does not contain '${incrementedDirectory}' in its basename."
+				assert (jesh(script: "basename \"`dirname \\\"${result}\\\"`\"",
+				             returnStdout: true).trim() == baseDirectory):
+						"'${result}' is not a subfolder of '${baseDirectory}'."
+				assert (jesh(script: "[ -d '${result}' ]", returnStatus: true) == 0): "'${result}' is not a directory."
+				assert (result.endsWith("${baseDirectory}/${incrementedDirectory}_${index + 1}")):
+						"'${result}' Does not match the expected pattern."
+			}
 		}
 	}
 }

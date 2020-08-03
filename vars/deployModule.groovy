@@ -53,13 +53,8 @@ String call(Map<String, String> options = [:]) {
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
 			String date = formatter.format(Date.from(Instant.now()))
 
-			String num = jesh(returnStdout: true,
-			                  script: "num=1 && " +
-			                          "while [[ -e \"$targetDir/$date-\$num\" ]]; " +
-			                          "do let num++; done && " +
-			                          "echo \$num").trim()
-
-			version = "$date-$num"
+			final String enumeratedTarget = createEnumeratedDirectory(Paths.get(targetDir, date).toString())
+			version = jesh(script: "basename \"${enumeratedTarget}\"", returnStdout: true).trim()
 		}
 
 		// Create module directories, if they do not exist
