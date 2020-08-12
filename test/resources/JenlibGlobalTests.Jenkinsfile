@@ -213,7 +213,7 @@ void testCreateDeploymentDirectory() {
 			assert result.contains(deploymentRoot): "'${result}' does not contain '${deploymentRoot}'."
 			assert (jesh(script: "[ -d '${result}' ]", returnStatus: true) == 0): "'${result}' is not a directory."
 
-			final String date = jesh(returnStdout: true, script: "date --iso").trim()
+			final String date = jesh(returnStdout: true, script: "date --utc --iso").trim()
 			if (isTriggeredByGerrit() && env.GERRIT_EVENT_TYPE != "change-merged") {
 				assert result.contains("testing")
 				assert result.contains(date), "Current date not in deployed folder. " +
