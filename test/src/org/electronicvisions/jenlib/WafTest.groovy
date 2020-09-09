@@ -66,12 +66,12 @@ class WafTest extends GroovyTestCase {
 
 		pipeline.env.GERRIT_PORT = "29418"
 		pipeline.env.GERRIT_HOST = "gerrit.bioai.eu"
-		pipeline.env.GERRIT_CHANGE_NUMBER = "3981"
+		pipeline.env.GERRIT_CHANGE_NUMBER = "11951"
 
 		Waf waf = new Waf(pipeline, true)
 		waf.build()
 
-		assertTrue(pipeline.stdout_accumulated.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
+		assertTrue(pipeline.stdout_accumulated.contains("Magic changeset for jenlib tests"),)
 
 		pipeline.jesh "cd ${waf.waf_dir} && ${waf.path}/waf --help"
 
@@ -79,7 +79,7 @@ class WafTest extends GroovyTestCase {
 
 		pipeline.jesh "cd ${waf.waf_dir}/waf/ && git log"
 
-		assertTrue(pipeline.stdout_lastrun.contains("Change cross ar to gcc-ar to enable finding lto plugins"))
+		assertTrue(pipeline.stdout_lastrun.contains("Magic changeset for jenlib tests"))
 
 		waf.clean()
 	}
