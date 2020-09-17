@@ -9,7 +9,7 @@ import org.electronicvisions.jenlib.SharedWorkspace
  *                    <li><b>ccacheDir</b> (optional), defaults to <code>/scratch/jenkins/ccache/$JOB_BASE_NAME</code></li>
  *                    <li><b>ccacheTmpdir</b> (optional), defaults to <code>/scratch/jenkins/ccache/$JOB_BASE_NAME</code></li>
  *                    <li><b>ccacheBasedir</b> (optional), defaults to <code>$WORKSPACE</code> if set, else to the shared workspace.</li>
- *                    <li><b>ccacheMaxsize</b> (optional), defaults to <code>25.0G</code></li>
+ *                    <li><b>ccacheMaxsize</b> (optional), defaults to <code>5.0G</code></li>
  *                    <li><b>ccacheNoHashDir</b> (optional), defaults to <code>true</code>. Has to be boolean.</li>
  *                </ul>
  * @param content Closure to be run with ccache
