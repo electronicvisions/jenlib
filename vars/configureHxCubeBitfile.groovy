@@ -58,14 +58,15 @@ private int getChipRevision() {
 	String hwdbQuery = """
 import os
 import pyhwdb
-import pyhalco_hicann_v2 as halco
 
 
 def get_chip_revision(hwdb):
     hw_license = os.environ["SLURM_HARDWARE_LICENSES"]
-    wafer_id = int(halco.from_string(hw_license).toWafer())
+    # license parsing should come from halco (Issue #3701)
+    wafer_id = int(hw_license.split('F')[0].split('W')[1])
+    fpga_id = int(hw_license.split('F')[1])
     hxcube_id = wafer_id - 60
-    return hwdb.get_hxcube_entry(hxcube_id).chip_revision
+    return hwdb.get_hxcube_setup_entry(hxcube_id).fpgas[fpga_id].wing.chip_revision
 
 
 if __name__ == '__main__':
@@ -77,8 +78,8 @@ if __name__ == '__main__':
 	int chipRevision = -1
 	String tempFilePath = "${pwd(tmp: true)}/${randomUUID().toString()}.py"
 	writeFile(file: tempFilePath, text: hwdbQuery)
-	inSingularity(app: "wafer") {
-		withModules(modules: ["hwdb_bss1"]) {
+	inSingularity(app: "dls-core") {
+		withModules(modules: ["hwdb_bss2"]) {
 			chipRevision = jesh(script: "python ${tempFilePath}", returnStdout: true).trim().toInteger()
 		}
 	}
