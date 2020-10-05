@@ -1,0 +1,7 @@
+<p>
+    Get a build-unique ids of the parallel branches this step is executed in, innermost first.
+</p>
+
+<p>
+    <b>Returns:</b> Ids of the current parallel branches.
+</p>

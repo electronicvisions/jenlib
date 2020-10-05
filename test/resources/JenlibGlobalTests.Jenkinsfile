@@ -44,6 +44,7 @@ try {
 	testConditionalStage()
 	testSetBuildState()
 	testAssertBuildResult()
+	testGetCurrentParallelBranchIds()
 	testConditionalTimeout()
 	testCreateEnumeratedDirectory()
 	testCreateDeploymentDirectory()
@@ -151,6 +152,60 @@ void testAssertBuildResult() {
 			jesh "exit 1"
 		}
 		assert (currentBuild.currentResult == "SUCCESS")
+	}
+}
+
+void testGetCurrentParallelBranchIds() {
+	stage('testGetCurrentParallelBranchId') {
+		assert (getCurrentParallelBranchIds().size() == 0): "Parallel branch ids found in sequential code!"
+
+		List seenIds = Collections.synchronizedList([])
+		Map parallelStages = [:]
+		for (int i = 0; i < 10; i++) {
+			parallelStages[i] = {
+				List<String> parallelContextIds = getCurrentParallelBranchIds()
+				assert (parallelContextIds.size() == 1): "Found too many/few branch ids: ${parallelContextIds}."
+				String parallelContextId = parallelContextIds[0]
+				assert (!seenIds.contains(parallelContextId)): "Already seen id '${parallelContextId}'!"
+				seenIds.add(parallelContextId)
+
+				stage("Parent in parallel context") {
+					List<String> parallelParentIds = getCurrentParallelBranchIds()
+					assert (parallelParentIds == parallelContextIds):
+							"Branch ids changed between context ('${parallelContextIds}') " +
+							"and parent ('${parallelParentIds}')!"
+
+					stage("Sub-stage in parallel context") {
+						List<String> parallelSubStageIds = getCurrentParallelBranchIds()
+						assert (parallelSubStageIds == parallelParentIds):
+								"Branch ids changed between context ('${parallelParentIds}') " +
+								"and parent ('${parallelSubStageIds}')!"
+					}
+
+					Map innerStages = [:]
+					for (int j = 0; j < 10; j++) {
+						innerStages[j] = {
+							List<String> nestedParallelIds = getCurrentParallelBranchIds()
+							assert (nestedParallelIds.size() == 2): "Found too many/few branch ids: " +
+							                                        "${nestedParallelIds}."
+							String innerBranchId = nestedParallelIds[0]
+							String outerBranchId = nestedParallelIds[1]
+							assert (!seenIds.contains(innerBranchId)): "Already seen id '${innerBranchId}'!"
+							seenIds.add(innerBranchId)
+							assert (outerBranchId == parallelContextId): "Outer branch id has changed " +
+							                                             "(was: '${parallelContextId}', " +
+							                                             "is: '${outerBranchId}')."
+						}
+					}
+					parallel(innerStages)
+				}
+			}
+		}
+
+		echo("Starting parallel stage tests in 'testGetCurrentParallelBranchId' (first run).")
+		parallel(parallelStages)
+		echo("Starting parallel stage tests in 'testGetCurrentParallelBranchId' (second run).")
+		parallel(parallelStages)  // everything should be run-unique
 	}
 }
 
