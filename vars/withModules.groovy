@@ -66,7 +66,7 @@ def call(Map<String, Object> options = [:], Closure content) {
 		                   "{ echo Module ${module} did not load correctly.>&2; exit 1; }")
 	}
 
-	ShellManipulator manipulator = new ShellManipulator(this)
+	ShellManipulator manipulator = ShellManipulator.fromEnvironment(this)
 	manipulator.add(prefixCommands.join(" && ") + " &&", "")
 
 	try {

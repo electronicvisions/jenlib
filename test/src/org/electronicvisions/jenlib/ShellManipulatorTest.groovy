@@ -10,10 +10,18 @@ import java.util.regex.Pattern
 
 class ShellManipulatorTest extends GroovyTestCase {
 
+	class EnvMock extends LinkedHashMap<String, String> {
+		String put(String key, String value) {
+			// Jenkins environment can only contain String-types (e.g. null -> 'null')
+			return super.put(key, value.toString())
+		}
+	}
+
 	@SuppressWarnings("unused")
 	class MockedPipelineScript {
 
-		public Map env = [WORKSPACE: new File(".").getCanonicalPath()]
+		public EnvMock env = [WORKSPACE: new File(".").getCanonicalPath()]
+		public List<String> parallelBranchIds = []
 
 		void jesh(String command) {
 			Process proc = ["bash", "-c", command].execute()
@@ -25,10 +33,14 @@ class ShellManipulatorTest extends GroovyTestCase {
 			Path targetFile = Paths.get(input.get("file"))
 			Files.write(targetFile, input.get("text").getBytes())
 		}
+
+		List<String> getCurrentParallelBranchIds() {
+			return parallelBranchIds
+		}
 	}
 
 	void testToString() {
-		ShellManipulator manipulator = new ShellManipulator(new MockedPipelineScript())
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(new MockedPipelineScript())
 
 		manipulator.add("foo", "bar")
 		manipulator.add("foo", "baz")
@@ -39,7 +51,7 @@ class ShellManipulatorTest extends GroovyTestCase {
 	}
 
 	void testFromString() {
-		ShellManipulator manipulator = new ShellManipulator(new MockedPipelineScript())
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(new MockedPipelineScript())
 		manipulator.fromString('[["foo", "bar"]]')
 		assertEquals(manipulator.manipulations[0][0], "foo")
 		assertEquals(manipulator.manipulations[0][1], "bar")
@@ -48,21 +60,21 @@ class ShellManipulatorTest extends GroovyTestCase {
 	void testAdd() {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 
-		ShellManipulator manipulator = new ShellManipulator(pipeline)
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(pipeline)
 		manipulator.add("foo", "bar")
 		assertEquals(manipulator.manipulations[0][0], "foo")
 		assertEquals(manipulator.manipulations[0][1], "bar")
 
 		// Env should have changed
-		assertTrue(new ShellManipulator(pipeline).toString().contains("foo"))
-		assertTrue(new ShellManipulator(pipeline).toString().contains("bar"))
+		assertTrue(ShellManipulator.fromEnvironment(pipeline).toString().contains("foo"))
+		assertTrue(ShellManipulator.fromEnvironment(pipeline).toString().contains("bar"))
 
 		manipulator.restore()
-		assertEquals(new ShellManipulator(pipeline).toString(), "[]")
+		assertEquals(ShellManipulator.fromEnvironment(pipeline).toString(), "[]")
 	}
 
 	void testConstructAndCleanup() {
-		ShellManipulator manipulator = new ShellManipulator(new MockedPipelineScript())
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(new MockedPipelineScript())
 		manipulator.add("foo", "bar")
 
 		String masterFileName = manipulator.constructScriptStack("baz")
@@ -88,7 +100,7 @@ class ShellManipulatorTest extends GroovyTestCase {
 	}
 
 	void testEmptyConstruction() {
-		ShellManipulator manipulator = new ShellManipulator(new MockedPipelineScript())
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(new MockedPipelineScript())
 		String masterFileName = manipulator.constructScriptStack("foobar")
 		String masterFileContent = new String(Files.readAllBytes(Paths.get(masterFileName)))
 		assertEquals(masterFileContent, "foobar")
@@ -96,7 +108,7 @@ class ShellManipulatorTest extends GroovyTestCase {
 	}
 
 	void testNoMultipleConstruction() {
-		ShellManipulator manipulator = new ShellManipulator(new MockedPipelineScript())
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(new MockedPipelineScript())
 		manipulator.add("foo", "")
 		manipulator.constructScriptStack("bar")
 
@@ -111,12 +123,49 @@ class ShellManipulatorTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript()
 		pipeline.env.WORKSPACE = "relative/"
 
-		ShellManipulator manipulator = new ShellManipulator(pipeline)
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(pipeline)
 
 		shouldFail(InternalError) {
 			manipulator.constructScriptStack("foobar")
 		}
 
 		manipulator.restore()
+	}
+
+	void testParallelBranches() {
+		MockedPipelineScript pipeline = new MockedPipelineScript()
+		ShellManipulator manipulator = ShellManipulator.fromEnvironment(pipeline)
+
+		// Sequential code path
+		manipulator.add("foo", "")
+		assertEquals("foo", manipulator.manipulations[0][0])
+
+		// Single parallel branch
+		pipeline.parallelBranchIds = ["branchId"]
+		manipulator = ShellManipulator.fromEnvironment(pipeline)
+		assertEquals("foo", manipulator.manipulations[0][0])
+		manipulator.add("bar", "")
+		assertEquals(2, manipulator.manipulations.size())
+		assertEquals("bar", manipulator.manipulations[0][0])
+		assertEquals("foo", manipulator.manipulations[1][0])
+		manipulator.restore()
+		assertEquals(1, manipulator.manipulations.size())
+
+		// Back to sequential code path
+		pipeline.parallelBranchIds = []
+		manipulator = ShellManipulator.fromEnvironment(pipeline)
+		assertEquals(1, manipulator.manipulations.size())
+		assertEquals("foo", manipulator.manipulations[0][0])
+
+		// Nested parallel branches
+		pipeline.parallelBranchIds = ["innerBranchId", "middleBranchId", "outerBranchId"]
+		manipulator = ShellManipulator.fromEnvironment(pipeline)
+		assertEquals("foo", manipulator.manipulations[0][0])
+		manipulator.add("baz", "")
+		assertEquals(2, manipulator.manipulations.size())
+		assertEquals("baz", manipulator.manipulations[0][0])
+		assertEquals("foo", manipulator.manipulations[1][0])
+		manipulator.restore()
+		assertEquals(1, manipulator.manipulations.size())
 	}
 }

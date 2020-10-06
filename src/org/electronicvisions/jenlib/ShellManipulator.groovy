@@ -12,8 +12,10 @@ import static java.util.UUID.randomUUID
  * This class manages a queue of shell modifications within the global {@code env}.
  *
  * Supported modifications are: {@code PREFIX}ing and {@code POSTFIX}ing shell commands.
- * All modifications are persisted across a build by serializing to the
- * {@code JENLIB_SHELL_MANIPULATIONS} environment variable.
+ * All modifications are persisted across a build by serializing to environment variables.
+ * Different environment variables are used per parallel branch, therefore allowing for
+ * shell manipulations to be used independently per-branch in concurrent sections.
+ * The same instance of this class must not be used across multiple parallel branches.
  *
  * To avoid escaping, all commands are written to temporary shell scripts. In case of
  * multiple modifications, these scripts call each other with the respective PREFIX/POSTFIX.
@@ -45,6 +47,12 @@ class ShellManipulator {
 	final private String initialManipulations
 
 	/**
+	 * Arbitrary, but unique string used to identify shell manipulations in sequential (no parallel branch)
+	 * execution sections.
+	 */
+	final static private String SEQUENTIAL_BRANCH_ID = "SEQUENTIAL_a3a1ced7-1485-4dfe-8826-05ed58bb1f15"
+
+	/**
 	 * Pipeline context
 	 */
 	private def steps
@@ -53,13 +61,29 @@ class ShellManipulator {
 	 * Constructor for {@link ShellManipulator}.
 	 *
 	 * @param steps Pipeline context, {@code steps.env} is used for persisting shell modifications.
+	 * @param manipulations JSON-formatted initial pipeline modifications.
 	 */
-	ShellManipulator(steps) {
+	private ShellManipulator(steps, String manipulations) {
 		this.steps = steps
 		this.scriptStack = new ArrayList<String>()
 
-		fromString((String) steps.env.JENLIB_SHELL_MANIPULATIONS)
+		fromString(manipulations)
 		initialManipulations = toString()
+	}
+
+	/**
+	 * Construct an instance of {@link ShellManipulator} from the current environment.
+	 *
+	 * This method is to be seen as the default entry point for this class.
+	 * The functionality can not be integrated into the actual constructor since the latter is implicitly not CPS
+	 * converted by Jenkins and we need to call CPS converted methods in here.
+	 *
+	 * @param steps Pipeline context
+	 * @return Instance of {@link ShellManipulator} with initial manipulations as given by the current environment
+	 */
+	static fromEnvironment(steps) {
+		String currentState = steps.env[getEnvironmentVariable(steps)]
+		return new ShellManipulator(steps, currentState)
 	}
 
 	/**
@@ -96,7 +120,7 @@ class ShellManipulator {
 	 */
 	void add(String prefix, String postfix) {
 		manipulations.add(0, new ArrayList<String>([prefix, postfix]))
-		steps.env.JENLIB_SHELL_MANIPULATIONS = toString()
+		steps.env[getEnvironmentVariable(steps)] = toString()
 	}
 
 	/**
@@ -132,13 +156,54 @@ class ShellManipulator {
 	}
 
 	/**
+	 * Compute the environment variable's name, shell manipulations are stored at.
+	 *
+	 * If called in (nested) parallel branches, the resulting environment variable will get initialized with a copy of
+	 * pending shell manipulations from hierarchical parents.
+	 *
+	 * @param steps Pipeline context
+	 * @return Name of the environment variable manipulations are stored at.
+	 */
+	private static String getEnvironmentVariable(steps) {
+		String parentBranchId = SEQUENTIAL_BRANCH_ID
+		String myBranchId = SEQUENTIAL_BRANCH_ID
+		List<String> parallelBranches = steps.getCurrentParallelBranchIds()
+
+		if (parallelBranches.size()) {
+			myBranchId = parallelBranches[0]
+		}
+
+		// Environment variable shell manipulations are stored at, will be returned eventually
+		String targetEnvironmentVariable = convertBranchToEnvironmentVariable(myBranchId)
+
+		if (steps.env[targetEnvironmentVariable] != null) {
+			return targetEnvironmentVariable
+		}
+
+		// Search for the innermost parent branch with non-null modifications
+		for (int i = 1; i < parallelBranches.size(); i++) {
+			if (steps.env[convertBranchToEnvironmentVariable(parallelBranches[i])] != null) {
+				parentBranchId = parallelBranches[i]
+			}
+		}
+
+		// Copy parent modifications (if available) as a starting point for the current branch
+		String parentModifications = steps.env[convertBranchToEnvironmentVariable(parentBranchId)]
+		if (parentModifications != null) {
+			steps.env[targetEnvironmentVariable] = parentModifications
+		}
+
+		return targetEnvironmentVariable
+	}
+
+	/**
 	 * Restore the environment's and file system's state as it was before constructing this
 	 * object.
 	 *
 	 * This method should always be called after the commands to-be modified have been issued.
 	 */
 	void restore() {
-		steps.env.JENLIB_SHELL_MANIPULATIONS = initialManipulations
+		steps.env[getEnvironmentVariable(steps)] = initialManipulations
 		fromString(initialManipulations)
 		cleanScriptStack()
 	}
@@ -165,6 +230,15 @@ class ShellManipulator {
 		}
 
 		return path
+	}
+
+	/**
+	 * Convert a branch id to an environment variable manipulations are stored at.
+	 * @param branchId Branch id to be converted
+	 * @return Name of the environment variable manipulations are stored at.
+	 */
+	private static String convertBranchToEnvironmentVariable(String branchId) {
+		return "JENLIB_SHELL_MANIPULATIONS-${branchId}".toString()
 	}
 
 	/**

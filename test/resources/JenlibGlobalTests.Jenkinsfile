@@ -1,3 +1,8 @@
+import groovy.transform.Field
+import org.jenkinsci.plugins.workflow.libs.LibraryStep
+
+@Field LibraryStep.LoadedClasses jenlib = null
+
 try {
 	stage('Cleanup') {
 		node(label: "frontend") {
@@ -28,9 +33,9 @@ try {
 					sh "git push --no-thin -u origin ${tmp_branch_name}"
 				}
 
-				library "jenlib@${tmp_branch_name}"
+				jenlib = library "jenlib@${tmp_branch_name}"
 			} catch (MissingPropertyException ignored) {
-				library 'jenlib'
+				jenlib = library 'jenlib'
 			} finally {
 				// Cleanup temporary branch
 				dir("jenlib_tmp") {
@@ -40,11 +45,21 @@ try {
 		}
 	}
 
+	/**
+	 * Prevent 'java.lang.IllegalAccessException' due to broken class caches:
+	 * Functions called on both,
+	 *   * the dynamically loaded library ('jenlib')
+	 *   * within global steps
+	 * need to be called on the loaded library once before test execution.
+	 */
+	jenlib.org.electronicvisions.jenlib.ShellManipulator.fromEnvironment(this)
+
 	// Reflection does not seem to play nicely with Jenkins CPS, this nevertheless needs beautification
 	testConditionalStage()
 	testSetBuildState()
 	testAssertBuildResult()
 	testGetCurrentParallelBranchIds()
+	testShellManipulator()
 	testConditionalTimeout()
 	testCreateEnumeratedDirectory()
 	testCreateDeploymentDirectory()
@@ -206,6 +221,29 @@ void testGetCurrentParallelBranchIds() {
 		parallel(parallelStages)
 		echo("Starting parallel stage tests in 'testGetCurrentParallelBranchId' (second run).")
 		parallel(parallelStages)  // everything should be run-unique
+	}
+}
+
+void testShellManipulator() {
+	stage('testShellManipulator') {
+		// Shell manipulations shall work in parallel branches
+		String testEnvironmentVariable = "JENLIB_testShellManipulator"
+		Map parallelStages = [:]
+		for (int i = 0; i < 10; i++) {
+			int localIterator = i
+			parallelStages[i] = {
+				manipulator = jenlib.org.electronicvisions.jenlib.ShellManipulator.fromEnvironment(this)
+				manipulator.add("${testEnvironmentVariable}=${localIterator} ", "")
+				String result = jesh(script: "echo \${${testEnvironmentVariable}}", returnStdout: true).trim()
+				assert (localIterator == result.toInteger()): "Wrong shell manipulation active: Found " +
+				                                              "'${result.toInteger()}', expected: '${localIterator}'."
+				manipulator.restore()
+			}
+		}
+
+		runOnSlave(label: "frontend") {
+			parallel(parallelStages)
+		}
 	}
 }
 

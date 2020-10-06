@@ -52,7 +52,7 @@ def call(Map<String, String> containerOptions = [:], Closure content) {
 	                   "${containerOptions.get("singularityArgs", "")} " +
 	                   "${containerImage}")
 
-	ShellManipulator manipulator = new ShellManipulator(this)
+	ShellManipulator manipulator = ShellManipulator.fromEnvironment(this)
 	manipulator.add(prefixCommands.join(" && "), "")
 
 	try {

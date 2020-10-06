@@ -18,7 +18,7 @@ def call(Map<String, Object> options = [:]) {
 
 	String command = options["script"]
 
-	ShellManipulator manipulator = new ShellManipulator(this)
+	ShellManipulator manipulator = ShellManipulator.fromEnvironment(this)
 	options["script"] = "bash " + manipulator.constructScriptStack(command)
 
 	echo("[jesh] Running command: $command")
