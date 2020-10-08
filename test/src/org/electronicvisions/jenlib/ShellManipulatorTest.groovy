@@ -84,6 +84,7 @@ class ShellManipulatorTest extends GroovyTestCase {
 		manipulator.restore()
 		assertFalse(new File(masterFileName).exists())
 		assertFalse(new File(commandFileName).exists())
+		assertEquals(manipulator.manipulations.size(), 0)
 	}
 
 	void testEmptyConstruction() {

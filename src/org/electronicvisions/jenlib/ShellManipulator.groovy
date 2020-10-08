@@ -139,6 +139,7 @@ class ShellManipulator {
 	 */
 	void restore() {
 		steps.env.JENLIB_SHELL_MANIPULATIONS = initialManipulations
+		fromString(initialManipulations)
 		cleanScriptStack()
 	}
 
