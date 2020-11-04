@@ -1129,14 +1129,6 @@ void testRunOnSlave() {
 
 		runOnSlave(label: "frontend") {
 
-			// Switching to master should be possible
-			runOnSlave(name: "master") {
-				assert (env.NODE_NAME == "master")
-			}
-			runOnSlave(label: "master") {
-				assert (env.NODE_NAME == "master")
-			}
-
 			// Make sure we stay on the same executor
 			pipeline_executor = env.EXECUTOR_NUMBER
 			runOnSlave(name: env.NODE_NAME) {
