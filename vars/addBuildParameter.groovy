@@ -1,6 +1,7 @@
 import hudson.model.ParameterDefinition
 import hudson.model.ParametersDefinitionProperty
 import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
+import org.jenkinsci.plugins.workflow.cps.DSL.NamedArgsAndClosure
 
 /**
  * Add a new build parameter to the job in whose context this step is executed.
@@ -53,5 +54,20 @@ void call(ParameterDefinition parameter, boolean overwriteDefault = true) {
  * @param overwriteDefault Overwrite existing parameter defaults
  */
 void call(UninstantiatedDescribable parameter, boolean overwriteDefault = true) {
-	call((ParameterDefinition) parameter.instantiate(), overwriteDefault)
+	call((ParameterDefinition) parameter.instantiate(null), overwriteDefault)
+}
+
+/**
+ * Add a new build parameter to the job in whose context this step is executed.
+ * Existing parameters will not be changed, existing default values will be overwritten unless
+ * <code>overwriteDefault=false</code>.
+ *
+ * This method takes parameters in the form {@code string(name:parameterName,defaultValue:parameterValue)}
+ * and thereby does not depend on instantiating {@link ParameterDefinition} objects in (secure) scripts
+ *
+ * @param parameter Build parameter to be added
+ * @param overwriteDefault Overwrite existing parameter defaults
+ */
+void call(NamedArgsAndClosure parameter, boolean overwriteDefault = true) {
+	call(parameter.uninstantiatedDescribable, overwriteDefault)
 }
