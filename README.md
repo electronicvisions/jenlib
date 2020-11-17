@@ -108,7 +108,7 @@ In total, there are four CI jobs verifying this library:
 ## License
 ```
 Jenlib – Shared Library for Visionary Jenkins Pipelines
-Copyright (C) 2018-2019 Electronic Vision(s) Group
+Copyright (C) 2018-2020 Electronic Vision(s) Group
                         Kirchhoff-Institute for Physics
                         Ruprecht-Karls-Universität Heidelberg
                         69120 Heidelberg
