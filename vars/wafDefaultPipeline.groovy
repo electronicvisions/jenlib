@@ -89,7 +89,7 @@ def call(Map<String, Object> options = [:]) {
 				     "Timeouts should be annotated in the respective wscript.")
 				testTimeout = "--test-timeout=" + (int) options.get("testTimeout")
 			}
-			String configureInstallOptions = options.get("configureInstallOptions", "")
+			String configureInstallOptions = options.get("configureInstallOptions", "--build-profile=release")
 
 			List<Map<String, String>> testResources
 			if (options.get("testSlurmResource") instanceof Map) {
