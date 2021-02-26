@@ -225,6 +225,7 @@ def call(Map<String, Object> options = [:]) {
 					                             type     : 'TOTAL',
 					                             unstable : true]],
 					             blameDisabled: true,
+					             skipPublishingChecks: true,
 					             filters: [excludeFile(".*usr/include.*"),
 					                       excludeFile(".*opt/spack.*")] +
 					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
@@ -236,6 +237,7 @@ def call(Map<String, Object> options = [:]) {
 					                             type     : 'TOTAL',
 					                             unstable : true]],
 					             blameDisabled: true,
+					             skipPublishingChecks: true,
 					             tools: [pyLint(pattern: testResultDirs.join("/**/*.pylint, ") + "/**/*.pylint",
 					                            id: "pylint_" + UUID.randomUUID().toString(),
 					                            name: "Pylint Warnings"),
@@ -249,6 +251,7 @@ def call(Map<String, Object> options = [:]) {
 						                             type     : 'TOTAL',
 						                             unstable : true]],
 						             blameDisabled: true,
+						             skipPublishingChecks: true,
 						             filters: [excludeFile(".*usr/include.*"),
 						                       excludeFile(".*opt/spack.*")] +
 						                      warningsIgnorePattern.split(",").collect({excludeFile(it)}),
