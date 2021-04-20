@@ -7,4 +7,7 @@ Available options:
         Defaults to <code>"--clone-depth=1"</code>
     <li><b>noExtraStage</b> (optional): Don't wrap the waf setup in a dedicated stage.
         Defaults to <code>false</code>.
+    <li><b>ignoreGerritChanges</b> (optional): Don't checkout any gerrit changeset, even if the build has been triggered
+        by one. This option is intended to be used for "latest" builds, where HEAD should be built.
+        Defaults to <code>false</code>.
 </ul>

@@ -11,6 +11,10 @@
  *                                                        Defaults to <code>"--clone-depth=1"</code>
  *                    <li><b>noExtraStage</b> (optional): Don't wrap the waf setup in a dedicated stage.
  *                                                        Defaults to <code>false</code>.
+ *                    <li><b>ignoreGerritChanges</b> (optional): Don't checkout any gerrit changeset, even if the build
+ *                                                               has been triggered by one. This option is intended to
+ *                                                               be used for "latest" builds, where HEAD should be
+ *                                                               built. Defaults to <code>false</code>.
  *                </ul>
  */
 def call(Map<String, Object> options = [:]) {
@@ -36,6 +40,7 @@ private void impl(Map<String, Object> options = [:]) {
 
 	List<String> projects = (List<String>) options.get("projects")
 	final String setupOptions = options.get("setupOptions", "--clone-depth=2")
+	final boolean ignoreGerritChanges = options.get("ignoreGerritChanges", false)
 
 	List<String> checkoutCommand = []
 	checkoutCommand.add("waf")
@@ -43,9 +48,11 @@ private void impl(Map<String, Object> options = [:]) {
 	checkoutCommand.add(([""] + projects).join(" --project ").trim())
 	checkoutCommand.add(setupOptions)
 
-	if (env.GERRIT_CHANGE_NUMBER) {
-		checkoutCommand.add("--gerrit-changes=${GERRIT_CHANGE_NUMBER}")
-		checkoutCommand.add("--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
+	if (!ignoreGerritChanges) {
+		if (env.GERRIT_CHANGE_NUMBER) {
+			checkoutCommand.add("--gerrit-changes=${GERRIT_CHANGE_NUMBER}")
+			checkoutCommand.add("--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
+		}
 	}
 
 	withWaf() {
