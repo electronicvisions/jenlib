@@ -20,12 +20,12 @@ def call(Map<String, Object> options = [:]) {
 		return impl(options)
 	}
 
-	stage('Waf Setup') {
+	stage("Waf Setup") {
 		return impl(options)
 	}
 }
 
-def impl(Map<String, Object> options = [:]) {
+private void impl(Map<String, Object> options = [:]) {
 	if (!options.containsKey("projects")) {
 		throw new IllegalArgumentException("No projects given to set up.")
 	}
@@ -34,21 +34,23 @@ def impl(Map<String, Object> options = [:]) {
 		throw new IllegalArgumentException("Projects have to be a list.")
 	}
 
-	List<String> projects = options.get("projects").collect()
+	List<String> projects = (List<String>) options.get("projects")
+	final String setupOptions = options.get("setupOptions", "--clone-depth=2")
 
-	projects.add(0, "")
-	String setupOptions = options.get("setupOptions", "--clone-depth=2")
-	String projectCommand = projects.join(" --project ").trim()
+	List<String> checkoutCommand = []
+	checkoutCommand.add("waf")
+	checkoutCommand.add("setup")
+	checkoutCommand.add(([""] + projects).join(" --project ").trim())
+	checkoutCommand.add(setupOptions)
+
+	if (env.GERRIT_CHANGE_NUMBER) {
+		checkoutCommand.add("--gerrit-changes=${GERRIT_CHANGE_NUMBER}")
+		checkoutCommand.add("--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
+	}
 
 	withWaf() {
 		runOnSlave(label: "frontend") {
-			if (env.GERRIT_CHANGE_NUMBER) {
-				jesh("waf setup ${projectCommand} ${setupOptions} " +
-				     "--gerrit-changes=${GERRIT_CHANGE_NUMBER} " +
-				     "--gerrit-url=ssh://${getGerritUsername()}@${GERRIT_HOST}:${GERRIT_PORT}")
-			} else {
-				jesh("waf setup ${projectCommand} ${setupOptions}")
-			}
+			jesh(checkoutCommand.join(" "))
 		}
 	}
 }
