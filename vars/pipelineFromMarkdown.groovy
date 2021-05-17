@@ -1,5 +1,7 @@
 import org.electronicvisions.jenlib.MarkdownScriptExtractor
 
+import static java.util.UUID.randomUUID
+
 /**
  * Generate a collection of pipeline stages from a given Markdown file.
  *
@@ -28,7 +30,10 @@ def call(Map<String, Object> options) {
 
 		extractor.getBlocks(blockType).eachWithIndex { script, id ->
 			stage("${blockType} block, #${id}") {
-				jesh(script)
+				// Write the extracted block to a temporary file, so we don't have to worry about escaping anything
+				String tempFile = "${pwd(tmp: true)}/jenlib_${randomUUID().toString()}.sh"
+				writeFile(file: tempFile, text: script)
+				jesh("cat ${tempFile} | bash")
 			}
 		}
 	}
