@@ -364,6 +364,7 @@ void testPipelineFromMarkdown() {
 		}
 
 		pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell")
+		pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell", concatenateBlocks: false)
 	}
 }
 

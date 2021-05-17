@@ -12,5 +12,8 @@ Options:
     <li><b>blockType:</b> Block type to be extracted. Since all content is executed in a shell step, you'll most
         probably want to use "shell" or "bash" here.
     </li>
+    <li><b>concatenateBlocks:</b> Concatenate all blocks of the given type and execute them in a single shell.
+        Defaults to <code>true</code>.
+    </li>
 </ul>
 
