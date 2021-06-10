@@ -742,6 +742,23 @@ void testWithWaf() {
 				}
 				assert (stdout_singularity.contains("waf [commands] [options]"))
 			}
+
+			// multiple parallel branches
+			Map parallelStages = [:]
+			for (int i = 0; i < 3; i++) {
+				final int localIterator = i
+				parallelStages[localIterator] = {
+					sleep(localIterator * 10) // build sequentially
+					withWaf {
+						runOnSlave(label: "frontend") {
+							stdout = jesh(returnStdout: true, script: "waf --help")
+							assert (stdout.contains("waf [commands] [options]"))
+						}
+						sleep(30) // stay in withWaf during the other builds
+					}
+				}
+			}
+			parallel(parallelStages)
 		}
 	}
 }

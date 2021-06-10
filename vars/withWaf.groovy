@@ -13,7 +13,9 @@ import org.electronicvisions.jenlib.Waf
  * @param options Map of options to provide to Waf class.
  */
 def call(Closure content) {
-	if (env.JENLIB_WITH_WAF?.toBoolean()) {
+	if (env.JENLIB_SEQUENTIAL_BRANCH_WITH_WAF?.toBoolean()) {
+		// Waf built during sequential branches may be used in parallel branches,
+		// because the environment is inherited.
 		content()
 		return
 	}
@@ -24,11 +26,25 @@ def call(Closure content) {
 		waf.build()
 	}
 	withEnv(["PATH+WAF=${waf.path}", "SINGULARITYENV_PREPEND_PATH+WAF=${waf.path}"]) {
-		env.JENLIB_WITH_WAF = true
+		if (!inParallelBranch()) {
+			// If we are in the sequential branch, it's OK to enable the waf cache.
+			// We do not enable the cache in parallel branches, because other parallel branches may not
+			// share the environment.
+			env.JENLIB_SEQUENTIAL_BRANCH_WITH_WAF = true
+		}
 		try {
 			content()
 		} finally {
-			env.JENLIB_WITH_WAF = false
+			if (!inParallelBranch()) {
+				env.JENLIB_SEQUENTIAL_BRANCH_WITH_WAF = false
+			}
 		}
 	}
+}
+
+/**
+ * Compute if we currently are within a parallel branch.
+ */
+private boolean inParallelBranch(){
+	return getCurrentParallelBranchIds().size() != 0
 }
