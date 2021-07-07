@@ -46,6 +46,7 @@ void call(Map options = [:], Closure content) {
 	withEnv(["SINGULARITYENV_PREPEND_PATH+OLDPATH=$ccachePath",
 	         "PATH+OLDPATH=$ccachePath",
 	         "CCACHE_DIR=$ccacheDir",
+	         "CCACHE_DEBUG=true",
 	         "CCACHE_TEMPDIR=$ccacheTmpdir",
 	         "CCACHE_BASEDIR=$ccacheBasedir",
 	         "CCACHE_MAXSIZE=$ccacheMaxsize",
