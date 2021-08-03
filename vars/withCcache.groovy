@@ -52,7 +52,7 @@ void call(Map options = [:], Closure content) {
 	         "CCACHE_MAXSIZE=$ccacheMaxsize",
 	         "CCACHE_NOHASHDIR=" + (ccacheNoHashDir ? "yes" : "no")]) {
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "frontend && singularity") {
 			inSingularity(app: "dev-tools") {  // we need some stable environment with ccache binaries to read out stats
 				jesh("ccache -p")  // --show config does not work for all versions of ccache
 				jesh("ccache --show-stats")
@@ -61,7 +61,7 @@ void call(Map options = [:], Closure content) {
 
 		content()
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "frontend && singularity") {
 			inSingularity(app: "dev-tools") {
 				jesh("ccache --show-stats")
 			}
