@@ -38,7 +38,7 @@ def call(LinkedHashMap<String, String> target_node, Closure content) {
 				}
 			}
 		}
-	} else if ((selector == "label") && !(target_node.get(selector) in env.NODE_LABELS?.split("\\s"))) {
+	} else if ((selector == "label") && !(nodesByLabel(target_node.get(selector)).contains(env.NODE_NAME))) {
 		node(label: target_node.get(selector)) {
 			// Do not use 'ws' here, it locks each workspace for single-use per node
 			// We override 'env.WORKSPACE' for compatibility with scripts using '$WORKSPACE'

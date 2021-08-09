@@ -1145,11 +1145,16 @@ void testRunOnSlave() {
 			}
 		}
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "frontend && singularity") {
 
-			// Make sure we stay on the same executor
+			// Make sure we stay on the same executor (same name given)
 			pipeline_executor = env.EXECUTOR_NUMBER
 			runOnSlave(name: env.NODE_NAME) {
+				assert (env.EXECUTOR_NUMBER == pipeline_executor)
+			}
+
+			// Make sure we stay on the same executor (similar label given)
+			runOnSlave(label: "frontend || singularity") {
 				assert (env.EXECUTOR_NUMBER == pipeline_executor)
 			}
 
