@@ -15,6 +15,8 @@ import org.electronicvisions.jenlib.swarm.SwarmSlaveConfig
  * @param content Content to be executed
  */
 def call(LinkedHashMap<String, String> slurm_args, Closure content) {
+	Map<String, String> slurmArgsInternal = slurm_args.clone()
+
 	// Visionary Jenkins Setup
 	SwarmSlaveConfig config = new SwarmSlaveConfig()
 	config.javaHome = "/wang/environment/software/jessie/jdk/11.0.7+10"
@@ -31,7 +33,9 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	// Workspace is overwritten to a shared workspace in runOnSlave
 	config.fsroot = "/jenkins/nodes/`hostname`"
 
-	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurm_args)
+	// Excluded hosts due to incompatible base image
+	slurmArgsInternal <<= [exclude: "RyzenHost0,RyzenHost1"]
+	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurmArgsInternal)
 
 	// Slurm controller has to be accessed from a frontend
 	runOnSlave(label: "frontend") {
