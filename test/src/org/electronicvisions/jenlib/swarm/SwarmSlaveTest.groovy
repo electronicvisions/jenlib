@@ -33,7 +33,7 @@ abstract class SwarmSlaveTest extends GroovyTestCase {
 
 			SwarmSlave slave = generateSwarmSlave(comb, config)
 
-			if (!mandatorySlaveParameters.any { comb.contains(it) }
+			if (!mandatorySlaveParameters.every { comb.contains(it) }
 					| prohibitedSlaveParameters.any { comb.contains(it) }) {
 				shouldFail {
 					slave.startSlave()
