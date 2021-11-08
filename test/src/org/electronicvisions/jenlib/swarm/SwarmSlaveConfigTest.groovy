@@ -179,18 +179,6 @@ class SwarmSlaveConfigTest extends GroovyTestCase {
 		}
 	}
 
-	void testGetSetSlaveJar() {
-		SwarmSlaveConfig config = new SwarmSlaveConfig()
-		assertNull(config.slaveJar)
-
-		config.slaveJar = "/some/path/file.jar"
-		assertEquals(config.slaveJar, "/some/path/file.jar")
-
-		shouldFail {
-			config.slaveJar = "relative/path/file.jar"
-		}
-	}
-
 	void testGetSetWorkspace() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
 		assertNull(config.fsroot)
@@ -201,5 +189,19 @@ class SwarmSlaveConfigTest extends GroovyTestCase {
 		shouldFail {
 			config.fsroot = "relative/path/"
 		}
+	}
+
+	void testGetWebAddress() {
+		SwarmSlaveConfig config = new SwarmSlaveConfig()
+
+		shouldFail {
+			String address = config.jenkinsWebAddress
+		}
+
+		config.jenkinsHostname = "localhost"
+		config.jenkinsWebPort = 1234
+		config.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTPS
+
+		assertEquals(config.jenkinsWebAddress, "https://localhost:1234")
 	}
 }

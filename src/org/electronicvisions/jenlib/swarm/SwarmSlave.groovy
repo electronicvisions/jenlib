@@ -44,11 +44,13 @@ abstract class SwarmSlave {
 	 * @return Complete slave startup command
 	 */
 	protected String buildSlaveStartCommand() {
-		if (!config.slaveJar) {
-			throw new IllegalArgumentException("Config does not define a jar file.")
-		}
-
 		List<String> args = new ArrayList<>()
+
+		args.add("set -exuo pipefail;")
+		args.add("jarfile=\$(mktemp --suffix=.jar);")
+		args.add('trap \\"rm -rf -- \\${jarfile}\\" EXIT;')
+
+		args.add("curl ${config.jenkinsWebAddress}/swarm/swarm-client.jar > \\\${jarfile};")
 
 		if (config.javaBinary != null) {
 			args.add("\"${config.javaBinary.toString()}\"")
@@ -57,7 +59,10 @@ abstract class SwarmSlave {
 		}
 
 		args.add("-jar")
-		args.add("\"${config.slaveJar.toString()}\"")
+		args.add("\\\${jarfile}")
+
+		args.add("-master")
+		args.add(config.jenkinsWebAddress)
 
 		if (config.slaveName != null) {
 			args.add("-name")
@@ -68,11 +73,6 @@ abstract class SwarmSlave {
 		if (config.mode != null) {
 			args.add("-mode")
 			args.add("\"${config.mode.toString()}\"")
-		}
-
-		if ((config.jenkinsWebProtocol != null) && (config.jenkinsHostname != null) && (config.jenkinsWebPort >= 0)) {
-			args.add("-master")
-			args.add("${config.jenkinsWebProtocol.toString()}${config.jenkinsHostname}:${config.jenkinsWebPort}")
 		}
 
 		if (config.jenkinsUsername != null) {
@@ -90,15 +90,9 @@ abstract class SwarmSlave {
 			args.add("\"${config.numExecutors.toString()}\"")
 		}
 
-		if ((config.jenkinsHostname != null) | (config.jenkinsJnlpPort >= 0)) {
+		if (config.jenkinsJnlpPort >= 0) {
 			args.add("-tunnel")
-			if ((config.jenkinsHostname != null) && (config.jenkinsJnlpPort >= 0)) {
-				args.add("${config.jenkinsHostname}:${config.jenkinsJnlpPort}")
-			} else if (config.jenkinsHostname != null) {
-				args.add("${config.jenkinsHostname}:")
-			} else {  // only jenkinsJnlpPort
-				args.add(":${config.jenkinsJnlpPort}")
-			}
+			args.add("${config.jenkinsHostname}:${config.jenkinsJnlpPort}")
 		}
 
 		if (config.fsroot != null) {
@@ -106,6 +100,6 @@ abstract class SwarmSlave {
 			args.add("\"${config.fsroot.toString()}\"")
 		}
 
-		return args.join(" ").trim()
+		return "bash -c \"${args.join(" ").trim()}\""
 	}
 }

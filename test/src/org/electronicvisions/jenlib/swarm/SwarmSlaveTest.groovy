@@ -3,18 +3,17 @@ package org.electronicvisions.jenlib.swarm
 
 abstract class SwarmSlaveTest extends GroovyTestCase {
 
-	final static Map DEFAULT_PARAMETERS = [javaHome          : "/test",
-	                                       jenkinsHostname   : "something",
-	                                       jenkinsJnlpPort   : 8079,
-	                                       jenkinsKeyfile    : "/something/else",
-	                                       jenkinsUsername   : "user",
-	                                       jenkinsWebPort    : 80,
-	                                       jenkinsWebProtocol: SwarmSlaveConfig.WebProtocol.HTTP,
-	                                       mode              : SwarmSlaveConfig.SlaveMode.NORMAL,
-	                                       slaveName         : "some_name",
-	                                       numExecutors      : 10,
-	                                       slaveJar          : "/some/path",
-	                                       fsroot            : "/some/other/path"]
+	protected final static Map DEFAULT_PARAMETERS = [javaHome          : "/test",
+	                                                 jenkinsHostname   : "something",
+	                                                 jenkinsJnlpPort   : 8079,
+	                                                 jenkinsKeyfile    : "/something/else",
+	                                                 jenkinsUsername   : "user",
+	                                                 jenkinsWebPort    : 80,
+	                                                 jenkinsWebProtocol: SwarmSlaveConfig.WebProtocol.HTTP,
+	                                                 mode              : SwarmSlaveConfig.SlaveMode.NORMAL,
+	                                                 slaveName         : "some_name",
+	                                                 numExecutors      : 10,
+	                                                 fsroot            : "/some/other/path"]
 
 	abstract List<String> getMandatorySlaveParameters()
 

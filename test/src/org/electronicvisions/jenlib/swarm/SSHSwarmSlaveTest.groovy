@@ -3,7 +3,7 @@ package org.electronicvisions.jenlib.swarm
 class SSHSwarmSlaveTest extends SwarmSlaveTest {
 	@Override
 	List<String> getMandatorySlaveParameters() {
-		return ["slaveJar"]
+		return ["jenkinsHostname", "jenkinsWebProtocol", "jenkinsWebPort"]
 	}
 
 	@Override
@@ -18,7 +18,9 @@ class SSHSwarmSlaveTest extends SwarmSlaveTest {
 
 	void testDoNotStartTwice() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
-		config.slaveJar = "/some/path.jar"
+		config.jenkinsHostname = DEFAULT_PARAMETERS["jenkinsHostname"]
+		config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
+		config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
 
 		SwarmSlave slave = new SSHSwarmSlave(new SSHSwarmSlavePipelineMock(), config, "user", "hostname")
 		slave.startSlave()

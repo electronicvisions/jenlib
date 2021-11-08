@@ -98,11 +98,6 @@ class SwarmSlaveConfig {
 	private int numExecutors = -1
 
 	/**
-	 * Absolute path to the {@code .jar} file of the swarm plugin.
-	 */
-	private String slaveJar
-
-	/**
 	 * Absolute path to the slave's filesystem-root.
 	 */
 	private String fsroot
@@ -263,21 +258,6 @@ class SwarmSlaveConfig {
 	}
 
 	/**
-	 * Getter for {@link SwarmSlaveConfig#slaveJar}
-	 */
-	String getSlaveJar() {
-		return slaveJar
-	}
-
-	/**
-	 * Setter for {@link SwarmSlaveConfig#slaveJar}
-	 */
-	void setSlaveJar(String slaveJar) {
-		validateFileString(slaveJar)
-		this.slaveJar = slaveJar
-	}
-
-	/**
 	 * Getter for {@link SwarmSlaveConfig#fsroot}
 	 */
 	String getFsroot() {
@@ -290,6 +270,16 @@ class SwarmSlaveConfig {
 	void setFsroot(String workspace) {
 		validateFileString(workspace)
 		this.fsroot = workspace
+	}
+
+	/**
+	 * Compute the web interface address of the Jenkins service
+	 */
+	String getJenkinsWebAddress() {
+		if (!((jenkinsWebProtocol != null) && (jenkinsHostname != null) && (jenkinsWebPort >= 0))) {
+			throw new IllegalArgumentException("Jenkins web service configuration incomplete.")
+		}
+		return "${jenkinsWebProtocol.toString()}${jenkinsHostname}:${jenkinsWebPort}"
 	}
 
 	/**

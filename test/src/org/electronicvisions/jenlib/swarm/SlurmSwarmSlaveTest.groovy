@@ -4,7 +4,7 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 
 	@Override
 	List<String> getMandatorySlaveParameters() {
-		return ["slaveJar"]
+		return ["jenkinsHostname", "jenkinsWebProtocol", "jenkinsWebPort"]
 	}
 
 	@Override
@@ -21,7 +21,9 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 		// Short names are prohibited
 		shouldFail(IllegalArgumentException) {
 			SwarmSlaveConfig config = new SwarmSlaveConfig()
-			config.slaveJar = "/some/path.jar"
+			config.jenkinsHostname = DEFAULT_PARAMETERS["jenkinsHostname"]
+			config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
+			config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
 			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [p: "compile"])
 			slave.startSlave()
 		}
@@ -29,7 +31,9 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 		// Partition is mandatory
 		shouldFail(MissingPropertyException) {
 			SwarmSlaveConfig config = new SwarmSlaveConfig()
-			config.slaveJar = "/some/path.jar"
+			config.jenkinsHostname = DEFAULT_PARAMETERS["jenkinsHostname"]
+			config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
+			config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
 			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [gres: "B201330"])
 			slave.startSlave()
 		}
@@ -37,7 +41,9 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 
 	void testSlurmJobIdParsing() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
-		config.slaveJar = "/some/path.jar"
+		config.jenkinsHostname = DEFAULT_PARAMETERS["jenkinsHostname"]
+		config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
+		config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
 
 		SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [partition: "jenkins"])
 		slave.startSlave()
@@ -46,7 +52,9 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 
 	void testSingleNodeOnly() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
-		config.slaveJar = "/some/path.jar"
+		config.jenkinsHostname = DEFAULT_PARAMETERS["jenkinsHostname"]
+		config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
+		config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
 
 		shouldFail(IllegalArgumentException) {
 			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config,

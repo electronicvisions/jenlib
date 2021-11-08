@@ -25,7 +25,6 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	config.jenkinsWebPort = 8080
 	config.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
 	config.mode = SwarmSlaveConfig.SlaveMode.EXCLUSIVE
-	config.slaveJar = "/jenkins/home/vis_jenkins/swarm_integration/swarm-client-latest.jar"
 	config.numExecutors = 1
 
 	// Workspace is overwritten to a shared workspace in runOnSlave

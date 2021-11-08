@@ -6,7 +6,7 @@ class SlurmSwarmSlavePipelineMock extends SwarmSlavePipelineMock {
 
 	static final int MOCKED_SLURM_ID = 12345
 
-	SlurmSwarmSlavePipelineMock(List<String> set_parameters = ["slaveJar"]) {
+	SlurmSwarmSlavePipelineMock(List<String> set_parameters = ["jenkinsHostname", "jenkinsWebProtocol", "jenkinsWebPort"]) {
 		super(set_parameters)
 	}
 

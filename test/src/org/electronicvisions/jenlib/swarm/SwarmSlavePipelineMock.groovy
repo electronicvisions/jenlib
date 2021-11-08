@@ -22,25 +22,9 @@ abstract class SwarmSlavePipelineMock {
 
 			/**
 			 * Ensure all parameters were set somehow.
-			 * There is one special case: the master configuration is only applied when all three related
-			 * parameters are given.
 			 */
-			if (setParameters.contains("jenkinsWebProtocol") &&
-			    setParameters.contains("jenkinsHostname") &&
-			    setParameters.contains("jenkinsWebPort")) {
-				// Nothing special here: Everything should be in the command
-				for (String key in setParameters) {
-					assertTrue(command.contains(SwarmSlaveTest.DEFAULT_PARAMETERS.get(key).toString()))
-				}
-			} else {
-				// Master configuration must not be in command
-				for (String key in setParameters) {
-					if (!["jenkinsWebProtocol", "jenkinsHostname", "jenkinsWebPort"].contains(key)) {
-						assertTrue(command.contains(SwarmSlaveTest.DEFAULT_PARAMETERS.get(key).toString()))
-					} else {
-						assertFalse(command.contains("-master"))
-					}
-				}
+			for (String key in setParameters) {
+				assertTrue(command.contains(SwarmSlaveTest.DEFAULT_PARAMETERS.get(key).toString()))
 			}
 		}
 	}
