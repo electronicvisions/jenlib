@@ -33,7 +33,7 @@ void call(Map<String, Object> options = [:]) {
 				}
 
 				withModules(modules: ["localdir"]) {
-					jesh("hxcube_smartlynq_program.py --verbose ${bitfilePath}")
+					jesh("program_fpga_jtag.py --verbose ${bitfilePath}")
 				}
 			}
 		}
