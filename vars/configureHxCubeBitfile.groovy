@@ -39,6 +39,8 @@ void call(Map<String, Object> options = [:]) {
 		}
 
 		// Make sure the setup is accessible after the reconfiguration
+		jesh("hostname")
+		jesh("ip route get \${SLURM_FPGA_IPS}")
 		jesh("ping -c 5 -i 0.2 \${SLURM_FPGA_IPS}")
 	}
 }
