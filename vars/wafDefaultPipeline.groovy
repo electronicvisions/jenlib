@@ -301,13 +301,18 @@ def call(Map<String, Object> options = [:]) {
 					for (String project in projects) {
 						String name = project.split("/")[1]
 
-						publishHTML([allowMissing         : false,
-						             alwaysLinkToLastBuild: false,
-						             keepAll              : false,
-						             reportDir            : project,
-						             reportFiles          : 'index.html',
-						             reportName           : "Documentation (" + name + ")",
-						             reportTitles         : ''])
+						// NOTE: 'JENLIB_HTML_DEPLOYMENT' needs to be a registered 'Lockable Resource'!
+						// Concurrent deployment from parallel builds of the same job might lead to build errors, if
+						// both try to deploy at the same time.
+						lock("JENLIB_HTML_DEPLOYMENT") {
+							publishHTML([allowMissing         : false,
+							             alwaysLinkToLastBuild: false,
+							             keepAll              : false,
+							             reportDir            : project,
+							             reportFiles          : 'index.html',
+							             reportName           : "Documentation (" + name + ")",
+							             reportTitles         : ''])
+						}
 					}
 
 					if (deployDocumentationRemoteOptions) {
