@@ -5,6 +5,7 @@
  * <ul>
  *     <li> Not shut down correctly, leading to orphaned jenkins nodes with no corresponding slurm job
  *     <li> Not have come up successfully, leading to stale jobs that need to be aborted
+ *     <li> Stay alive, even the jobs spawning them was terminated; we detect via idle time and stop manually
  * </ul>
  *
  * This step handles both cases by either removing the orphaned node or canceling the respective job.
@@ -73,6 +74,23 @@ static List<SlurmComputer> getSlurmComputers() {
 	return ret
 }
 
+/**
+ * Get a list of all slurm-slave-based computers that are idle for at least idleSeconds.
+ * @param idleSeconds Seconds a computer must be idle before being reported as such
+ * @return List of slurm-slave-based computers
+ */
+@NonCPS
+static List<SlurmComputer> getIdleSlurmComputers(long idleSeconds) {
+	List<SlurmComputer> ret = []
+
+	for (SlurmComputer sc : getSlurmComputers()) {
+		if (sc.computer.isIdle() && (System.currentTimeMillis() - sc.computer.getIdleStartMilliseconds() > (1000 * idleSeconds))) {
+			ret.add(sc)
+		}
+	}
+
+	return ret
+}
 
 /**
  * Get a list of all items in the Jenkins queue which are waiting for a slurm slave.
@@ -138,6 +156,14 @@ def call() {
 		if (jobRemovedFromQueue(queueItem.slurmId)) {
 			echo("[Jenlib] Found stale queue item for ${queueItem.name}, canceling...")
 			Jenkins.getInstanceOrNull().queue.doCancelItem(queueItem.jenkinsId)
+		}
+	}
+
+	// drop idle slurm computers
+	for (SlurmComputer computer : getIdleSlurmComputers(60)) {
+		println("[Jenlib] Removing long-idling slave with job ID $computer.slurmId")
+		node("frontend") {
+			jesh("scancel $computer.slurmId")
 		}
 	}
 }
