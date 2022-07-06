@@ -10,7 +10,7 @@ node {
 
 		stage('Build and Test') {
 			withMaven(maven: 'M3',
-			          jdk: 'J8',
+			          jdk: 'J17',
 			          mavenLocalRepo: '.repository',
 			          options: [artifactsPublisher(disabled: true),
 			                    openTasksPublisher(disabled: true),
@@ -32,7 +32,7 @@ node {
 
 		stage('Build/Deploy Documentation') {
 			withMaven(maven: 'M3',
-			          jdk: 'J8',
+			          jdk: 'J17',
 			          mavenLocalRepo: '.repository',
 			          options: [artifactsPublisher(disabled: true),
 			                    openTasksPublisher(disabled: true),
