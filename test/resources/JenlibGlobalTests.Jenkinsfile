@@ -592,36 +592,36 @@ void testGetDefaultFixturePath() {
 
 		// NOTE; additional white-space in the commit-messages is intended
 		List<String> commitMessagesSuccess = [
-				"""
-				Fake commit message subject
+"""
+Fake commit message subject
 
-				Here be dragons!
+Here be dragons!
 
-				${commitKey}: ${pathCustomImage}
+${commitKey}: ${pathCustomImage}
 
-				Change-Id: 12345678
-				""",
+Change-Id: 12345678
+""",
 
-				"""
-				Fake commit message subject
+"""
+Fake commit message subject
 
-				Here be dragons!
+Here be dragons!
 
-				${commitKey}:${pathCustomImage}     
+${commitKey}:${pathCustomImage}     
 
-				Change-Id: 12345678
-				""",
+Change-Id: 12345678
+""",
 
-				"""
-				Fake commit message subject
+"""
+Fake commit message subject
 
-				Change-Id: 12345678
-				${commitKey}:       ${pathCustomImage}     
-				"""
+Change-Id: 12345678
+${commitKey}:       ${pathCustomImage}     
+"""
 		]
 
 		commitMessagesSuccess.eachWithIndex { fakeCommitMessage, i ->
-			String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
+			String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage)
 
 			withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=$encodedFakeCommitMessage"]) {
 				// Generate new options per message to disable caching
@@ -634,20 +634,20 @@ void testGetDefaultFixturePath() {
 		}
 
 		List<String> commitMessagesFail = [
-				"""
-				Fake commit message subject
+"""
+Fake commit message subject
 
-				Here be dragons! And multiple ${commitKey} statements!
+Here be dragons! And multiple ${commitKey} statements!
 
-				${commitKey}:${pathCustomImage}     
-				${commitKey}: ${pathCustomImage}
+${commitKey}:${pathCustomImage}     
+${commitKey}: ${pathCustomImage}
 
-				Change-Id: 12345678
-				""",
+Change-Id: 12345678
+""",
 		]
 
 		commitMessagesFail.eachWithIndex { fakeCommitMessage, i ->
-			String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage.stripIndent())
+			String encodedFakeCommitMessage = encodeBase64(fakeCommitMessage)
 
 			assertBuildResult("FAILURE") {
 				withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
