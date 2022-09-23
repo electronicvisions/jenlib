@@ -83,7 +83,8 @@ if __name__ == '__main__':
 	int chipRevision = -1
 	String tempFilePath = "${pwd(tmp: true)}/${randomUUID().toString()}.py"
 	writeFile(file: tempFilePath, text: hwdbQuery)
-	inSingularity(app: "dls-core") {
+	inSingularity(app: "dls-core",
+	              image: "/containers/stable/latest") {
 		withModules(modules: ["hwdb_bss2"]) {
 			chipRevision = jesh(script: "python ${tempFilePath}", returnStdout: true).trim().toInteger()
 		}
