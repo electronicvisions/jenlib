@@ -34,5 +34,5 @@ def call(Map<String, Object> options = [:]) {
 	               text: "Jenkins build `${env.JOB_NAME}` was not successful. ${failInfo}".trim(),
 	               message: "${env.BUILD_URL}",
 	               failOnError: true,
-	               endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
+	               endpoint: "https://chat.bioai.eu:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
 }
