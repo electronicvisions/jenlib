@@ -574,7 +574,7 @@ void testGetDefaultFixturePath() {
 		String commitKey = "SomeKey"
 
 		// Default without key commit message
-		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
+		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('foobar')}"]) {
 			assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
 			                             commitKey: commitKey,
 			                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
