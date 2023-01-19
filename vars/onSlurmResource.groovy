@@ -15,6 +15,8 @@ import org.electronicvisions.jenlib.swarm.SwarmSlaveConfig
  * @param content Content to be executed
  */
 def call(LinkedHashMap<String, String> slurm_args, Closure content) {
+	Map<String, String> slurmArgsInternal = slurm_args.clone()
+
 	// Visionary Jenkins Setup
 	SwarmSlaveConfig config = new SwarmSlaveConfig()
 	config.javaHome = "/wang/environment/software/jessie/jdk/17+7_ys-manual_robust-pthread"
@@ -30,7 +32,11 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	// Workspace is overwritten to a shared workspace in runOnSlave
 	config.fsroot = "/jenkins/nodes/`hostname`"
 
-	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurm_args)
+	// If not explicitly stated otherwise exclude GPU node
+	if(!slurmArgsInternal.containsKey("exclude")) {
+		slurmArgsInternal <<= [exclude: "RyzenHost3"]
+	}
+	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurmArgsInternal)
 
 	// Slurm controller has to be accessed from a frontend
 	runOnSlave(label: "frontend") {
