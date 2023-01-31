@@ -87,12 +87,6 @@ class SlurmSwarmSlave extends SwarmSlave {
 	private String buildSlurmArguments() {
 		List<String> args = new ArrayList<>()
 
-		// Since there can be only one jenkins slave per host, we want our nodes exclusively
-		args.add("--exclusive")
-
-		// For exclusive nodes, we can take all the memory
-		args.add("--mem=0")
-
 		// Make sure exactly one node is allocated
 		args.add("--nodes=1-1")
 
