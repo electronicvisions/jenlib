@@ -7,6 +7,8 @@ import static java.util.UUID.randomUUID
  * The to be configured bitfile defaults to the latest stable bitfile for the corresponding chip revision, it may be
  * overwritten by the build parameter 'OVERWRITE_HX_CUBE_BITFILE' ot the commit message key 'HX-Cube-Bitfile'.
  *
+ * Requires a 'JENLIB_JTAG_ACCESS' lock.
+ *
  * @param options Map of options:
  *                <ul>
  *                    <li><b>bitfilePath</b> (optional): Override the default bitfile path and flash a different one.
@@ -33,7 +35,9 @@ void call(Map<String, Object> options = [:]) {
 				}
 
 				withModules(modules: ["localdir"]) {
-					jesh("program_fpga_jtag.py --verbose ${bitfilePath}")
+					lock("JENLIB_JTAG_ACCESS") {
+						jesh("program_fpga_jtag.py --verbose ${bitfilePath}")
+					}
 				}
 			}
 		}
