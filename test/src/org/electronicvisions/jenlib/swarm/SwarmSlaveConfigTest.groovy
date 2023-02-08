@@ -30,6 +30,18 @@ class SwarmSlaveConfigTest extends GroovyTestCase {
 		}
 	}
 
+	void testGetSetLoggingConfig() {
+		SwarmSlaveConfig config = new SwarmSlaveConfig()
+		assertNull(config.loggingConfig)
+
+		config.loggingConfig = "/some/path/logging.properties"
+		assertEquals(config.loggingConfig, "/some/path/logging.properties")
+
+		shouldFail {
+			config.loggingConfig = "relative/path/logging.properties"
+		}
+	}
+
 	void testGetSetJenkinsHostname() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
 		assertNull(config.jenkinsHostname)

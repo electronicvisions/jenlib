@@ -52,6 +52,11 @@ class SwarmSlaveConfig {
 	private String javaHome
 
 	/**
+	 * Absolute path to the {@code logging.properties} to be used for the jenkins slave.
+	 */
+	private String loggingConfig
+
+	/**
 	 * Hostname of the jenkins instance.
 	 */
 	private String jenkinsHostname
@@ -123,6 +128,21 @@ class SwarmSlaveConfig {
 		validateFileString(javaHome)
 		this.javaHome = javaHome
 		this.javaBinary = Paths.get(javaHome.toString(), "bin", "java").toString()
+	}
+
+	/**
+	 * Getter for {@link SwarmSlaveConfig#loggingConfig}
+	 */
+	String getLoggingConfig() {
+		return loggingConfig
+	}
+
+	/**
+	 * Setter for {@link SwarmSlaveConfig#loggingConfig}
+	 */
+	void setLoggingConfig(String loggingProperties) {
+		validateFileString(loggingProperties)
+		this.loggingConfig = loggingProperties
 	}
 
 	/**

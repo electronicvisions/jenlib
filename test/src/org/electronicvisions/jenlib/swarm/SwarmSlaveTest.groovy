@@ -4,6 +4,7 @@ package org.electronicvisions.jenlib.swarm
 abstract class SwarmSlaveTest extends GroovyTestCase {
 
 	protected final static Map DEFAULT_PARAMETERS = [javaHome          : "/test",
+	                                                 loggingConfig     : "/foo/logging.properties",
 	                                                 jenkinsHostname   : "something",
 	                                                 jenkinsJnlpPort   : 8079,
 	                                                 jenkinsKeyfile    : "/something/else",

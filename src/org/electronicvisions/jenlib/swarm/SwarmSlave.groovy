@@ -58,6 +58,10 @@ abstract class SwarmSlave {
 			args.add("java")
 		}
 
+		if (config.loggingConfig != null) {
+			args.add("-Djava.util.logging.config.file=\"${config.loggingConfig.toString()}\"")
+		}
+
 		args.add("-jar")
 		args.add("\\\${jarfile}")
 
