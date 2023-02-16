@@ -107,8 +107,10 @@ class SlurmSwarmSlave extends SwarmSlave {
 	 * @return Jenkins slave startup script in a single string
 	 */
 	private String buildSlaveStartScript() {
+		// Signals are only passed to the SBATCH shell by default.
+		// Since we run a single command, we can use 'exec' to replace the SBATCH shell by the slave-starting shell.
 		return "#!/bin/sh\n" +
-		       "${buildSlaveStartCommand()}"
+		       "exec ${buildSlaveStartCommand()}"
 	}
 
 	/**
