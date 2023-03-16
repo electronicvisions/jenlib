@@ -46,10 +46,11 @@ private String getDefaultPath(Map<String, String> options) {
 	String defaultPath = defaultPathCanonical
 
 	if (isTriggeredByGerrit()) {
-		if (env.GERRIT_CHANGE_COMMIT_MESSAGE == null) {
-			error("Commit message not found in build triggered by gerrit!")
-		}
+		assert env.GERRIT_CHANGE_COMMIT_MESSAGE != null: "Commit message not found in build triggered by gerrit!"
+	}
 
+	// env-based conditional enables testability in non-gerrit-triggered setups
+	if (env.GERRIT_CHANGE_COMMIT_MESSAGE != null) {
 		String commitMessage = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE)
 
 		Pattern regex = Pattern.compile("^${commitKey}:\\s*(.*?)\\s*\$")
