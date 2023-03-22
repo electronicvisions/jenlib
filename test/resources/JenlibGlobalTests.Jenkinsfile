@@ -82,6 +82,7 @@ try {
 	testGetDefaultFixturePath()
 	testGetDefaultContainerPath()
 	testGetContainerApps()
+	testGetHxTestResource()
 	testDeployDocumentationRemote()
 	testWithWaf()
 	testWafSetup()
@@ -688,6 +689,18 @@ void testGetContainerApps() {
 		runOnSlave(label: "frontend && singularity") {
 			assert getContainerApps().contains("visionary-dls")
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
+		}
+	}
+}
+
+void testGetHxTestResource() {
+	conditionalStage(name: "testGetHxTestResource", skip: isAsicJenkins()) {
+		assertBuildResult("FAILURE") {
+			getHxTestResource(-100)  // invalid chip revision
+		}
+
+		onSlurmResource(getHxTestResource(3)) {
+			assert (env.SLURM_FPGA_IPS != null) : "SLURM_FPGA_IPS not defined on what is expected to be a hardware allocation!"
 		}
 	}
 }

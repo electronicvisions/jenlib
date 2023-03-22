@@ -1,0 +1,14 @@
+<p>
+    Request a BrainScaleS-2 HICANN-X system with the given chip revision as test resource.
+</p>
+
+<p>
+    <b>Returns</b> a map of arguments for a slurm job.
+</p>
+
+<p>
+    Parameters:
+<ul>
+    <li><b>chipRevision</b>HICANN-X ASIC revision to be used.</li>
+</ul>
+</p>
