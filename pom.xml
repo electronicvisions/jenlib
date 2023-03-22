@@ -131,6 +131,11 @@
             <artifactId>workflow-cps</artifactId>
             <version>2725.v7b_c717eb_12ce</version>
         </dependency>
+        <dependency>
+            <groupId>org.6wind.jenkins</groupId>
+            <artifactId>lockable-resources</artifactId>
+            <version>1131.vb_7c3d377e723</version>
+        </dependency>
         <!-- Missing dependency by jenkins -->
         <dependency>
             <groupId>javax.servlet</groupId>

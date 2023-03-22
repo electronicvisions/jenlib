@@ -60,6 +60,7 @@ try {
 	testAssertBuildResult()
 	testGetCurrentParallelBranchIds()
 	testShellManipulator()
+	testCleanLocks()
 	testConditionalTimeout()
 	testCreateEnumeratedDirectory()
 	testCreateDeploymentDirectory()
@@ -244,6 +245,12 @@ void testShellManipulator() {
 		runOnSlave(label: "frontend") {
 			parallel(parallelStages)
 		}
+	}
+}
+
+void testCleanLocks() {
+	stage("testCleanLocks") {
+		jenlibCleanLocks()
 	}
 }
 
