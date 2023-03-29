@@ -45,11 +45,6 @@ private String getDefaultPath(Map<String, String> options) {
 
 	String defaultPath = defaultPathCanonical
 
-	if (isTriggeredByGerrit()) {
-		assert env.GERRIT_CHANGE_COMMIT_MESSAGE != null: "Commit message not found in build triggered by gerrit!"
-	}
-
-	// env-based conditional enables testability in non-gerrit-triggered setups
 	if (env.GERRIT_CHANGE_COMMIT_MESSAGE != null) {
 		String commitMessage = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE)
 
