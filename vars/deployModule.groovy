@@ -8,13 +8,16 @@ import java.text.SimpleDateFormat
  * The deployed module's name has to be given by a 'name'.
  * The deployed module's version defaults to an enumerated date string (e.g. '2019-08-15-1').
  * The latter may be overwritten by the 'version' parameter.
+ * Newly deployed module is set as new default version of the module. This can be adjusted with
+ * the parameter 'set_as_default' which defaults to true.
  *
  * Example:
  * 	<pre>
  * 	    inSingularity() {
  * 	        deployModule(name: "ppu",
  * 	                     source: "install",
- * 	                     version: "c7311p24")
+ * 	                     version: "c7311p24",
+ * 	                     set_as_default: true)
  * 	    }
  * 	</pre>
  *
@@ -68,10 +71,12 @@ String call(Map<String, String> options = [:]) {
 		                                                             MODULEDIR: Paths.get(targetDir, version).toString(),
 		                                                             MODNAME  : moduleName,
 		                                                             VERSION  : version])
-		String moduleVersionContent = fillTemplate(moduleVersionTemplate, [VERSION: version])
 
 		dir(moduleDir) {
-			writeFile(file: ".version", text: moduleVersionContent)
+			if (!options.get("set_as_default", false)) {
+				String moduleVersionContent = fillTemplate(moduleVersionTemplate, [VERSION: version])
+				writeFile(file: ".version", text: moduleVersionContent)
+			}
 			writeFile(file: version, text: moduleFileContent)
 		}
 	}
