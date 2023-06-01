@@ -26,7 +26,7 @@ void call(Map<String, Object> options = [:]) {
 
 	String toolsXilinxTop = "${steps.pwd(tmp: true)}/toolsXilinxTop_${randomUUID().toString()}"
 	dir(toolsXilinxTop) {
-		inSingularity(image: getAsicContainerPath()) {
+		inSingularity(image: getDefaultAsicContainerPath()) {
 			withModules(modules: ["xilinx/2020.1"]) {
 				withWaf {
 					wafSetup(projects: ["tools-xilinx"])
@@ -47,12 +47,6 @@ void call(Map<String, Object> options = [:]) {
 		jesh("ip route get \${SLURM_FPGA_IPS}")
 		jesh("ping -c 5 -i 0.2 \${SLURM_FPGA_IPS}")
 	}
-}
-
-private String getAsicContainerPath() {
-	getDefaultFixturePath(defaultPathCanonical: "/containers/stable/asic_latest",
-	                      commitKey: "In-ASIC-Container",
-	                      parameterName: "OVERWRITE_DEFAULT_ASIC_CONTAINER_IMAGE")
 }
 
 private String getDefaultBitfilePath() {
