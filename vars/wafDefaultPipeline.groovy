@@ -46,6 +46,10 @@
                                                                Defaults to <code>true</code>.
  *                    <li><b>enableClangTidyVote</b> (optional): Enable clang-tidy voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
+ *                    <li><b>enableDoxygenCheck</b> (optional): Enable doxygen warning checks.
+                                                               Defaults to <code>true</code>.
+ *                    <li><b>enableDoxygenCheckVote</b> (optional): Enable doxygen warning checks voting unstable if warnings/errors are found.
+                                                               Defaults to <code>false</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
  *                                                       Values returned by this Hook are passed as a single argument to postTestHook.
  *                    <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
@@ -131,6 +135,9 @@ def call(Map<String, Object> options = [:]) {
 
 			Boolean requiresBear = enableCppcheck || enableClangTidy
 
+			Boolean enableDoxygenCheck = options.get("enableDoxygenCheck", true)
+			Boolean enableDoxygenCheckVote = options.get("enableDoxygenCheckVote", false)
+
 			// Pre/post test execution hooks
 			Closure preTestHook = (Closure) options.get("preTestHook", {})
 			Closure postTestHook = (Closure) options.get("postTestHook", {})
@@ -156,10 +163,12 @@ def call(Map<String, Object> options = [:]) {
 						stage("Build ${wafTargetOption}".trim()) {
 							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 								withModules(moduleOptions) {
+									// we prefix doxygen warnings with (doxygen) and filter these out of stderr into doxygen.txt
 									jesh("${requiresBear ? "bear -- " : ""}waf configure install " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
-									     "${wafTargetOption} ${configureInstallOptions}")
+									     "${wafTargetOption} ${configureInstallOptions} " +
+									     "${enableDoxygenCheck ? " 2> >(tee >(grep \"(doxygen)\" | sed \"s,(doxygen) ,,g\" > doxygen.txt))" : ""}")
 								}
 							}
 						}
@@ -305,6 +314,20 @@ def call(Map<String, Object> options = [:]) {
 						                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
 						             tools: [clangTidy(id: "clang_tidy_" + UUID.randomUUID().toString(),
 						                               name: "Clang-Tidy", pattern: "clang-tidy.txt")]
+						)
+					}
+
+					if (enableDoxygenCheck) {
+						List<Map<String, Object>> qualityGates = [
+						    [threshold: 1,
+						     type     : 'TOTAL',
+						     unstable : true]]
+						recordIssues(qualityGates: enableDoxygenCheckVote ? qualityGates : [],
+						             blameDisabled: true,
+						             skipPublishingChecks: true,
+						             filters: warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
+						             tools: [doxygen(id: "doxygen_" + UUID.randomUUID().toString(),
+						                               name: "Doxygen", pattern: "doxygen.txt")]
 						)
 					}
 				}

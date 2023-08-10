@@ -40,6 +40,10 @@ Available options (see also <code>wafSetup</code>):
         Defaults to <code>true</code>.
     <li><b>enableClangTidyVote</b> (optional): Enable clang-tidy voting unstable if warnings/errors are found.
         Defaults to <code>false</code>.
+    <li><b>enableDoxygenCheck</b> (optional): Enable doxygen warning checks.
+        Defaults to <code>true</code>.
+    <li><b>enableDoxygenCheckVote</b> (optional): Enable doxygen warning checks voting unstable if warnings/errors are found.
+        Defaults to <code>false</code>.
     <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
         Values returned by this Hook are passed as a single argument to postTestHook.
     <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
