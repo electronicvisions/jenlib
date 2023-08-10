@@ -255,7 +255,7 @@ def call(Map<String, Object> options = [:]) {
 					                       excludeFile(".*opt/spack.*")] +
 					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
 					             tools: [gcc(id: "gcc_" + UUID.randomUUID().toString(),
-					                         name: "GCC Warnings")]
+					                         name: "GCC")]
 					)
 
 					recordIssues(qualityGates: [[threshold: 1,
@@ -268,7 +268,7 @@ def call(Map<String, Object> options = [:]) {
 					                            name: "Pylint Warnings"),
 					                     pep8(pattern: testResultDirs.join("/**/*.pycodestyle, ") + "/**/*.pycodestyle",
 					                          id: "pep8_" + UUID.randomUUID().toString(),
-					                          name: "PEP8 Warnings")]
+					                          name: "PEP8")]
 					)
 
 					if (enableCppcheck) {
@@ -285,7 +285,7 @@ def call(Map<String, Object> options = [:]) {
 						                       excludeFile(".*opt/spack.*")] +
 						                      warningsIgnorePattern.split(",").collect({excludeFile(it)}),
 						             tools: [cppCheck(id: "cppcheck_" + UUID.randomUUID().toString(),
-						                              name: "Cppcheck Warnings", pattern: "cppcheck.xml")]
+						                              name: "Cppcheck", pattern: "cppcheck.xml")]
 						)
 					}
 
@@ -304,7 +304,7 @@ def call(Map<String, Object> options = [:]) {
 						                       excludeFile(".*\\.dox\$")] +
 						                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
 						             tools: [clangTidy(id: "clang_tidy_" + UUID.randomUUID().toString(),
-						                               name: "Clang-Tidy Warnings", pattern: "clang-tidy.txt")]
+						                               name: "Clang-Tidy", pattern: "clang-tidy.txt")]
 						)
 					}
 				}
