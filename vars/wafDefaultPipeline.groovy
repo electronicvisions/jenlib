@@ -39,6 +39,8 @@
                                                                of the difference of the last commit.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
+                                                               Defaults to <code>true</code>.
+ *                    <li><b>enableCppcheckVote</b> (optional): Enable cppcheck voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
  *                                                       Values returned by this Hook are passed as a single argument to postTestHook.
@@ -117,7 +119,8 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
-			Boolean enableCppcheck = options.get("enableCppcheck", false)
+			Boolean enableCppcheck = options.get("enableCppcheck", true)
+			Boolean enableCppcheckVote = options.get("enableCppcheckVote", false)
 
 			// Pre/post test execution hooks
 			Closure preTestHook = (Closure) options.get("preTestHook", {})
@@ -144,7 +147,7 @@ def call(Map<String, Object> options = [:]) {
 						stage("Build ${wafTargetOption}".trim()) {
 							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 								withModules(moduleOptions) {
-									jesh("${enableCppcheck ? "bear " : ""}waf configure install " +
+									jesh("${enableCppcheck ? "bear -- " : ""}waf configure install " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
 									     "${wafTargetOption} ${configureInstallOptions}")
@@ -260,9 +263,13 @@ def call(Map<String, Object> options = [:]) {
 					)
 
 					if (enableCppcheck) {
-						recordIssues(qualityGates: [[threshold: 1,
-						                             type     : 'TOTAL',
-						                             unstable : true]],
+						List<Map<String, Object>> qualityGates = []
+						if (enableCppcheckVote) {
+							qualityGates.add([threshold: 1,
+							                  type     : 'TOTAL',
+							                  unstable : true])
+						}
+						recordIssues(qualityGates: qualityGates,
 						             blameDisabled: true,
 						             skipPublishingChecks: true,
 						             filters: [excludeFile(".*usr/include.*"),
