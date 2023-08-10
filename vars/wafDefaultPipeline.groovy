@@ -35,6 +35,9 @@
  *                                                            Defaults to <code>[""]</code>, representing only the default target set.
  *                    <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
                                                                Defaults to <code>true</code>.
+ *                    <li><b>enableClangFormatFullDiff</b> (optional): Enable clang-format to check on the complete project instead
+                                                               of the difference of the last commit.
+                                                               Defaults to <code>false</code>.
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
                                                                Defaults to <code>false</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
