@@ -42,6 +42,10 @@
                                                                Defaults to <code>true</code>.
  *                    <li><b>enableCppcheckVote</b> (optional): Enable cppcheck voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
+ *                    <li><b>enableClangTidy</b> (optional): Enable clang-tidy checks. This needs `bear` to be available.
+                                                               Defaults to <code>true</code>.
+ *                    <li><b>enableClangTidyVote</b> (optional): Enable clang-tidy voting unstable if warnings/errors are found.
+                                                               Defaults to <code>false</code>.
  *                    <li><b>preTestHook</b> (optional): Closure to be run on each test allocation prior to running the tests.
  *                                                       Values returned by this Hook are passed as a single argument to postTestHook.
  *                    <li><b>postTestHook</b> (optional): Closure to be run on each test allocation after running the tests.
@@ -122,6 +126,11 @@ def call(Map<String, Object> options = [:]) {
 			Boolean enableCppcheck = options.get("enableCppcheck", true)
 			Boolean enableCppcheckVote = options.get("enableCppcheckVote", false)
 
+			Boolean enableClangTidy = options.get("enableClangTidy", true)
+			Boolean enableClangTidyVote = options.get("enableClangTidyVote", false)
+
+			Boolean requiresBear = enableCppcheck || enableClangTidy
+
 			// Pre/post test execution hooks
 			Closure preTestHook = (Closure) options.get("preTestHook", {})
 			Closure postTestHook = (Closure) options.get("postTestHook", {})
@@ -147,7 +156,7 @@ def call(Map<String, Object> options = [:]) {
 						stage("Build ${wafTargetOption}".trim()) {
 							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 								withModules(moduleOptions) {
-									jesh("${enableCppcheck ? "bear -- " : ""}waf configure install " +
+									jesh("${requiresBear ? "bear -- " : ""}waf configure install " +
 									     "${testTimeout} " +
 									     "--test-execnone " +
 									     "${wafTargetOption} ${configureInstallOptions}")
@@ -224,7 +233,7 @@ def call(Map<String, Object> options = [:]) {
 				}
 			}
 
-			stage("Test clang-tidy") {
+			conditionalStage(name: "Test clang-tidy", skip: !enableClangTidy) {
 				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 					inSingularity(containerOptions) {
 						// Issue #3979: Script should be installed in PATH.
@@ -280,15 +289,24 @@ def call(Map<String, Object> options = [:]) {
 						)
 					}
 
-					recordIssues(blameDisabled: true,
-					             filters: [excludeFile(".*usr/include.*"),
-					                       excludeFile(".*opt/spack.*"),
-					                       excludeFile(".*\\.dox\$")] +
-					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
-					             tools: [clangTidy(id: "clang_tidy_" + UUID.randomUUID().toString(),
-					                               name: "Clang-Tidy Warnings", pattern: "clang-tidy.txt")]
-					)
-
+					if (enableClangTidy) {
+						List<Map<String, Object>> qualityGates = []
+						if (enableClangTidyVote) {
+							qualityGates.add([threshold: 1,
+							                  type     : 'TOTAL',
+							                  unstable : true])
+						}
+						recordIssues(qualityGates: qualityGates,
+						             blameDisabled: true,
+						             skipPublishingChecks: true,
+						             filters: [excludeFile(".*usr/include.*"),
+						                       excludeFile(".*opt/spack.*"),
+						                       excludeFile(".*\\.dox\$")] +
+						                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
+						             tools: [clangTidy(id: "clang_tidy_" + UUID.randomUUID().toString(),
+						                               name: "Clang-Tidy Warnings", pattern: "clang-tidy.txt")]
+						)
+					}
 				}
 			}
 
