@@ -39,7 +39,7 @@
                                                                of the difference of the last commit.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
-                                                               Defaults to <code>true</code>.
+                                                               Defaults to <code>false</code>.
  *                    <li><b>enableCppcheckVote</b> (optional): Enable cppcheck voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableClangTidy</b> (optional): Enable clang-tidy checks. This needs `bear` to be available.
@@ -123,7 +123,7 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
-			Boolean enableCppcheck = options.get("enableCppcheck", true)
+			Boolean enableCppcheck = options.get("enableCppcheck", false)
 			Boolean enableCppcheckVote = options.get("enableCppcheckVote", false)
 
 			Boolean enableClangTidy = options.get("enableClangTidy", true)
