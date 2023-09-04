@@ -39,7 +39,7 @@
                                                                of the difference of the last commit.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
-                                                               Defaults to <code>false</code>.
+                                                               Defaults to <code>true</code>.
  *                    <li><b>enableCppcheckVote</b> (optional): Enable cppcheck voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableClangTidy</b> (optional): Enable clang-tidy checks. This needs `bear` to be available.
@@ -123,7 +123,7 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
-			Boolean enableCppcheck = options.get("enableCppcheck", false)
+			Boolean enableCppcheck = options.get("enableCppcheck", true)
 			Boolean enableCppcheckVote = options.get("enableCppcheckVote", false)
 
 			Boolean enableClangTidy = options.get("enableClangTidy", true)
@@ -228,7 +228,7 @@ def call(Map<String, Object> options = [:]) {
 						// FIXME: Issue #3537 cppcheck needs local copy of cfg directory
 						jesh("cp -r /opt/spack_views/visionary-wafer/cfg/ .")
 						jesh("cppcheck --xml --project=compile_commands.json -j\$(nproc) --suppress=syntaxError:* " +
-						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml")
+						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml || exit 0")
 					}
 				}
 			}
