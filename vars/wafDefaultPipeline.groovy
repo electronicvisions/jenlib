@@ -39,11 +39,11 @@
                                                                of the difference of the last commit.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableCppcheck</b> (optional): Enable cppcheck checks. This needs `bear` to be available.
-                                                               Defaults to <code>!isTriggeredByGerrit()</code> (due to long runtime).
+                                                               Defaults to <code>env.JOB_NAME.contains("nightly")</code> (due to long runtime).
  *                    <li><b>enableCppcheckVote</b> (optional): Enable cppcheck voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableClangTidy</b> (optional): Enable clang-tidy checks. This needs `bear` to be available.
-                                                               Defaults to <code>!isTriggeredByGerrit()</code> (due to long runtime).
+                                                               Defaults to <code>env.JOB_NAME.contains("nightly")</code> (due to long runtime).
  *                    <li><b>enableClangTidyVote</b> (optional): Enable clang-tidy voting unstable if warnings/errors are found.
                                                                Defaults to <code>false</code>.
  *                    <li><b>enableDoxygenCheck</b> (optional): Enable doxygen warning checks.
@@ -127,10 +127,10 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
-			Boolean enableCppcheck = options.get("enableCppcheck", !isTriggeredByGerrit())
+			Boolean enableCppcheck = options.get("enableCppcheck", env.JOB_NAME.contains("nightly"))
 			Boolean enableCppcheckVote = options.get("enableCppcheckVote", false)
 
-			Boolean enableClangTidy = options.get("enableClangTidy", !isTriggeredByGerrit())
+			Boolean enableClangTidy = options.get("enableClangTidy", env.JOB_NAME.contains("nightly"))
 			Boolean enableClangTidyVote = options.get("enableClangTidyVote", false)
 
 			Boolean requiresBear = enableCppcheck || enableClangTidy
