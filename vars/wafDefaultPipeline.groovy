@@ -312,6 +312,7 @@ def call(Map<String, Object> options = [:]) {
 						                       excludeFile(".*opt/spack.*"),
 						                       excludeFile(".*\\.dox\$")] +
 						                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
+						             sourceDirectories: [[path: "build"]],
 						             tools: [clangTidy(id: "clang_tidy_" + UUID.randomUUID().toString(),
 						                               name: "Clang-Tidy", pattern: "clang-tidy.txt")]
 						)
