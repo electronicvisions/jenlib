@@ -29,11 +29,12 @@ if { [ module-info mode whatis ] } {
 
 set dir_bindir     \${module_basedir}/bin
 set dir_libdir     \${module_basedir}/lib
-set dir_python     \${module_basedir}/lib
+set dir_python     \${module_basedir}/lib/python3.8/site-packages
 
 # set environment variables for existing directories
 if { ! [system test -d \${dir_bindir} ] } { prepend-path PATH                                   \${dir_bindir} }
 if { ! [system test -d \${dir_bindir} ] } { prepend-path SINGULARITYENV_PREPEND_PATH            \${dir_bindir} }
 if { ! [system test -d \${dir_libdir} ] } { prepend-path LD_LIBRARY_PATH                        \${dir_libdir} }
 if { ! [system test -d \${dir_libdir} ] } { prepend-path SINGULARITYENV_LD_LIBRARY_PATH \${dir_libdir} }
+if { ! [system test -d \${dir_python} ] } { prepend-path PYTHONPATH                             \${dir_libdir} }
 if { ! [system test -d \${dir_python} ] } { prepend-path PYTHONPATH                             \${dir_python} }
