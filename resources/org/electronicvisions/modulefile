@@ -36,5 +36,5 @@ if { ! [system test -d \${dir_bindir} ] } { prepend-path PATH                   
 if { ! [system test -d \${dir_bindir} ] } { prepend-path SINGULARITYENV_PREPEND_PATH            \${dir_bindir} }
 if { ! [system test -d \${dir_libdir} ] } { prepend-path LD_LIBRARY_PATH                        \${dir_libdir} }
 if { ! [system test -d \${dir_libdir} ] } { prepend-path SINGULARITYENV_LD_LIBRARY_PATH \${dir_libdir} }
-if { ! [system test -d \${dir_python} ] } { prepend-path PYTHONPATH                             \${dir_libdir} }
+if { ! [system test -d \${dir_libdir} ] } { prepend-path PYTHONPATH                             \${dir_libdir} }
 if { ! [system test -d \${dir_python} ] } { prepend-path PYTHONPATH                             \${dir_python} }
