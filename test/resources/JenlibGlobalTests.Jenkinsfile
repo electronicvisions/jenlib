@@ -1011,6 +1011,26 @@ void testWafDefaultPipeline() {
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
+
+		// Test a small project with clang-tidy test
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   testSlurmResource: [partition: "jenkins"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   enableClangTidy: true)
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
+		// Test a small project with cppcheck test
+		wafDefaultPipeline(projects: ["hate"],
+		                   container: [app: "visionary-dls"],
+		                   testSlurmResource: [partition: "jenkins"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   enableCppcheck: true)
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
 	}
 }
 
