@@ -33,10 +33,6 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	// Workspace is overwritten to a shared workspace in runOnSlave
 	config.fsroot = "/jenkins/nodes/`hostname`"
 
-	// If not explicitly stated otherwise exclude GPU node
-	if(!slurmArgsInternal.containsKey("exclude")) {
-		slurmArgsInternal <<= [exclude: "RyzenHost3"]
-	}
 	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurmArgsInternal)
 
 	// Slurm controller has to be accessed from a frontend

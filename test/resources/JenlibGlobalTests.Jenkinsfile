@@ -1143,17 +1143,6 @@ void testOnSlurmResource() {
 			assert (env.NODE_LABELS.contains("swarm"))
 		}
 
-		assertBuildResult("FAILURE") {
-			// GPU node excluded by default
-			onSlurmResource(partition: "cube", nodelist: "RyzenHost3") {
-				jesh "hostname"
-			}
-		}
-		// overwrite default exclusion
-		onSlurmResource(partition: "cube", nodelist: "RyzenHost3", exclude: "''") {
-			assert (env.SLURMD_NODENAME.contains("RyzenHost3"))
-		}
-
 		// PWD stays the same
 		runOnSlave(label: "frontend") {
 			frontendPwd = pwd()
