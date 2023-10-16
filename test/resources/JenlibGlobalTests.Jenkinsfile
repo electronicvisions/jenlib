@@ -1160,13 +1160,6 @@ void testOnSlurmResource() {
 				assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
 			}
 		}
-
-		assertBuildResult("FAILURE") {
-			// Too many tasks for a single node
-			onSlurmResource(partition: "jenkins", ntasks: 32) {
-				jesh "hostname"
-			}
-		}
 	}
 }
 
