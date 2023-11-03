@@ -234,8 +234,6 @@ def call(Map<String, Object> options = [:]) {
 			conditionalStage(name: "Test cppcheck", skip: !enableCppcheck) {
 				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
 					inSingularity(containerOptions) {
-						// FIXME: Issue #3537 cppcheck needs local copy of cfg directory
-						jesh("cp -r /opt/spack_views/visionary-wafer/cfg/ .")
 						jesh("cppcheck --xml --project=compile_commands.json -j\$(nproc) --suppress=syntaxError:* " +
 						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml || exit 0")
 					}
