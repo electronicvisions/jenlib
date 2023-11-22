@@ -259,7 +259,8 @@ def call(Map<String, Object> options = [:]) {
 					             blameDisabled: true,
 					             skipPublishingChecks: true,
 					             filters: [excludeFile(".*usr/include.*"),
-					                       excludeFile(".*opt/spack.*")] +
+					                       excludeFile(".*opt/spack.*"),
+					                       excludeMessage(".*Problems running dot:.*")] +
 					                      warningsIgnorePattern.split(",").collect({ param -> return excludeFile(param) }),
 					             tools: [gcc(id: "gcc_" + UUID.randomUUID().toString(),
 					                         name: "GCC")]
