@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
  * The deployed module's version defaults to an enumerated date string (e.g. '2019-08-15-1').
  * The latter may be overwritten by the 'version' parameter.
  * Newly deployed module is set as new default version of the module. This can be adjusted with
- * the parameter 'set_as_default' which defaults to true.
+ * the parameter 'setAsDefault' which defaults to true.
  *
  * Example:
  * 	<pre>
@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat
  * 	        deployModule(name: "ppu",
  * 	                     source: "install",
  * 	                     version: "c7311p24",
- * 	                     set_as_default: true)
+ * 	                     setAsDefault: true)
  * 	    }
  * 	</pre>
  *
@@ -73,7 +73,7 @@ String call(Map<String, String> options = [:]) {
 		                                                             VERSION  : version])
 
 		dir(moduleDir) {
-			if (!options.get("set_as_default", false)) {
+			if (options.get("setAsDefault", true)) {
 				String moduleVersionContent = fillTemplate(moduleVersionTemplate, [VERSION: version])
 				writeFile(file: ".version", text: moduleVersionContent)
 			}

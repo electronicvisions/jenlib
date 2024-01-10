@@ -1317,6 +1317,30 @@ void testDeployModule() {
 				              targetRoot: "$WORKSPACE/install",
 				              source    : "$WORKSPACE/source/*"])
 			}
+
+			// test setAsDefault
+			inSingularity() {
+				moduleName = "testmodule_${UUID.randomUUID().toString()}"
+				firstModuleAndVersion = deployModule([name        : moduleName,
+				                                      moduleRoot  : "$WORKSPACE/module",
+				                                      targetRoot  : "$WORKSPACE/install",
+				                                      source      : "$WORKSPACE/source/*",
+				                                      setAsDefault: true])
+
+				// this should not change the default-loaded module
+				deployModule([name        : moduleName,
+				              moduleRoot  : "$WORKSPACE/module",
+				              targetRoot  : "$WORKSPACE/install",
+				              source      : "$WORKSPACE/source/*",
+				              setAsDefault: false])
+
+				withModules(modules: [moduleName],
+						    prependModulePath: "$WORKSPACE/module") {
+					assert (jesh(returnStdout: true,
+							script: "echo \$PATH").contains("$WORKSPACE/install/${firstModuleAndVersion}"))
+				}
+			}
+
 			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
 		}
 	}
