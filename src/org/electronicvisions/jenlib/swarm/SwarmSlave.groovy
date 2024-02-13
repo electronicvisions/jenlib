@@ -48,7 +48,8 @@ abstract class SwarmSlave {
 
 		args.add("set -exuo pipefail;")
 		args.add("jarfile=\$(mktemp --suffix=.jar);")
-		args.add('trap \\"rm -rf -- \\${jarfile}\\" EXIT;')
+		args.add("fsroot=\$(mktemp -d);")
+		args.add('trap \\"rm -rf -- \\${jarfile} \\${fsroot}\\" EXIT;')
 
 		args.add("curl ${config.jenkinsWebAddress}/swarm/swarm-client.jar > \\\${jarfile};")
 
@@ -99,9 +100,11 @@ abstract class SwarmSlave {
 			args.add("${config.jenkinsHostname}:${config.jenkinsJnlpPort}")
 		}
 
+		args.add("-fsroot")
 		if (config.fsroot != null) {
-			args.add("-fsroot")
 			args.add("\"${config.fsroot.toString()}\"")
+		} else {
+			args.add('\\${fsroot}')
 		}
 
 		return "bash -c \"${args.join(" ").trim()}\""
