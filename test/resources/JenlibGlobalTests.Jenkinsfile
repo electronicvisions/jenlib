@@ -373,6 +373,12 @@ void testPipelineFromMarkdown() {
 
 		pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell")
 		pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: "shell", concatenateBlocks: false)
+
+		for (failingBlock in ["fail-0", "fail-1", "fail-2"]) {
+			assertBuildResult("FAILURE") {
+				pipelineFromMarkdown(markdownFilePath: tempFilePath, blockType: failingBlock)
+			}
+		}
 	}
 }
 

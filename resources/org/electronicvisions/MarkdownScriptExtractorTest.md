@@ -20,3 +20,20 @@ echo "Hello world"
 
 pwd
 ```
+
+## Failure Tests
+
+These should fail, individually:
+
+```fail-0
+false
+true
+```
+
+```fail-1
+false | true
+```
+
+```fail-2
+echo ${MUSTNOTEXIST_5709142e}
+```

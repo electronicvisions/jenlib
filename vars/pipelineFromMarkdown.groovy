@@ -43,7 +43,7 @@ def call(Map<String, Object> options) {
 				// Write the extracted block to a temporary file, so we don't have to worry about escaping anything
 				String tempFile = "${pwd(tmp: true)}/jenlib_${randomUUID().toString()}.sh"
 				writeFile(file: tempFile, text: script)
-				jesh("cat ${tempFile} | bash")
+				jesh("cat ${tempFile} | bash -euo pipefail")
 			}
 		}
 	}
