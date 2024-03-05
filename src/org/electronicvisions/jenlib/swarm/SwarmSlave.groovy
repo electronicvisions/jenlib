@@ -49,7 +49,10 @@ abstract class SwarmSlave {
 		args.add("set -exuo pipefail;")
 		args.add("jarfile=\$(mktemp --suffix=.jar);")
 		args.add("fsroot=\$(mktemp -d);")
-		args.add('trap \\"rm -rf -- \\${jarfile} \\${fsroot}\\" EXIT;')
+
+		// /tmp cleanup happens automatically on EINC cluster
+		// trapping on EXIT disturbes JRE shutdown -> disabled for debugging (see below)
+		// args.add('trap \\"rm -rf -- \\${jarfile} \\${fsroot}\\" EXIT;')
 
 		args.add("curl ${config.jenkinsWebAddress}/swarm/swarm-client.jar > \\\${jarfile};")
 
@@ -62,6 +65,9 @@ abstract class SwarmSlave {
 		if (config.loggingConfig != null) {
 			args.add("-Djava.util.logging.config.file=\"${config.loggingConfig.toString()}\"")
 		}
+
+		// Debug
+		args.add("-javaagent:/jenkins/home/vis_jenkins/swarm_integration/ActiveAgent.jar")
 
 		args.add("-jar")
 		args.add("\\\${jarfile}")
