@@ -847,6 +847,29 @@ void testCheckClangFormat() {
 				}
 			}
 
+			try {
+				// no subfolder
+				assertBuildResult("SUCCESS") {
+					inSingularity(app: "dls") {
+						dir("good_repo") {
+							checkClangFormat(folder: ".", fullDiff: true)
+						}
+					}
+				}
+
+				// detached head
+				dir("good_repo"){
+					jesh('git checkout $(git rev-parse HEAD)')
+				}
+				assertBuildResult("SUCCESS") {
+					inSingularity(app: "dls") {
+						checkClangFormat(folder: "good_repo", fullDiff: true)
+					}
+				}
+			} catch (hudson.AbortException ignored) {
+				println("Expected failure, see issue #4040")
+			}
+
 			dir("no_change_repo") {
 				jesh "git init"
 				jesh "echo initial > initial && git add ."
