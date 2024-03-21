@@ -920,7 +920,7 @@ void testWafDefaultPipeline() {
 		// Test a small project on multiple test resources
 		wafDefaultPipeline(projects: ["hate"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [[partition: "jenkins"],
+		                   testSlurmResource: [[partition: "batch"],
 		                                       [partition: "interactive"]],
 		                   notificationChannel: "#jenkins-trashbin")
 		runOnSlave(label: "frontend") {
@@ -1011,7 +1011,7 @@ void testWafDefaultPipeline() {
 		// Test a small project without clang-format test
 		wafDefaultPipeline(projects: ["hate"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [partition: "jenkins"],
+		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableClangFormat: false)
 		runOnSlave(label: "frontend") {
@@ -1021,7 +1021,7 @@ void testWafDefaultPipeline() {
 		// Test a small project with clang-tidy test
 		wafDefaultPipeline(projects: ["hate"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [partition: "jenkins"],
+		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableClangTidy: true)
 		runOnSlave(label: "frontend") {
@@ -1031,7 +1031,7 @@ void testWafDefaultPipeline() {
 		// Test a small project with cppcheck test
 		wafDefaultPipeline(projects: ["hate"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [partition: "jenkins"],
+		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableCppcheck: true)
 		runOnSlave(label: "frontend") {
@@ -1145,14 +1145,14 @@ void testNotifyFailure() {
 
 void testOnSlurmResource() {
 	conditionalStage(name: "testOnSlurmResource", skip: isAsicJenkins()) {
-		onSlurmResource(partition: "jenkins") {
+		onSlurmResource(partition: "batch") {
 			assert (env.NODE_LABELS.contains("swarm"))
 		}
 
 		// PWD stays the same
 		runOnSlave(label: "frontend") {
 			frontendPwd = pwd()
-			onSlurmResource(partition: "jenkins") {
+			onSlurmResource(partition: "batch") {
 				slavePwd = pwd()
 				assert (slavePwd == frontendPwd): "slavePwd: $slavePwd, frontendPwd: $frontendPwd"
 			}
@@ -1161,7 +1161,7 @@ void testOnSlurmResource() {
 		// Workspace stays the same
 		runOnSlave(label: "frontend") {
 			frontendWs = WORKSPACE
-			onSlurmResource(partition: "jenkins") {
+			onSlurmResource(partition: "batch") {
 				slaveWs = WORKSPACE
 				assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
 			}
@@ -1232,7 +1232,7 @@ void testRunOnSlave() {
 
 void testConfigureHxCubeBitfile() {
 	conditionalStage(name: "testConfigureHxCubeBitfile", skip: isAsicJenkins()) {
-		onSlurmResource(partition: "cube", wafer: 62, "fpga-without-aout": 3) {
+		onSlurmResource(partition: "batch", wafer: 62, "fpga-without-aout": 3) {
 			configureHxCubeBitfile()
 		}
 

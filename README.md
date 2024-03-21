@@ -24,7 +24,7 @@ Notable features include:
 * **Slurm Nodes**  
   *Jenlib* provides abstraction for using build nodes that are part of a cluster infrastructure managed by the [Slurm Workload Manager](https://slurm.schedmd.com):
   ```groovy
-  onSlurmResource(partition: "compile") {
+  onSlurmResource(partition: "batch") {
       jesh("make")
   }
   ```

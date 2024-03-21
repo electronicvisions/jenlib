@@ -21,7 +21,7 @@ Available options (see also <code>wafSetup</code>):
     <li><b>testSlurmResource</b> (optional):List of Slurm resource definitions tests are run on.
         If multiple resources are given, tests are executed once on all given resources.
         Arguments that are not of type list are transformed into a list of length 1.
-        Defaults to <code>[partition: "jenkins", "cpus-per-task": "8"]</code>
+        Defaults to <code>[partition: "batch", "cpus-per-task": "8"]</code>
     <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
         Defaults to <code>"--test-execall"</code>
     <li><b>testTimeout</b> (optional): Timeout of waf test execution call.

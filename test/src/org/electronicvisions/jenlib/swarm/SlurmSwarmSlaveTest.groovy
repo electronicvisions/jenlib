@@ -14,7 +14,7 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 
 	@Override
 	SwarmSlave generateSwarmSlave(List<String> configuredParameters, SwarmSlaveConfig config) {
-		return new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(configuredParameters), config, [partition: "compile"])
+		return new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(configuredParameters), config, [partition: "batch"])
 	}
 
 	void testSlurmArgumentHandling() {
@@ -24,7 +24,7 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 			config.jenkinsHostname = DEFAULT_PARAMETERS["jenkinsHostname"]
 			config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
 			config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
-			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [p: "compile"])
+			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [p: "batch"])
 			slave.startSlave()
 		}
 
@@ -45,7 +45,7 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 		config.jenkinsWebProtocol = DEFAULT_PARAMETERS["jenkinsWebProtocol"]
 		config.jenkinsWebPort = DEFAULT_PARAMETERS["jenkinsWebPort"]
 
-		SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [partition: "jenkins"])
+		SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config, [partition: "batch"])
 		slave.startSlave()
 		assertEquals(slave.jobID, SlurmSwarmSlavePipelineMock.MOCKED_SLURM_ID)
 	}
@@ -58,7 +58,7 @@ class SlurmSwarmSlaveTest extends SwarmSlaveTest {
 
 		shouldFail(IllegalArgumentException) {
 			SwarmSlave slave = new SlurmSwarmSlave(new SlurmSwarmSlavePipelineMock(), config,
-			                                       [partition: "jenkins", nodes: 2])
+			                                       [partition: "batch", nodes: 2])
 			slave.startSlave()
 		}
 	}

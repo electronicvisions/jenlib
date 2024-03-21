@@ -17,7 +17,7 @@ For most efficient resource usage, make sure that this command is not run within
 <p>
 Intended usage:
 <pre>
-	onSlurmResource(partition: "jenkins") {
+	onSlurmResource(partition: "batch") {
 		jesh "hostname"
 	}
 </pre>

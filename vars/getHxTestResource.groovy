@@ -8,7 +8,7 @@ import static java.util.UUID.randomUUID
  */
 def call(int chipRevision) {
 	final HxCubeSetup randomSetup = getRandomSetup(chipRevision)
-	return [partition          : "cube",
+	return [partition          : "batch",
 	        wafer              : randomSetup.waferId,
 	        "fpga-without-aout": randomSetup.fpgaId]
 }

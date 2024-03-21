@@ -26,7 +26,7 @@
  *                                                             resources.
  *                                                             Arguments that are not of type list are
  *                                                             transformed into a list of length 1.
- *                                                             Defaults to <code>[partition: "jenkins", "cpus-per-task": "8"]</code>
+ *                                                             Defaults to <code>[partition: "batch", "cpus-per-task": "8"]</code>
  *                    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
@@ -110,7 +110,7 @@ def call(Map<String, Object> options = [:]) {
 			} else if (options.get("testSlurmResource") instanceof List) {
 				testResources = options.get("testSlurmResource") as List<Map<String, String>>
 			} else if (options.get("testSlurmResource") == null) {
-				testResources = [[partition: "jenkins", "cpus-per-task": "8"]]
+				testResources = [[partition: "batch", "cpus-per-task": "8"]]
 			} else {
 				throw new IllegalArgumentException("testSlurmResource argument is malformed.")
 			}
@@ -161,7 +161,7 @@ def call(Map<String, Object> options = [:]) {
 
 					for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
 						stage("Build ${wafTargetOption}".trim()) {
-							onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+							onSlurmResource(partition: "batch", "cpus-per-task": "8") {
 								withModules(moduleOptions) {
 									// we prefix doxygen warnings with (doxygen) and filter these out of stderr into doxygen.txt
 									jesh("${requiresBear ? "bear -- " : ""}waf configure install " +
@@ -232,7 +232,7 @@ def call(Map<String, Object> options = [:]) {
 			}
 
 			conditionalStage(name: "Test cppcheck", skip: !enableCppcheck) {
-				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+				onSlurmResource(partition: "batch", "cpus-per-task": "8") {
 					inSingularity(containerOptions) {
 						jesh("cppcheck --xml --project=compile_commands.json -j\$(nproc) --suppress=syntaxError:* " +
 						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml || exit 0")
@@ -241,7 +241,7 @@ def call(Map<String, Object> options = [:]) {
 			}
 
 			conditionalStage(name: "Test clang-tidy", skip: !enableClangTidy) {
-				onSlurmResource(partition: "jenkins", "cpus-per-task": "8") {
+				onSlurmResource(partition: "batch", "cpus-per-task": "8") {
 					inSingularity(containerOptions) {
 						// Issue #3979: Script should be installed in PATH.
 						// (mis-)use PYTHONHOME to get the app's root directory
