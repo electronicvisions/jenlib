@@ -22,7 +22,8 @@ void call(Map<String, Object> options = [:]) {
 
 	String toolsXilinxTop = "${steps.pwd(tmp: true)}/toolsXilinxTop_${randomUUID().toString()}"
 	dir(toolsXilinxTop) {
-		inSingularity(image: getDefaultAsicContainerPath()) {
+		inSingularity(image: getDefaultAsicContainerPath(),
+		              app: "visionary-asic") {
 			withModules(modules: ["xilinx/2020.1"]) {
 				withWaf {
 					wafSetup(projects: ["tools-xilinx"])
