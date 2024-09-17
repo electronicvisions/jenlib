@@ -11,13 +11,6 @@ import org.jenkins.plugins.lockableresources.LockableResource
 
 @Field final int MAX_LOCKING_TIME_MILLIS = 1000 * 60 * 10 // 10 min
 
-class LockTimeoutInterruption extends CauseOfInterruption {
-	@Override
-	String getShortDescription() {
-		return "[jenlib] Lock held for too long. Timeout."
-	}
-}
-
 /**
  * Main cleanup call: Find locks that have been locked for too long and abort the responsible build.
  */
@@ -38,7 +31,9 @@ def call() {
 			continue
 		}
 
-		resource.build.executor.interrupt(Result.FAILURE, new LockTimeoutInterruption())
+		resource.build.executor.interrupt(Result.FAILURE, new CauseOfInterruption.UserInterruption(
+				"[jenlib] Lock '${resource.name}' held for too long. Timeout."
+		))
 		println("[Jenlib] Forefully unlocked '${resource.name}' after ${lockedTimeMillis / 1000}s.")
 	}
 }
