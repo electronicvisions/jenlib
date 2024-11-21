@@ -44,6 +44,7 @@ def call(Map<String, Object> options = [:]) {
 		// clang-format
 		dir(folder) {
 			Boolean hasParent = (Integer.parseInt(jesh(returnStdout: true, script: "git rev-list --count $reference").trim()) > 1)
+			String extensions = "c,h,m,mm,cc,cp,cpp,c++,cxx,hh,hpp,hxx,tcc,cu,proto,protodevel,java,js,ts,cs"
 
 			String diff
 			if (fullDiff) {
@@ -58,13 +59,13 @@ def call(Map<String, Object> options = [:]) {
 
 				diff = jesh(
 				    returnStdout: true,
-				    script: "git clang-format --diff --style=file empty $reference")
+				    script: "git clang-format --extensions $extensions --diff --style=file empty $reference")
 
 				jesh "git branch -D empty"
 			} else if (hasParent) {
 				diff = jesh(
 				    returnStdout: true,
-				    script: "git clang-format --diff --style=file $reference~1")
+				    script: "git clang-format --extensions $extensions --diff --style=file $reference~1")
 			} else {
 				throw new IllegalStateException("Clang-Format non-full-diff checking requires parent commit.")
 			}
