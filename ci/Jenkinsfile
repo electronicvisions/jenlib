@@ -22,12 +22,15 @@ node {
 			}
 
 			// Coverage reports
-			jacoco(execPattern: 'target/jacoco.exec',
-			       classPattern: 'target/classes/org/electronicvisions',
-			       sourcePattern: 'src/',
-			       sourceInclusionPattern: '**/*.groovy',
-			       changeBuildStatus: true,
-			       maximumLineCoverage: '100')
+			recordCoverage(
+					tools: [
+							[pattern: 'target/site/jacoco/jacoco.xml']
+					],
+					qualityGates: [
+							[metric: 'LINE', threshold: 100.0]
+					],
+					failOnError: true,
+			)
 		}
 
 		stage('Build/Deploy Documentation') {
