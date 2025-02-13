@@ -565,7 +565,7 @@ void testInSingularity() {
 				// App shall not be propagated
 				inSingularity(app: "dls") {
 					inSingularity() {
-						jesh("env | grep 'SINGULARITY_APPNAME=\$'")
+						jesh("env | grep -E '(APPTAINER|SINGULARITY)_APPNAME=\$'")
 					}
 				}
 

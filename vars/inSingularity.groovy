@@ -42,7 +42,7 @@ def call(Map<String, String> containerOptions = [:], Closure content) {
 	List<String> prefixCommands = new ArrayList()
 
 	// Parent app shall not be propagated in nested singularity calls
-	prefixCommands.add('unset SINGULARITY_APPNAME')
+	prefixCommands.add('unset SINGULARITY_APPNAME APPTAINER_APPNAME')
 
 	// SINGULARITY_ENV environment modifiers shall be kept inside the container to allow for nested calls
 	prefixCommands.add('for param in "${!SINGULARITYENV_@}"; do export "SINGULARITYENV_$param"="${!param}"; done')
