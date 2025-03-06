@@ -11,6 +11,7 @@ import org.electronicvisions.jenlib.SharedWorkspace
  *                    <li><b>ccacheBasedir</b> (optional), defaults to <code>$WORKSPACE</code> if set, else to the shared workspace.</li>
  *                    <li><b>ccacheMaxsize</b> (optional), defaults to <code>5.0G</code></li>
  *                    <li><b>ccacheNoHashDir</b> (optional), defaults to <code>true</code>. Has to be boolean.</li>
+ *                    <li><b>printStats</b> (optional), defaults to <code>true</code>. Print ccache states before/after content execution.</li>
  *                </ul>
  * @param content Closure to be run with ccache
  */
@@ -38,6 +39,7 @@ void call(Map options = [:], Closure content) {
 	ccacheBasedir = options.get("ccacheBasedir", defaultBasedir)
 	ccacheMaxsize = options.get("ccacheMaxsize", "5.0G")
 	ccacheNoHashDir = options.get("ccacheNoHashDir", true)
+	printStats = options.get("printStats", true)
 
 	if (!(ccacheNoHashDir instanceof Boolean)) {
 		throw new IllegalArgumentException("ccacheNoHashDir has to be boolean.")
@@ -52,18 +54,23 @@ void call(Map options = [:], Closure content) {
 	         "CCACHE_MAXSIZE=$ccacheMaxsize",
 	         "CCACHE_NOHASHDIR=" + (ccacheNoHashDir ? "yes" : "no")]) {
 
-		runOnSlave(label: "frontend && singularity") {
-			inSingularity(app: "dev-tools") {  // we need some stable environment with ccache binaries to read out stats
-				jesh("ccache -p")  // --show config does not work for all versions of ccache
-				jesh("ccache --show-stats")
+		if(printStats) {
+			runOnSlave(label: "frontend && singularity") {
+				inSingularity(app: "dev-tools") {
+					// we need some stable environment with ccache binaries to read out stats
+					jesh("ccache -p")  // --show config does not work for all versions of ccache
+					jesh("ccache --show-stats")
+				}
 			}
 		}
 
 		content()
 
-		runOnSlave(label: "frontend && singularity") {
-			inSingularity(app: "dev-tools") {
-				jesh("ccache --show-stats")
+		if(printStats) {
+			runOnSlave(label: "frontend && singularity") {
+				inSingularity(app: "dev-tools") {
+					jesh("ccache --show-stats")
+				}
 			}
 		}
 	}
