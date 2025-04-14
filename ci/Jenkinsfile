@@ -13,9 +13,7 @@ node {
 			          jdk: 'J17',
 			          mavenLocalRepo: '.repository',
 			          options: [artifactsPublisher(disabled: true),
-			                    openTasksPublisher(disabled: true),
-			                    // we need more jacoco options than available here
-			                    jacocoPublisher(disabled: true)]) {
+			                    openTasksPublisher(disabled: true)]) {
 
 				// Build and run tests
 				sh "mvn clean test"
@@ -38,8 +36,7 @@ node {
 			          jdk: 'J17',
 			          mavenLocalRepo: '.repository',
 			          options: [artifactsPublisher(disabled: true),
-			                    openTasksPublisher(disabled: true),
-			                    jacocoPublisher(disabled: true)]) {
+			                    openTasksPublisher(disabled: true)]) {
 				sh "mvn gplus:generateStubs gplus:groovydoc"
 			}
 
