@@ -798,17 +798,16 @@ void testWafSetup() {
 		}
 
 		withModules(modules: requiredModules) {
-			// Test checkout a seldom altered project with minimal dependencies and a stable CI flow
-			wafSetup(projects: ["hate"])
+			wafSetup(projects: ["jenlib-minimalwaftest"])
 
 			// Multiple projects
-			wafSetup(projects: ["hate", "code-format"])
+			wafSetup(projects: ["jenlib-minimalwaftest", "code-format"])
 
 			// Setup in subfolder
 			runOnSlave(label: "frontend") {
 				String subfolder = UUID.randomUUID().toString()
 				dir(subfolder) {
-					wafSetup(projects: ["hate"])
+					wafSetup(projects: ["jenlib-minimalwaftest"])
 				}
 				assert fileExists("${subfolder}/wscript")
 			}
@@ -818,7 +817,7 @@ void testWafSetup() {
 				wafSetup()
 			}
 			assertBuildResult("FAILURE") {
-				wafSetup(projects: "hate")
+				wafSetup(projects: "jenlib-minimalwaftest")
 			}
 		}
 	}
@@ -909,16 +908,15 @@ void testCheckClangFormat() {
 void testWafDefaultPipeline() {
 
 	conditionalStage(name: "testWafDefaultPipeline", skip: isAsicJenkins()) {
-		// Test build a seldom altered project with minimal dependencies and a stable CI flow
-		wafDefaultPipeline(projects: ["hate"],
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin")
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
 
-		// Test a small project on multiple test resources
-		wafDefaultPipeline(projects: ["hate"],
+		// Test on multiple test resources
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   testSlurmResource: [[partition: "batch"],
 		                                       [partition: "interactive"]],
@@ -928,7 +926,7 @@ void testWafDefaultPipeline() {
 		}
 
 		// Test injection of pre/post test hooks does not fail
-		wafDefaultPipeline(projects: ["hate"],
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   preTestHook: { jesh("hostname") },
@@ -939,7 +937,7 @@ void testWafDefaultPipeline() {
 
 		// Test injection of test hooks has an effect: if 'build' is deleted, reconfiguration is necessary.
 		assertBuildResult("FAILURE") {
-			wafDefaultPipeline(projects: ["hate"],
+			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin",
 			                   preTestHook: { jesh("rm -rf build/") })
@@ -949,7 +947,7 @@ void testWafDefaultPipeline() {
 		}
 
 		// Only injecting a post hook does not fail
-		wafDefaultPipeline(projects: ["hate"],
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   postTestHook: { jesh("hostname") })
@@ -958,7 +956,7 @@ void testWafDefaultPipeline() {
 		}
 
 		// Value passing between test hooks works
-		wafDefaultPipeline(projects: ["hate"],
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   preTestHook: { return jesh(script: "hostname", returnStdout: true) },
@@ -978,7 +976,7 @@ void testWafDefaultPipeline() {
 		}
 		assertBuildResult("FAILURE") {
 			// 'projects' has to be of type List<String>
-			wafDefaultPipeline(projects: "hate",
+			wafDefaultPipeline(projects: "jenlib-minimalwaftest",
 			                   notificationChannel: "#jenkins-trashbin")
 		}
 		assertBuildResult("FAILURE") {
@@ -988,28 +986,28 @@ void testWafDefaultPipeline() {
 		}
 		assertBuildResult("FAILURE") {
 			// Target may not be modified, the pipeline runs for default and '*' internally
-			wafDefaultPipeline(projects: ["hate"],
+			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin",
 			                   configureInstallOptions: "--target='*'")
 		}
 		assertBuildResult("FAILURE") {
 			// Target may not be modified, the pipeline runs for default and '*' internally
-			wafDefaultPipeline(projects: ["hate"],
+			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin",
 			                   testOptions: "--target='*'")
 		}
 		assertBuildResult("FAILURE") {
 			// Test handling may not be modified, the pipeline does it internally
-			wafDefaultPipeline(projects: ["hate"],
+			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin",
 			                   configureInstallOptions: "--test-execnone")
 		}
 
-		// Test a small project without clang-format test
-		wafDefaultPipeline(projects: ["hate"],
+		// Test project without clang-format test
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
@@ -1018,8 +1016,8 @@ void testWafDefaultPipeline() {
 			cleanWs()
 		}
 
-		// Test a small project with clang-tidy test
-		wafDefaultPipeline(projects: ["hate"],
+		// Test project with clang-tidy test
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
@@ -1028,8 +1026,8 @@ void testWafDefaultPipeline() {
 			cleanWs()
 		}
 
-		// Test a small project with cppcheck test
-		wafDefaultPipeline(projects: ["hate"],
+		// Test project with cppcheck test
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
