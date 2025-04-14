@@ -19,7 +19,7 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 
 	// Visionary Jenkins Setup
 	SwarmSlaveConfig config = new SwarmSlaveConfig()
-	config.javaHome = "/wang/environment/software/jessie/jdk/17+7_ys-manual_robust-pthread"
+	config.javaHome = "/wang/environment/software/jessie/jdk/21.0.6+8"
 	config.loggingConfig = "/jenkins/home/vis_jenkins/swarm_integration/logging.properties"
 	config.jenkinsHostname = "jenviz.skynet.kip.uni-heidelberg.de"
 	config.jenkinsJnlpPort = 8079
