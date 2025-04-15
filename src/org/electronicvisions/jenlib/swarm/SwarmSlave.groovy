@@ -68,6 +68,7 @@ abstract class SwarmSlave {
 
 		// Debug
 		args.add("-javaagent:/jenkins/home/vis_jenkins/swarm_integration/ActiveAgent.jar")
+		args.add("-Xlog:os+thread=warning")
 
 		args.add("-jar")
 		args.add("\\\${jarfile}")
