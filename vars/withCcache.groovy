@@ -31,15 +31,15 @@ void call(Map options = [:], Closure content) {
 		defaultBasedir = SharedWorkspace.getWorkspace(this)
 	}
 
-	ccachePath = options.get("ccachePath", "/usr/lib/ccache")
-	ccacheDir = options.get("ccacheDir",
-	                        isAsicJenkins() ? "/jenkins/ccache_s5/$JOB_BASE_NAME" :
-	                                          "/jenkins/ccache_f9/$JOB_BASE_NAME")
-	ccacheTmpdir = options.get("ccacheTmpdir", "$ccacheDir/tmp")
-	ccacheBasedir = options.get("ccacheBasedir", defaultBasedir)
-	ccacheMaxsize = options.get("ccacheMaxsize", "5.0G")
-	ccacheNoHashDir = options.get("ccacheNoHashDir", true)
-	printStats = options.get("printStats", true)
+	String ccachePath = options.get("ccachePath", "/usr/lib/ccache")
+	String ccacheDir = options.get("ccacheDir",
+	                               isAsicJenkins() ? "/jenkins/ccache_s5/$JOB_BASE_NAME" :
+	                                                 "/jenkins/ccache_f9/$JOB_BASE_NAME")
+	String ccacheTmpdir = options.get("ccacheTmpdir", "$ccacheDir/tmp")
+	String ccacheBasedir = options.get("ccacheBasedir", defaultBasedir)
+	String ccacheMaxsize = options.get("ccacheMaxsize", "5.0G")
+	def ccacheNoHashDir = options.get("ccacheNoHashDir", true)
+	boolean printStats = options.get("printStats", true)
 
 	if (!(ccacheNoHashDir instanceof Boolean)) {
 		throw new IllegalArgumentException("ccacheNoHashDir has to be boolean.")
