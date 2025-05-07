@@ -30,6 +30,12 @@ String call(Map<String, String> options = [:]) {
 		throw new IllegalStateException("Module deployment only works in the container.")
 	}
 
+	String pythonLibPath = jesh(returnStdout: true,
+	                            script: "python -c \"" +
+	                                    "import sysconfig, sys, os; " +
+	                                    "print(os.path.relpath(sysconfig.get_paths()['platlib'], sys.prefix))\""
+	).trim()
+
 	String moduleRoot = Paths.get(options.get("moduleRoot", "/wang/environment/modules")).toString()
 	String targetRoot = Paths.get(options.get("targetRoot", "/wang/environment/software/container")).toString()
 
@@ -68,6 +74,7 @@ String call(Map<String, String> options = [:]) {
 
 		// Construct module file and default module version
 		String moduleFileContent = fillTemplate(moduleFileTemplate, [CONTAINER: container,
+		                                                             PYTHON_LIB_PATH: pythonLibPath,
 		                                                             MODULEDIR: Paths.get(targetDir, version).toString(),
 		                                                             MODNAME  : moduleName,
 		                                                             VERSION  : version])
