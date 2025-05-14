@@ -57,15 +57,21 @@ def call(Map<String, Object> options = [:]) {
 				jesh "git stash"
 				jesh "git checkout $currentBranch"
 
+				// exit 0 if exit 1, because git-clang-format since clang 14 introduced a bug (fixed in clang 20.1), where they
+				// exit 1 if there are any ignored files, since also then the new and old tree
+				// differ and they branch to "there's a difference", which requires exit 1.
 				diff = jesh(
 				    returnStdout: true,
-				    script: "git clang-format --extensions $extensions --diff --style=file empty $reference")
+				    script: "git clang-format --extensions $extensions --diff --style=file empty $reference; code=\$?; [ \$code -eq 1 ] && exit 0 || exit \$code")
 
 				jesh "git branch -D empty"
 			} else if (hasParent) {
+				// exit 0 if exit 1, because git-clang-format since clang 14 introduced a bug (fixed in clang 20.1), where they
+				// exit 1 if there are any ignored files, since also then the new and old tree
+				// differ and they branch to "there's a difference", which requires exit 1.
 				diff = jesh(
 				    returnStdout: true,
-				    script: "git clang-format --extensions $extensions --diff --style=file $reference~1")
+				    script: "git clang-format --extensions $extensions --diff --style=file $reference~1; code=\$?; [ \$code -eq 1 ] && exit 0 || exit \$code")
 			} else {
 				throw new IllegalStateException("Clang-Format non-full-diff checking requires parent commit.")
 			}
