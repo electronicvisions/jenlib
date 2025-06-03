@@ -11,6 +11,10 @@ import org.electronicvisions.jenlib.SharedWorkspace
  */
 
 try {
+	stage("Locked Resources") {
+		jenlibCleanLocks()
+	}
+
 	stage("Workspace Cleanup") {
 		node(label: "frontend") {
 			cleanWs()
@@ -21,12 +25,6 @@ try {
 	stage("Stuck slurm slaves/jobs") {
 		runOnSlave(label: "frontend") {
 			jenlibCleanSlurmNodes()
-		}
-	}
-
-	stage("Locked Resources") {
-		runOnSlave(label: "frontend") {
-			jenlibCleanLocks()
 		}
 	}
 } catch (Throwable t) {
