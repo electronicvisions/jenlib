@@ -12,8 +12,7 @@ node {
 			withMaven(maven: 'M3',
 			          jdk: 'J21',
 			          mavenLocalRepo: '.repository',
-			          options: [artifactsPublisher(disabled: true),
-			                    openTasksPublisher(disabled: true)]) {
+			          options: [artifactsPublisher(disabled: true)]) {
 
 				// Build and run tests
 				sh "mvn clean test"
@@ -35,8 +34,7 @@ node {
 			withMaven(maven: 'M3',
 			          jdk: 'J21',
 			          mavenLocalRepo: '.repository',
-			          options: [artifactsPublisher(disabled: true),
-			                    openTasksPublisher(disabled: true)]) {
+			          options: [artifactsPublisher(disabled: true)]) {
 				sh "mvn gplus:generateStubs gplus:groovydoc"
 			}
 
