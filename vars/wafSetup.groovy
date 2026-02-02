@@ -1,3 +1,5 @@
+import hudson.model.StringParameterDefinition
+
 /**
  * Pipeline step for checking out a list of waf projects, respecting
  * any gerrit changesets given in the current environment. Note that
@@ -19,6 +21,11 @@
  */
 def call(Map<String, Object> options = [:]) {
 	boolean noExtraStage = options.get("noExtraStage", false)
+	// add GERRIT_{HOST,PORT,CHANGE_NUMBER} as parameters, so they can be overwritten as parameters
+	// usually these get filled by the gerrit trigger plugin
+	addBuildParameter(new StringParameterDefinition("GERRIT_HOST", "", "GERRIT_HOST parameter to overwrite manually.", true))
+	addBuildParameter(new StringParameterDefinition("GERRIT_PORT", "", "GERRIT_PORT parameter to overwrite manually.", true))
+	addBuildParameter(new StringParameterDefinition("GERRIT_CHANGE_NUMBER", "", "GERRIT_CHANGE_NUMBER parameter to overwrite manually.", true))
 
 	if (noExtraStage) {
 		return impl(options)
