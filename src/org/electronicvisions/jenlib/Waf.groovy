@@ -73,7 +73,7 @@ class Waf implements Serializable {
 		this.gerrit_changes = steps.env.GERRIT_CHANGE_NUMBER
 		this.gerrit_host = steps.env.GERRIT_HOST
 
-		if (steps.env.GERRIT_PORT != null) { // needed because parseInt can't parse 'null'
+		if (steps.env.GERRIT_PORT) { // needed because parseInt can't parse 'null' or ""
 			this.gerrit_port = Integer.parseInt(steps.env.GERRIT_PORT)
 		} else {
 			this.gerrit_port = 22 // default to 22 for ssh, if not in in env.
@@ -96,8 +96,8 @@ class Waf implements Serializable {
 		           "git clone ssh://gerrit.bioai.eu:29418/waf -b symwaf2ic symwaf2ic"
 		debugShell "cd ${waf_dir}/symwaf2ic && " +
 		           "make"
-		if (gerrit_changes != null) {
-			if (gerrit_host != null) {
+		if (gerrit_changes) {
+			if (gerrit_host) {
 				debugShell "cd ${waf_dir} && " +
 				           "./symwaf2ic/waf setup --project waf@symwaf2ic " +
 				           "--clone-depth 1 " +
