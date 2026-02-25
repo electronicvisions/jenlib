@@ -197,9 +197,10 @@ def call(Map<String, Object> options = [:]) {
 			stage("Test Evaluation") {
 				runOnSlave(label: "frontend") {
 					String xmlResultPattern = testResultDirs.join("/**/*.xml, ") + "/**/*.xml"
+					String allTestResultPattern = testResultDirs.join("/**/*, ") + "/**/*"
 
-					// Always keep the plain results
-					archiveArtifacts xmlResultPattern
+					// Always keep all plain results
+					archiveArtifacts allTestResultPattern
 
 					// Parse test results
 					step([$class       : 'XUnitPublisher',
