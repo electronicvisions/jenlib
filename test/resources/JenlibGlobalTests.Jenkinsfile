@@ -1032,7 +1032,6 @@ void testWafDefaultPipeline() {
 		// Test project without clang-format test
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableClangFormat: false)
 		runOnSlave(label: "frontend") {
@@ -1042,7 +1041,6 @@ void testWafDefaultPipeline() {
 		// Test project with clang-tidy test
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableClangTidy: true)
 		runOnSlave(label: "frontend") {
@@ -1052,7 +1050,6 @@ void testWafDefaultPipeline() {
 		// Test project with cppcheck test
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
-		                   testSlurmResource: [partition: "batch"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableCppcheck: true)
 		runOnSlave(label: "frontend") {
@@ -1166,14 +1163,14 @@ void testNotifyFailure() {
 
 void testOnSlurmResource() {
 	conditionalStage(name: "testOnSlurmResource", skip: isAsicJenkins()) {
-		onSlurmResource(partition: "batch") {
+		onSlurmResource([:]) {
 			assert (env.NODE_LABELS.contains("swarm"))
 		}
 
 		// PWD stays the same
 		runOnSlave(label: "frontend") {
 			frontendPwd = pwd()
-			onSlurmResource(partition: "batch") {
+			onSlurmResource([:]) {
 				slavePwd = pwd()
 				assert (slavePwd == frontendPwd): "slavePwd: $slavePwd, frontendPwd: $frontendPwd"
 			}
@@ -1182,7 +1179,7 @@ void testOnSlurmResource() {
 		// Workspace stays the same
 		runOnSlave(label: "frontend") {
 			frontendWs = WORKSPACE
-			onSlurmResource(partition: "batch") {
+			onSlurmResource([:]) {
 				slaveWs = WORKSPACE
 				assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
 			}
@@ -1253,7 +1250,7 @@ void testRunOnSlave() {
 
 void testConfigureHxCubeBitfile() {
 	conditionalStage(name: "testConfigureHxCubeBitfile", skip: isAsicJenkins()) {
-		onSlurmResource(partition: "batch", wafer: 62, "fpga-without-aout": 3) {
+		onSlurmResource(wafer: 62, "fpga-without-aout": 3) {
 			configureHxCubeBitfile()
 		}
 

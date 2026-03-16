@@ -24,7 +24,6 @@ class SlurmSwarmSlave extends SwarmSlave {
 	 * @param config Swarm slave configuration to be used for this slave
 	 * @param slurm_args Slurm arguments: Key-value pairs, where the keys represent the slurm argument, the value the value to be set.
 	 *                                    Keys have to be full-length ('partition', not 'p'). Double-dashes are added internally.
-	 *                                    The 'partition' key is mandatory.
 	 */
 	SlurmSwarmSlave(steps, SwarmSlaveConfig config, Map<String, Object> slurm_args) {
 		super(steps, config)
@@ -123,10 +122,6 @@ class SlurmSwarmSlave extends SwarmSlave {
 			if (key.length() < 2) {
 				throw new IllegalArgumentException('Only fully-named argument identifiers (--$key) are supported.')
 			}
-		}
-
-		if (!arguments.containsKey("partition")) {
-			throw new MissingPropertyException("Slurm partition has to be specified.")
 		}
 
 		if (arguments.containsKey("nodes")) {

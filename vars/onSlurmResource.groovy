@@ -11,7 +11,7 @@ import org.electronicvisions.jenlib.swarm.SwarmSlaveConfig
  *
  * @param slurm_args Map of arguments passed to {@code sbatch}.
  *                   Keys are full-length (double-dash) argument keys (e.g. 'partition'), values the respective values.
- *                   Double-dashes are added internally. The 'partition' argument is mandatory.
+ *                   Double-dashes are added internally.
  * @param content Content to be executed
  */
 def call(LinkedHashMap<String, String> slurm_args, Closure content) {
