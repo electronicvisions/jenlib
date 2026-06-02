@@ -1,1 +1,0 @@
-../../resources/org/electronicvisions/MarkdownScriptExtractorTest.md
