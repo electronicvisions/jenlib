@@ -12,7 +12,7 @@ class MarkdownScriptExtractorTest extends GroovyTestCase {
 	public static MockedPipelineContext pipeline = new MockedPipelineContext();
 
 	void setUp() {
-		File testResourceRoot = new File("test/resources/").getCanonicalFile()
+		File testResourceRoot = new File("resources/org/electronicvisions/").getCanonicalFile()
 		assertTrue(testResourceRoot.isDirectory())
 		this.testResourceRoot = testResourceRoot
 	}
