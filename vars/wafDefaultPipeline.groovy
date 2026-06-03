@@ -353,10 +353,9 @@ def call(Map<String, Object> options = [:]) {
 					for (String project in projects) {
 						String name = project.split("/")[1]
 
-						// NOTE: 'JENLIB_HTML_DEPLOYMENT' needs to be a registered 'Lockable Resource'!
 						// Concurrent deployment from parallel builds of the same job might lead to build errors, if
 						// both try to deploy at the same time.
-						lock("JENLIB_HTML_DEPLOYMENT") {
+						lock(resource: "JENLIB_HTML_DEPLOYMENT_${JOB_NAME}") {
 							publishHTML([allowMissing         : false,
 							             alwaysLinkToLastBuild: false,
 							             keepAll              : false,

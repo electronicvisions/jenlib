@@ -8,16 +8,14 @@ import org.jenkinsci.plugins.workflow.cps.DSL.NamedArgsAndClosure
  * Existing parameters will not be changed, existing default values will be overwritten unless
  * <code>overwriteDefault=false</code>.
  *
- * This step needs the <a href="https://wiki.jenkins.io/display/JENKINS/Lockable+Resources+Plugin">Lockable Resources Plugin</a>
- * with registered resource {@code JENLIB_JOB_CONFIGURATION_UPDATE}.
+ * This step needs the <a href="https://wiki.jenkins.io/display/JENKINS/Lockable+Resources+Plugin">Lockable Resources Plugin</a>.
  *
  * @param parameter Build parameter to be added
  * @param overwriteDefault Overwrite existing parameter defaults
  */
 void call(ParameterDefinition parameter, boolean overwriteDefault = true) {
 	// Build parameter changes are not atomic: Make sure parallel builds do not interfere
-	// NOTE: 'JENLIB_JOB_CONFIGURATION_UPDATE' needs to be a registered 'Lockable Resource'!
-	lock("JENLIB_JOB_CONFIGURATION_UPDATE") {
+	lock(resource: "JENLIB_CONFIG_UPDATE_${JOB_NAME}") {
 		// Get existing parameters
 		List<ParameterDefinition> oldParams = currentBuild.rawBuild.getParent().
 				getProperty(ParametersDefinitionProperty)?.getParameterDefinitions()
