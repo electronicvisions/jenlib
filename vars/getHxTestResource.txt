@@ -1,5 +1,5 @@
 <p>
-    Request a BrainScaleS-2 HICANN-X system with the given chip revision as test resource.
+    Request a BrainScaleS-2 HICANN-X system matching a given filter.
 </p>
 
 <p>
@@ -7,8 +7,9 @@
 </p>
 
 <p>
-    Parameters:
+    Parameters (either, not named!):
 <ul>
-    <li><b>chipRevision</b>HICANN-X ASIC revision to be used.</li>
+    <li><b>int chipRevision</b> [LEGACY] HICANN-X ASIC revision to be used.</li>
+    <li><b>Closure<Boolean> setupFilter</b>Filtering Closure, see code for available fields.</li>
 </ul>
 </p>

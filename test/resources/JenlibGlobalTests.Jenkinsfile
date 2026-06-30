@@ -705,7 +705,15 @@ void testGetHxTestResource() {
 			getHxTestResource(-100)  // invalid chip revision
 		}
 
+		assertBuildResult("FAILURE") {
+			getHxTestResource({false})  // no chip found
+		}
+
 		onSlurmResource(getHxTestResource(3)) {
+			assert (env.SLURM_FPGA_IPS != null) : "SLURM_FPGA_IPS not defined on what is expected to be a hardware allocation!"
+		}
+
+		onSlurmResource(getHxTestResource({ it.chipRevision == 3 })) {
 			assert (env.SLURM_FPGA_IPS != null) : "SLURM_FPGA_IPS not defined on what is expected to be a hardware allocation!"
 		}
 	}
