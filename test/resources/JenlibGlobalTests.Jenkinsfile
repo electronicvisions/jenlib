@@ -972,6 +972,16 @@ void testWafDefaultPipeline() {
 		// Test on multiple test resources
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
+		                   testRunners: [onSlurmResource.&call.curry(partition: "batch"),
+		                                 onSlurmResource.&call.curry(partition: "interactive")],
+		                   notificationChannel: "#jenkins-trashbin")
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+
+		// Test on multiple test resources using legacy testSlurmResource
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
+		                   container: [app: "visionary-dls"],
 		                   testSlurmResource: [[partition: "batch"],
 		                                       [partition: "interactive"]],
 		                   notificationChannel: "#jenkins-trashbin")
@@ -1083,6 +1093,19 @@ void testWafDefaultPipeline() {
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableCppcheck: true)
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+	}
+	// test that noop testRunners and buildRunner allows wafDefaultPipeline to run on the ASIC jenkins
+	conditionalStage(name: "testWafDefaultPipeline", skip: !isAsicJenkins()) {
+	    runOnSlave(label: "singularity") {
+			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
+							   container: [app: "visionary-dls"],
+							   notificationChannel: "#jenkins-trashbin",
+							   buildRunner: { it() },
+							   testRunners: [{ it() }])
+		}
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}

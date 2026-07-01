@@ -18,10 +18,12 @@ Available options (see also <code>wafSetup</code>):
     <li><b>configureInstallOptions</b> (optional): Options passed to the
         <code>waf configure install</code> call.
         Defaults to <code>""</code>, <code>--test-execnone</code> is always set.
-    <li><b>testSlurmResource</b> (optional):List of Slurm resource definitions tests are run on.
-        If multiple resources are given, tests are executed once on all given resources.
-        Arguments that are not of type list are transformed into a list of length 1.
-        Defaults to <code>["cpus-per-task": "8"]</code>
+    <li><b>buildRunner</b> (optional): <code>Closure</code> that receives a <code>Closure</code> that executes
+        the waf build calls. Used to override how or where the build waf calls are run.
+        Defaults to <code>onSlurmResource.&call.curry("cpus-per-task": 8)</code>
+    <li><b>testRunners</b> (optional): List of <code>Closure</code>s that receive a <code>Closure</code> as argument,
+        that runs the tests. If multiple <code>Closure</code>s are given, test are run via each one.
+        Defaults to <code>[onSlurmResource.&call.curry("cpus-per-task": 8)]</code>
     <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
         Defaults to <code>"--test-execall"</code>
     <li><b>testTimeout</b> (optional): Timeout of waf test execution call.

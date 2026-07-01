@@ -20,13 +20,12 @@
  *                    <li><b>configureInstallOptions</b> (optional): Options passed to the
  *                                                        <code>waf configure install</code> call.
  *                                                        Defaults to <code>""</code>, <code>--test-execnone</code> is always set.
- *                    <li><b>testSlurmResource</b> (optional): List of Slurm resource definitions tests
- *                                                             are run on. If multiple resources are given,
- *                                                             tests are executed once on all given
- *                                                             resources.
- *                                                             Arguments that are not of type list are
- *                                                             transformed into a list of length 1.
- *                                                             Defaults to <code>["cpus-per-task": "8"]</code>
+ *                    <li><b>buildRunner</b> (optional): <code>Closure</code> that receives a <code>Closure</code> that executes
+ *                                                       the waf build calls. Used to override how or where the build waf calls are run.
+ *                                                       Defaults to <code>onSlurmResource.&call.curry("cpus-per-task": 8)</code>
+ *                    <li><b>testRunners</b> (optional): List of <code>Closure</code>s that receive a <code>Closure</code> as argument,
+ *                                                       that runs the tests. If multiple <code>Closure</code>s are given, test are run via each one.
+ *                                                       Defaults to <code>[onSlurmResource.&call.curry("cpus-per-task": 8)]</code>
  *                    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
@@ -104,15 +103,25 @@ def call(Map<String, Object> options = [:]) {
 			}
 			String configureInstallOptions = options.get("configureInstallOptions", "")
 
-			List<Map<String, String>> testResources
+			Closure buildRunner = options.get("buildRunner", onSlurmResource.&call.curry("cpus-per-task": 8))
+
+			if (options.get("testSlurmResource") != null) {
+				echo "[WARNING] testSlurmResource is deprecated! Use testRunners instead!"
+			}
+			if (options.get("testRunner") != null && options.get("testSlurmResource") != null) {
+				throw new IllegalArgumentException("Cannot specify testRunner and testSlurmResource.")
+			}
+
+			List<Closure> testRunners = options.get("testRunners", [onSlurmResource.&call.curry("cpus-per-task": 8)])
 			if (options.get("testSlurmResource") instanceof Map) {
-				testResources = [options.get("testSlurmResource")] as List<Map<String, String>>
+				testRunners = [onSlurmResource.&call.curry(options.get("testSlurmResource"))]
 			} else if (options.get("testSlurmResource") instanceof List) {
-				testResources = options.get("testSlurmResource") as List<Map<String, String>>
-			} else if (options.get("testSlurmResource") == null) {
-				testResources = [["cpus-per-task": "8"]]
-			} else {
+				testRunners = options.get("testSlurmResource").collect(onSlurmResource.&call.&curry)
+			} else if (options.get("testSlurmResource") != null) {
 				throw new IllegalArgumentException("testSlurmResource argument is malformed.")
+			}
+			if (testRunners.size() == 0) {
+				echo "[WARNING] zero length list passed to testRunners, this means no tests will be run!"
 			}
 
 			String testOptions = options.get("testOptions", "--test-execall")
@@ -161,7 +170,7 @@ def call(Map<String, Object> options = [:]) {
 
 					for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
 						stage("Build ${wafTargetOption}".trim()) {
-							onSlurmResource("cpus-per-task": "8") {
+							buildRunner {
 								withModules(moduleOptions) {
 									// we prefix doxygen warnings with (doxygen) and filter these out of stderr into doxygen.txt
 									jesh("${requiresBear ? "bear -- " : ""}waf configure install " +
@@ -174,12 +183,12 @@ def call(Map<String, Object> options = [:]) {
 						}
 
 						// Run tests defined in waf for all given test resources
-						for (Map<String, String> testSlurmResource in testResources) {
+						for (Closure testRunner in testRunners) {
 							String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
 							testResultDirs.add(testOutputDir)
 
-							stage("Tests ${wafTargetOption} ${testSlurmResource}".trim()) {
-								onSlurmResource(testSlurmResource) {
+							stage("Tests ${wafTargetOption}".trim()) {
+								testRunner {
 									withModules(moduleOptions) {
 										def preTestHookResult = preTestHook()
 										jesh("waf build ${wafTargetOption} ${testOptions}")
@@ -233,7 +242,7 @@ def call(Map<String, Object> options = [:]) {
 			}
 
 			conditionalStage(name: "Test cppcheck", skip: !enableCppcheck) {
-				onSlurmResource("cpus-per-task": "8") {
+				buildRunner {
 					inSingularity(containerOptions) {
 						jesh("cppcheck --xml --project=compile_commands.json -j\$(nproc) --suppress=syntaxError:* " +
 						     "-i \$(readlink -f build) --enable=warning 2> cppcheck.xml || exit 0")
@@ -242,7 +251,7 @@ def call(Map<String, Object> options = [:]) {
 			}
 
 			conditionalStage(name: "Test clang-tidy", skip: !enableClangTidy) {
-				onSlurmResource("cpus-per-task": "8") {
+				buildRunner {
 					inSingularity(containerOptions) {
 						// Issue #3979: Script should be installed in PATH.
 						// (mis-)use PYTHONHOME to get the app's root directory
