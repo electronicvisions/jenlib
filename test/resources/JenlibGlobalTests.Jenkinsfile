@@ -79,6 +79,7 @@ try {
 	testDecodeBase64()
 	testEncodeBase64()
 	testInSingularity()
+	testInVirtualenv()
 	testGetDefaultFixturePath()
 	testGetDefaultContainerPath()
 	testGetContainerApps()
@@ -575,6 +576,28 @@ void testInSingularity() {
 						inSingularity() {
 							jesh("env | grep '^PATH=foobar'")
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void testInVirtualenv() {
+	stage('testInVirtualenv') {
+		runOnSlave(label: "singularity") {
+			inSingularity(app: "dls") {
+				String venvPath = UUID.randomUUID().toString()
+				jesh("python -m venv ${venvPath}")
+
+				inVirtualenv(path: venvPath) {
+					String pythonPath = jesh(script: "which python", returnStdout: true)
+					assert pythonPath.contains(venvPath)
+				}
+
+				assertBuildResult("FAILURE") { // mandatory path argument missing
+					inVirtualenv() {
+						jesh("hostname")
 					}
 				}
 			}

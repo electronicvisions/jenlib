@@ -1,0 +1,10 @@
+<p>
+    Run a section of code in a shell with <code>$path/bin/activate</code> sourced.
+</p>
+
+<p>
+    Parameters:
+</p>
+<ul>
+    <li><b>path</>: (mandatory) Path to an (existing!) virtualenv/venv (e.g. <code>venv/</code>).</li>
+</ul>
