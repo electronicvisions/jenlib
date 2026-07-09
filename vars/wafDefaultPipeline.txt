@@ -5,7 +5,7 @@ Pipeline for verifying "typical" waf projects:
     <li>Evaluate test results
 </ul>
 
-The project is built and tested for the default target definition as well as <code>--target='*'</code>.
+By default, the project is built and tested for the default target definition.
 
 Available options (see also <code>wafSetup</code>):
 <ul>

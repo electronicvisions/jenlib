@@ -1049,14 +1049,14 @@ void testWafDefaultPipeline() {
 			                   notificationChannel: "#jenkins-trashbin")
 		}
 		assertBuildResult("FAILURE") {
-			// Target may not be modified, the pipeline runs for default and '*' internally
+			// (Build) target must not be modified, the pipeline exposes 'wafTargetOptions' to do so.
 			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin",
 			                   configureInstallOptions: "--target='*'")
 		}
 		assertBuildResult("FAILURE") {
-			// Target may not be modified, the pipeline runs for default and '*' internally
+			// (Test) target must not be modified, the pipeline exposes 'wafTargetOptions' to do so.
 			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 			                   container: [app: "visionary-dls"],
 			                   notificationChannel: "#jenkins-trashbin",

@@ -6,7 +6,7 @@
  *     <li>Evaluate test results
  * </ul>
  *
- * The project is built and tested for the default target definition as well as <code>--target='*'</code>.
+ * By default, the project is built and tested for the default target definition.
  *
  * @param options Map of options for the pipeline:
  *                <ul>
