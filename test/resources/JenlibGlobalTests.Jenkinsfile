@@ -1096,6 +1096,15 @@ void testWafDefaultPipeline() {
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
+
+		// Test pipeline without test execution
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
+		                   container: [app: "visionary-dls"],
+		                   notificationChannel: "#jenkins-trashbin",
+		                   testRunners: [])
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
 	}
 	// test that noop testRunners and buildRunner allows wafDefaultPipeline to run on the ASIC jenkins
 	conditionalStage(name: "testWafDefaultPipeline", skip: !isAsicJenkins()) {

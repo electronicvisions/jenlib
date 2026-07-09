@@ -203,7 +203,7 @@ def call(Map<String, Object> options = [:]) {
 			}
 
 			// Evaluate waf test results
-			stage("Test Evaluation") {
+			conditionalStage(name: "Test Evaluation", skip: (testRunners.size() == 0)) {
 				runOnSlave(label: "frontend") {
 					String xmlResultPattern = testResultDirs.join("/**/*.xml, ") + "/**/*.xml"
 					String allTestResultPattern = testResultDirs.join("/**/*, ") + "/**/*"
