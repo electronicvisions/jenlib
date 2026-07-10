@@ -23,9 +23,9 @@
  *                    <li><b>buildRunner</b> (optional): <code>Closure</code> that receives a <code>Closure</code> that executes
  *                                                       the waf build calls. Used to override how or where the build waf calls are run.
  *                                                       Defaults to <code>onSlurmResource.&call.curry("cpus-per-task": 8)</code>
- *                    <li><b>testRunners</b> (optional): List of <code>Closure</code>s that receive a <code>Closure</code> as argument,
- *                                                       that runs the tests. If multiple <code>Closure</code>s are given, test are run via each one.
- *                                                       Defaults to <code>[onSlurmResource.&call.curry("cpus-per-task": 8)]</code>
+ *                    <li><b>testRunners</b> (optional): Map of <code>[String id: Closure<]/code>, where the value receives a <code>Closure</code> as argument,
+ *                                                       that runs the tests. If multiple entries are given, tests are run via each one.
+ *                                                       Defaults to <code>["sw": onSlurmResource.&call.curry("cpus-per-task": 8)]</code>
  *                    <li><b>testOptions</b> (optional): Options passed to the test execution waf call.
  *                                                       Defaults to <code>"--test-execall"</code>
  *                    <li><b>testTimeout</b> (optional): Timeout of waf test execution call.
@@ -108,20 +108,22 @@ def call(Map<String, Object> options = [:]) {
 			if (options.get("testSlurmResource") != null) {
 				echo "[WARNING] testSlurmResource is deprecated! Use testRunners instead!"
 			}
-			if (options.get("testRunner") != null && options.get("testSlurmResource") != null) {
-				throw new IllegalArgumentException("Cannot specify testRunner and testSlurmResource.")
+			if (options.get("testRunners") != null && options.get("testSlurmResource") != null) {
+				throw new IllegalArgumentException("Cannot specify testRunners and testSlurmResource.")
 			}
 
-			List<Closure> testRunners = options.get("testRunners", [onSlurmResource.&call.curry("cpus-per-task": 8)])
+			Map<String, Closure> testRunners = options.get("testRunners", ["sw": onSlurmResource.&call.curry("cpus-per-task": 8)])
 			if (options.get("testSlurmResource") instanceof Map) {
-				testRunners = [onSlurmResource.&call.curry(options.get("testSlurmResource"))]
+				testRunners = [(options.get("testSlurmResource").toString()): onSlurmResource.&call.curry(options.get("testSlurmResource"))]
 			} else if (options.get("testSlurmResource") instanceof List) {
-				testRunners = options.get("testSlurmResource").collect(onSlurmResource.&call.&curry)
+				testRunners = options.get("testSlurmResource").collectEntries { resource ->
+					[(resource.toString()): onSlurmResource.&call.curry(resource)]
+				}
 			} else if (options.get("testSlurmResource") != null) {
 				throw new IllegalArgumentException("testSlurmResource argument is malformed.")
 			}
 			if (testRunners.size() == 0) {
-				echo "[WARNING] zero length list passed to testRunners, this means no tests will be run!"
+				echo "[WARNING] zero entry map passed to testRunners, this means no tests will be run!"
 			}
 
 			String testOptions = options.get("testOptions", "--test-execall")
@@ -183,12 +185,12 @@ def call(Map<String, Object> options = [:]) {
 						}
 
 						// Run tests defined in waf for all given test resources
-						for (Closure testRunner in testRunners) {
+						for (Map.Entry<String, Closure> runner : testRunners.entrySet()) {
 							String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
 							testResultDirs.add(testOutputDir)
 
-							stage("Tests ${wafTargetOption}".trim()) {
-								testRunner {
+							stage("Tests (" + "${runner.key} ${wafTargetOption}".trim() +")") {
+								runner.value {
 									withModules(moduleOptions) {
 										def preTestHookResult = preTestHook()
 										jesh("waf build ${wafTargetOption} ${testOptions}")

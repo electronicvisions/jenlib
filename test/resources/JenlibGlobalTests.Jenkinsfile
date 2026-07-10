@@ -972,8 +972,8 @@ void testWafDefaultPipeline() {
 		// Test on multiple test resources
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
-		                   testRunners: [onSlurmResource.&call.curry(partition: "batch"),
-		                                 onSlurmResource.&call.curry(partition: "interactive")],
+		                   testRunners: ["batch": onSlurmResource.&call.curry(partition: "batch"),
+		                                 "interactive": onSlurmResource.&call.curry(partition: "interactive")],
 		                   notificationChannel: "#jenkins-trashbin")
 		runOnSlave(label: "frontend") {
 			cleanWs()
@@ -1101,7 +1101,7 @@ void testWafDefaultPipeline() {
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
-		                   testRunners: [])
+		                   testRunners: [:])
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
@@ -1113,7 +1113,7 @@ void testWafDefaultPipeline() {
 							   container: [app: "visionary-dls"],
 							   notificationChannel: "#jenkins-trashbin",
 							   buildRunner: { it() },
-							   testRunners: [{ it() }])
+							   testRunners: ["": { it() }])
 		}
 		runOnSlave(label: "frontend") {
 			cleanWs()
