@@ -97,6 +97,7 @@ try {
 	testConfigureHxCubeBitfile()
 	testFillTemplate()
 	testDeployModule()
+	testWithQuiggeldy()
 
 } catch (Throwable t) {
 	notifyFailure(mattermostChannel: "#softies")
@@ -1429,6 +1430,26 @@ void testDeployModule() {
 			}
 
 			jesh "rm -rf $WORKSPACE/install $WORKSPACE/module $WORKSPACE/source"
+		}
+	}
+}
+
+void testWithQuiggeldy(){
+	conditionalStage(name: "testWithQuiggeldy", skip: isAsicJenkins()) {
+		onSlurmResource("cpus-per-task": 8){
+			withEnv(["HXCOMM_ENABLE_ZERO_MOCK=1"]) {
+				withQuiggeldy(){
+					assert jesh(
+						script: "nc -z $QUIGGELDY_IP $QUIGGELDY_PORT",
+						returnStatus: true
+					) == 0
+
+					assert jesh(
+						script: "echo $ENABLE_QUIGGELDY",
+						returnStdout: true
+					).trim().toInteger() == 1
+				}
+			}
 		}
 	}
 }

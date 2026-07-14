@@ -1,0 +1,4 @@
+<p>
+    Starts a Quiggeldy-Server and sets enviroment variables to enable execution
+    on the server.
+</p>
