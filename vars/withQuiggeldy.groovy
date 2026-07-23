@@ -71,8 +71,9 @@ private Map<String, Integer> startQuiggeldy() {
 	inSingularity(containerOptions) {
 		withModules(modules: ["localdir"]) {
 			pid = jesh(
-				script: "quiggeldy --listen-port ${port} "+
-				"--no-munge &> quiggeldy_server.log & echo \$!",
+				script: "quiggeldy --listen-port ${port} " +
+				"--no-munge --no-allocate-license " +
+				"&> quiggeldy_server.log & echo \$!",
 				returnStdout: true).trim().toInteger()
 			hostname = jesh(
 				script: "hostname -s",
