@@ -32,6 +32,8 @@
  *                    <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
  *                    <li><b>wafTargetOptions</b> (optional): List of targets to be built.
  *                                                            Defaults to <code>[""]</code>, representing only the default target set.
+ *                    <li><b>enableCcache</b> (optional): Enable ccache.
+                                                               Defaults to <code>isTriggeredByGerrit()</code>.
  *                    <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
                                                                Defaults to <code>true</code>.
  *                    <li><b>enableClangFormatFullDiff</b> (optional): Enable clang-format to check on the complete project instead
@@ -138,6 +140,9 @@ def call(Map<String, Object> options = [:]) {
 				deployDocumentationRemoteOptions = null
 			}
 
+			Boolean enableCcache = options.get("enableCcache", isTriggeredByGerrit())
+			Closure withOptionalCcache = enableCcache ? withCcache.&call : { it() }
+
 			Boolean enableCppcheck = options.get("enableCppcheck", env.JOB_NAME.contains("nightly"))
 			Boolean enableCppcheckVote = options.get("enableCppcheckVote", false)
 
@@ -161,41 +166,43 @@ def call(Map<String, Object> options = [:]) {
 				currentBuild.description = decodeBase64(env.GERRIT_CHANGE_COMMIT_MESSAGE).split("\n")[0].trim()
 			}
 
-			inSingularity(containerOptions) {
-				withWaf() {
-					// Setup and build the project
-					wafSetup(options)
+			withOptionalCcache {
+				inSingularity(containerOptions) {
+					withWaf() {
+						// Setup and build the project
+						wafSetup(options)
 
-					runOnSlave(label: "frontend") {
-						jesh("waf repos-log > repos_log.txt")
-					}
-
-					for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
-						stage("Build ${wafTargetOption}".trim()) {
-							buildRunner {
-								withModules(moduleOptions) {
-									// we prefix doxygen warnings with (doxygen) and filter these out of stderr into doxygen.txt
-									jesh("${requiresBear ? "bear -- " : ""}waf configure install " +
-									     "${testTimeout} " +
-									     "--test-execnone " +
-									     "${wafTargetOption} ${configureInstallOptions} " +
-									     "${enableDoxygenCheck ? " 2> >(tee >(grep \"(doxygen)\" | sed \"s,(doxygen) ,,g\" > doxygen.txt))" : ""}")
-								}
-							}
+						runOnSlave(label: "frontend") {
+							jesh("waf repos-log > repos_log.txt")
 						}
 
-						// Run tests defined in waf for all given test resources
-						for (Map.Entry<String, Closure> runner : testRunners.entrySet()) {
-							String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
-							testResultDirs.add(testOutputDir)
-
-							stage("Tests (" + "${runner.key} ${wafTargetOption}".trim() +")") {
-								runner.value {
+						for (String wafTargetOption in options.get("wafTargetOptions", [""])) {
+							stage("Build ${wafTargetOption}".trim()) {
+								buildRunner {
 									withModules(moduleOptions) {
-										def preTestHookResult = preTestHook()
-										jesh("waf build ${wafTargetOption} ${testOptions}")
-										jesh("mv build/test_results ${testOutputDir}")
-										postTestHook(preTestHookResult)
+										// we prefix doxygen warnings with (doxygen) and filter these out of stderr into doxygen.txt
+										jesh("${requiresBear ? "bear -- " : ""}waf configure install " +
+											"${testTimeout} " +
+											"--test-execnone " +
+											"${wafTargetOption} ${configureInstallOptions} " +
+											"${enableDoxygenCheck ? " 2> >(tee >(grep \"(doxygen)\" | sed \"s,(doxygen) ,,g\" > doxygen.txt))" : ""}")
+									}
+								}
+							}
+
+							// Run tests defined in waf for all given test resources
+							for (Map.Entry<String, Closure> runner : testRunners.entrySet()) {
+								String testOutputDir = "testOutput_" + UUID.randomUUID().toString()
+								testResultDirs.add(testOutputDir)
+
+								stage("Tests (" + "${runner.key} ${wafTargetOption}".trim() +")") {
+									runner.value {
+										withModules(moduleOptions) {
+											def preTestHookResult = preTestHook()
+											jesh("waf build ${wafTargetOption} ${testOptions}")
+											jesh("mv build/test_results ${testOutputDir}")
+											postTestHook(preTestHookResult)
+										}
 									}
 								}
 							}

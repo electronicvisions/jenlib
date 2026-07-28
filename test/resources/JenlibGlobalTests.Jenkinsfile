@@ -961,6 +961,26 @@ void testCheckClangFormat() {
 }
 
 void testWafDefaultPipeline() {
+	def testCcacheIsEnabled = {
+		// Test ccache is enabled
+		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
+		                   container: [app: "visionary-dls"],
+		                   notificationChannel: "#jenkins-trashbin",
+						   enableCcache: true,
+						   buildRunner: {
+						       runOnSlave(label: "frontend && singularity") {
+						           jesh(script: "ln -s \$(which gcc) ccache")
+						           ccacheVersion = jesh(script: "./ccache --version | head -n1", returnStdout: true)
+						           jesh(script: "rm -f ccache")
+
+						           assert (ccacheVersion.contains("ccache")): "$ccacheVersion does not contain 'ccache'"
+						       }
+						   },
+		                   testRunners: [:])
+		runOnSlave(label: "frontend") {
+			cleanWs()
+		}
+	}
 
 	conditionalStage(name: "testWafDefaultPipeline", skip: isAsicJenkins()) {
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
@@ -1106,6 +1126,8 @@ void testWafDefaultPipeline() {
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
+
+		testCcacheIsEnabled()
 	}
 	// test that noop testRunners and buildRunner allows wafDefaultPipeline to run on the ASIC jenkins
 	conditionalStage(name: "testWafDefaultPipeline", skip: !isAsicJenkins()) {
@@ -1119,6 +1141,8 @@ void testWafDefaultPipeline() {
 		runOnSlave(label: "frontend") {
 			cleanWs()
 		}
+
+		testCcacheIsEnabled()
 	}
 }
 

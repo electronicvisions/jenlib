@@ -30,6 +30,8 @@ Available options (see also <code>wafSetup</code>):
     <li><b>warningsIgnorePattern</b> (optional): Compiler warnings to be ignored.
     <li><b>wafTargetOptions</b> (optional): List of targets to be built.
         Defaults to <code>[""]</code>, representing only the default target set.
+	<li><b>enableCcache</b> (optional): Enable ccache.
+		Defaults to <code>isTriggeredByGerrit()</code>.
     <li><b>enableClangFormat</b> (optional): Enable clang-format checks.
     <li><b>enableClangFormatFullDiff</b> (optional): Enable clang-format to check on the complete project instead
         of the difference of the last commit.
