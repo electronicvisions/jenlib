@@ -88,7 +88,7 @@ class SSHSwarmSlave extends SwarmSlave {
 	 * @return {@code systemctl} command for stopping the slave
 	 */
 	private String getSystemdServiceStopCommand() {
-		return "systemctl kill --user systemdUnitName && " +
+		return "systemctl kill --user $systemdUnitName && " +
 
 		       /**
 		        *  Java exits with 143 when {@code SIGTERM} is received.
