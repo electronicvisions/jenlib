@@ -1,5 +1,7 @@
 package org.electronicvisions.jenlib
 
+import com.cloudbees.groovy.cps.NonCPS
+
 import java.util.regex.Matcher
 import java.util.regex.Pattern;
 
@@ -34,9 +36,15 @@ class MarkdownScriptExtractor {
 	 * @return List of all code blocks found.
 	 */
 	List<String> getBlocks(String blockType) {
+		final String markdown = pipelineContext.readFile(markdownFilePath)
+		return markdown2blocks(markdown, blockType)
+	}
+
+	@NonCPS
+	private static List<String> markdown2blocks(String markdown, String blockType) {
 		final String regex = "^```${blockType}\\s*\\R(?<content>(?:.*\\R)*?)```\\s*\$"
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE)
-		final Matcher matcher = pattern.matcher((String) pipelineContext.readFile(markdownFilePath));
+		final Matcher matcher = pattern.matcher(markdown);
 
 		List<String> result = new ArrayList<String>()
 		while (matcher.find()) {
