@@ -13,12 +13,14 @@ import static java.util.UUID.randomUUID
  *                <ul>
  *                    <li><b>bitfilePath</b> (optional): Override the default bitfile path and flash a different one.
  *                                                       This path should point to a directory containing the bitfile.
+ *                    <li><b>checkPing</b> (optional): Check that the FPGA responds to ICMP pings after configuration
  *                    </li>
  *                </ul>
  */
 void call(Map<String, Object> options = [:]) {
 	Map<String, Object> internalOptions = (Map<String, Object>) options.clone()
 	String bitfilePath = internalOptions.get("bitfilePath", getDefaultBitfilePath())
+	boolean checkPing = internalOptions.get("checkPing", true)
 
 	String toolsXilinxTop = "${steps.pwd(tmp: true)}/toolsXilinxTop_${randomUUID().toString()}"
 	dir(toolsXilinxTop) {
@@ -40,9 +42,11 @@ void call(Map<String, Object> options = [:]) {
 		}
 
 		// Make sure the setup is accessible after the reconfiguration
-		jesh("hostname")
-		jesh("ip route get \${SLURM_FPGA_IPS}")
-		jesh("ping -c 5 -i 0.2 \${SLURM_FPGA_IPS}")
+		if (checkPing) {
+			jesh("hostname")
+			jesh("ip route get \${SLURM_FPGA_IPS}")
+			jesh("ping -c 5 -i 0.2 \${SLURM_FPGA_IPS}")
+		}
 	}
 }
 

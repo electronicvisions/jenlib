@@ -13,5 +13,6 @@ Available options:
 <ul>
     <li><b>bitfilePath</b> (optional): Override the default bitfile path and flash a different one.
         This path should point to a directory containing the bitfile.
+    <li><b>checkPing</b> (optional): Check that the FPGA responds to ICMP pings after configuration
     </li>
 </ul>
