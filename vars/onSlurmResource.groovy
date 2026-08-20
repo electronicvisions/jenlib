@@ -17,19 +17,25 @@ import org.electronicvisions.jenlib.swarm.SwarmSlaveConfig
 def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	Map<String, String> slurmArgsInternal = slurm_args.clone()
 
-	// Visionary Jenkins Setup
-	SwarmSlaveConfig config = new SwarmSlaveConfig()
-	config.javaHome = "/wang/environment/software/jessie/jdk/21.0.6+8"
-	config.loggingConfig = "/jenkins/home/vis_jenkins/swarm_integration/logging.properties"
-	config.jenkinsHostname = "jenviz.skynet.kip.uni-heidelberg.de"
-	config.jenkinsKeyfile = "/jenkins/home/vis_jenkins/swarm_integration/passfile.key"
-	config.jenkinsUsername = "vis_jenkins"
-	config.jenkinsWebPort = 8080
-	config.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
-	config.mode = SwarmSlaveConfig.SlaveMode.EXCLUSIVE
-	config.numExecutors = 1
+	SwarmSlaveConfig commonConfig = new SwarmSlaveConfig()
+	commonConfig.javaHome = "/wang/environment/software/jessie/jdk/21.0.6+8"
+	commonConfig.loggingConfig = "/jenkins/home/vis_jenkins/swarm_integration/logging.properties"
+	commonConfig.jenkinsWebPort = 8080
+	commonConfig.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
+	commonConfig.mode = SwarmSlaveConfig.SlaveMode.EXCLUSIVE
+	commonConfig.numExecutors = 1
 
-	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, config, slurmArgsInternal)
+	SwarmSlaveConfig configVisions = commonConfig.clone()
+	configVisions.jenkinsHostname = "jenviz.skynet.kip.uni-heidelberg.de"
+	configVisions.jenkinsUsername = "vis_jenkins"
+	configVisions.jenkinsKeyfile = "/jenkins/home/vis_jenkins/swarm_integration/passfile.key"
+
+	SwarmSlaveConfig configAsic = commonConfig.clone()
+	configAsic.jenkinsHostname = "jenkins.kip.uni-heidelberg.de"
+	configAsic.jenkinsUsername = "jenkins"
+	configAsic.jenkinsKeyfile = "/einc/prod/users/jenkins/swarm_integration/passfile.key"
+
+	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, isAsicJenkins() ? configAsic : configVisions, slurmArgsInternal)
 
 	// Slurm controller has to be accessed from a frontend
 	runOnSlave(label: "frontend") {

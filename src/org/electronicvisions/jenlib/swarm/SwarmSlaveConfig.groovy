@@ -5,7 +5,7 @@ import java.nio.file.Paths
 /**
  * Full configuration of a single {@link SwarmSlave}.
  */
-class SwarmSlaveConfig {
+class SwarmSlaveConfig implements Cloneable {
 	/**
 	 * Jenkins slave mode
 	 */
@@ -339,5 +339,32 @@ class SwarmSlaveConfig {
 		if (count < 0) {
 			throw new IllegalArgumentException("Invalid number of executors specified.")
 		}
+	}
+
+	/**
+	 * Create a copy of this instance and return it
+	 */
+	SwarmSlaveConfig clone() {
+		def clone = new SwarmSlaveConfig()
+		[
+				"javaHome",
+				"loggingConfig",
+				"jenkinsHostname",
+				"jenkinsKeyfile",
+				"jenkinsUsername",
+				"jenkinsWebPort",
+				"jenkinsWebProtocol",
+				"mode",
+				"slaveName",
+				"numExecutors",
+				"fsroot",
+		].each { property ->
+			// only assign if we are not null
+			this."$property"?.with {
+				clone."$property" = it
+			}
+		}
+
+		return clone
 	}
 }

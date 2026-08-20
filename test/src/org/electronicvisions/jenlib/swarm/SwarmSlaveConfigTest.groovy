@@ -7,6 +7,36 @@ class SwarmSlaveConfigTest extends GroovyTestCase {
 		this.random_generator = new Random(1234)
 	}
 
+	void testCloneable() {
+		SwarmSlaveConfig original = new SwarmSlaveConfig()
+		original.javaHome = "/some/path"
+		original.loggingConfig = "/some/logging.properties"
+		original.jenkinsHostname = "jenkins.example.com"
+		original.jenkinsKeyfile = "/some/passfile.key"
+		original.jenkinsUsername = "jenkins"
+		original.jenkinsWebPort = 8080
+		original.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
+		original.mode = SwarmSlaveConfig.SlaveMode.EXCLUSIVE
+		original.slaveName = "original"
+		original.numExecutors = 2
+		original.fsroot = "/some/workspace"
+
+		SwarmSlaveConfig copy = original.clone()
+		assertNotSame(copy, original)
+		assertEquals(original.javaBinary, copy.javaBinary)
+		assertEquals(original.javaHome, copy.javaHome)
+		assertEquals(original.loggingConfig, copy.loggingConfig)
+		assertEquals(original.jenkinsHostname, copy.jenkinsHostname)
+		assertEquals(original.jenkinsKeyfile, copy.jenkinsKeyfile)
+		assertEquals(original.jenkinsUsername, copy.jenkinsUsername)
+		assertEquals(original.jenkinsWebPort, copy.jenkinsWebPort)
+		assertEquals(original.jenkinsWebProtocol, copy.jenkinsWebProtocol)
+		assertEquals(original.mode, copy.mode)
+		assertEquals(original.slaveName, copy.slaveName)
+		assertEquals(original.numExecutors, copy.numExecutors)
+		assertEquals(original.fsroot, copy.fsroot)
+	}
+
 	void testGetJavaBinary() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
 		assertNull(config.javaBinary)
