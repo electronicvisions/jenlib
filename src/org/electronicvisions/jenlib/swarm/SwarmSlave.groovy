@@ -102,11 +102,6 @@ abstract class SwarmSlave {
 			args.add("\"${config.numExecutors.toString()}\"")
 		}
 
-		if (config.jenkinsJnlpPort >= 0) {
-			args.add("-tunnel")
-			args.add("${config.jenkinsHostname}:${config.jenkinsJnlpPort}")
-		}
-
 		args.add("-fsroot")
 		if (config.fsroot != null) {
 			args.add("\"${config.fsroot.toString()}\"")

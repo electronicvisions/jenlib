@@ -54,40 +54,6 @@ class SwarmSlaveConfigTest extends GroovyTestCase {
 		}
 	}
 
-	void testGetSetJenkinsJnlpPort() {
-		SwarmSlaveConfig config = new SwarmSlaveConfig()
-		assertEquals(config.jenkinsJnlpPort, -1)
-
-		int testPort
-
-		// General case
-		testPort = Math.min(Math.abs(random_generator.nextInt()), (int) Math.pow(2, 16) - 1)
-		config.jenkinsJnlpPort = testPort
-		assertEquals(config.jenkinsJnlpPort, testPort)
-
-		// Valid edge cases
-		testPort = (int) Math.pow(2, 16) - 1
-		config.jenkinsJnlpPort = testPort
-		assertEquals(config.jenkinsJnlpPort, testPort)
-
-		testPort = 1
-		config.jenkinsJnlpPort = testPort
-		assertEquals(config.jenkinsJnlpPort, testPort)
-
-		// Invalid edge cases
-		shouldFail {
-			config.jenkinsJnlpPort = (int) Math.pow(2, 16)
-		}
-		shouldFail {
-			config.jenkinsJnlpPort = 0
-		}
-
-		// Negative port numbers
-		shouldFail {
-			config.jenkinsJnlpPort = -Math.abs(random_generator.nextInt())
-		}
-	}
-
 	void testGetSetJenkinsKeyfile() {
 		SwarmSlaveConfig config = new SwarmSlaveConfig()
 		assertNull(config.jenkinsKeyfile)

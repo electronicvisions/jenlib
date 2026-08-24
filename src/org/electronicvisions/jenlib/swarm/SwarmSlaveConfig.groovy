@@ -62,11 +62,6 @@ class SwarmSlaveConfig {
 	private String jenkinsHostname
 
 	/**
-	 * JNLP Port of the jenkins instance.
-	 */
-	private int jenkinsJnlpPort = -1
-
-	/**
 	 * Absolute path to a file that contains the user's password for the Web UI.
 	 * Used for on-demand creation of Build Executors.
 	 */
@@ -158,21 +153,6 @@ class SwarmSlaveConfig {
 	void setJenkinsHostname(String jenkinsHostname) {
 		validateHostname(jenkinsHostname)
 		this.jenkinsHostname = jenkinsHostname
-	}
-
-	/**
-	 * Getter for {@link SwarmSlaveConfig#jenkinsJnlpPort}
-	 */
-	int getJenkinsJnlpPort() {
-		return jenkinsJnlpPort
-	}
-
-	/**
-	 * Setter for {@link SwarmSlaveConfig#jenkinsJnlpPort}
-	 */
-	void setJenkinsJnlpPort(int jenkinsJnlpPort) {
-		validatePortNumber(jenkinsJnlpPort)
-		this.jenkinsJnlpPort = jenkinsJnlpPort
 	}
 
 	/**
