@@ -401,9 +401,8 @@ void testIsWeekend() {
 
 void testIsAsicJenkins() {
 	stage('testIsAsicJenkins') {
-		// This file can only run on F9 jenkins
-		assert isAsicJenkins() == nodesByLabel("frontend").contains("ome"):
-				"Wrong Jenkins instance detected! Frontend nodes: ${nodesByLabel("frontend")}."
+		assert isAsicJenkins() == nodesByLabel(label: "cad", offline: true).contains("ome"):
+				"Wrong Jenkins instance detected! CAD nodes: ${nodesByLabel("cad")}."
 	}
 }
 
