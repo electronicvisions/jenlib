@@ -17,7 +17,7 @@ try {
 			 */
 			String tmp_branch_name = "sandbox/hudson/tmp_" + UUID.randomUUID().toString()
 
-			try {
+			if (GERRIT_HOST.length() > 0) {
 				/**
 				 * Workaround for JENKINS-50433
 				 * Jenkins' Shared library git checkout plugin always adds '-t -h' to 'git ls-remote'.
@@ -26,21 +26,24 @@ try {
 				 * We therefore checkout the change in a local repository, push that state to a temporary
 				 * branch at 'refs/heads', use that branch for loading the shared library and finally delete it.
 				 */
-				dir("jenlib_tmp") {
-					git url: "ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib.git"
-					sh "git fetch ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib ${GERRIT_REFSPEC} && git checkout FETCH_HEAD"
-					sh "git checkout -b ${tmp_branch_name}"
-					sh "git push --no-thin -u origin ${tmp_branch_name}"
-				}
+				try {
+					dir("jenlib_tmp") {
+						git url: "ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib.git"
 
-				jenlib = library "jenlib@${tmp_branch_name}"
-			} catch (MissingPropertyException ignored) {
-				jenlib = library 'jenlib'
-			} finally {
-				// Cleanup temporary branch
-				dir("jenlib_tmp") {
-					sh "git push --delete origin ${tmp_branch_name} || exit 0"
+						sh "git fetch ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib ${GERRIT_REFSPEC} && git checkout FETCH_HEAD"
+						sh "git checkout -b ${tmp_branch_name}"
+						sh "git push --no-thin -u origin ${tmp_branch_name}"
+					}
+
+					jenlib = library "jenlib@${tmp_branch_name}"
+				} finally {
+					// Cleanup temporary branch
+					dir("jenlib_tmp") {
+						sh "git push --delete origin ${tmp_branch_name} || exit 0"
+					}
 				}
+			} else {
+				jenlib = library 'jenlib'
 			}
 		}
 	}
