@@ -28,8 +28,8 @@ String call(Map<String, String> options) {
 	}
 
 	// We need to be on a node to resolve the realpath to our fixture.
-	// Here we assume that a frontend has all mount points.
-	runOnSlave(label: "frontend") {
+	// Here we assume that a lightweight node has all mount points.
+	runOnSlave(label: "lightweight") {
 		env[optionCacheKey] = jesh(script: "readlink -f ${getDefaultPath(options)}",
 		                           returnStdout: true).trim()
 	}

@@ -57,7 +57,7 @@ String call(Map<String, String> options = [:]) {
 	String moduleFileTemplate = libraryResource 'org/electronicvisions/modulefile'
 	String moduleVersionTemplate = libraryResource 'org/electronicvisions/.version'
 
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "lightweight") {
 		if (version == null) {
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
 			String date = formatter.format(Date.from(Instant.now()))

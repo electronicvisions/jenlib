@@ -87,7 +87,7 @@ if __name__ == '__main__':
                 fpga_entry.wing.handwritten_chip_serial
             ).serialize())
 """
-	runOnSlave(label: "frontend && singularity") {
+	runOnSlave(label: "apptainer") {
 		String tempFilePath = "${pwd(tmp: true)}/${randomUUID().toString()}.py"
 		writeFile(file: tempFilePath, text: hwdbQuery)
 		inSingularity(app: "dls-core",

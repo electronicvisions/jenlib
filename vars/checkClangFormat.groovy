@@ -34,7 +34,7 @@ def call(Map<String, Object> options = [:]) {
 	Boolean fullDiff = options.get("fullDiff", false)
 
 	// Get most recent code formatting guidelines
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "lightweight") {
 		String tmpDir = Paths.get(steps.pwd(tmp: true), "code_format_" + randomUUID().toString()).toString()
 		dir (tmpDir) {
 			wafSetup(projects: ["code-format"], noExtraStage: true)

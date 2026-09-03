@@ -172,7 +172,7 @@ def call(Map<String, Object> options = [:]) {
 						// Setup and build the project
 						wafSetup(options)
 
-						runOnSlave(label: "frontend") {
+						runOnSlave(label: "apptainer") {
 							jesh("waf repos-log > repos_log.txt")
 						}
 
@@ -213,7 +213,7 @@ def call(Map<String, Object> options = [:]) {
 
 			// Evaluate waf test results
 			conditionalStage(name: "Test Evaluation", skip: (testRunners.size() == 0)) {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "lightweight") {
 					String xmlResultPattern = testResultDirs.join("/**/*.xml, ") + "/**/*.xml"
 					String allTestResultPattern = testResultDirs.join("/**/*, ") + "/**/*"
 
@@ -239,7 +239,7 @@ def call(Map<String, Object> options = [:]) {
 
 			// Check C/C++ source formatting
 			conditionalStage(name: "Test clang-format", skip: !options.get("enableClangFormat", true)) {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "apptainer") {
 					inSingularity(containerOptions) {
 						Boolean enableClangFormatFullDiff = options.get("enableClangFormatFullDiff", false)
 						for (String project in options.get("projects")) {
@@ -271,7 +271,7 @@ def call(Map<String, Object> options = [:]) {
 
 			// Scan for compiler and linting warnings
 			stage("Compiler/Linting Warnings") {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "lightweight") {
 					recordIssues(qualityGates: [[threshold: 1,
 					                             type     : 'TOTAL',
 					                             unstable : true]],
@@ -356,7 +356,7 @@ def call(Map<String, Object> options = [:]) {
 			stage("Deploy Documentation") {
 				String[] projects
 
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "lightweight") {
 					int projects_return = jesh(script: "ls -d doc/*/html", returnStatus: true)
 					if (projects_return == 0) {
 						String projects_string = jesh(script: "ls -d doc/*/html", returnStdout: true)

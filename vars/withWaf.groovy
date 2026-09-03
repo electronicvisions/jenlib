@@ -21,7 +21,7 @@ def call(Closure content) {
 	}
 
 	Waf waf
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "internet") {
 		waf = new Waf(this, false)
 		waf.build()
 	}

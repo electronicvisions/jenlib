@@ -63,7 +63,7 @@ private void impl(Map<String, Object> options = [:]) {
 	}
 
 	withWaf() {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "internet") {
 			jesh(checkoutCommand.join(" "))
 		}
 	}

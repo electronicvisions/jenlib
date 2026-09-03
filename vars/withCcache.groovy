@@ -55,7 +55,7 @@ void call(Map options = [:], Closure content) {
 	         "CCACHE_NOHASHDIR=" + (ccacheNoHashDir ? "yes" : "no")]) {
 
 		if(printStats) {
-			runOnSlave(label: "frontend && singularity") {
+			runOnSlave(label: "apptainer") {
 				inSingularity(app: "dev-tools") {
 					// we need some stable environment with ccache binaries to read out stats
 					jesh("ccache -p")  // --show config does not work for all versions of ccache
@@ -67,7 +67,7 @@ void call(Map options = [:], Closure content) {
 		content()
 
 		if(printStats) {
-			runOnSlave(label: "frontend && singularity") {
+			runOnSlave(label: "apptainer") {
 				inSingularity(app: "dev-tools") {
 					jesh("ccache --show-stats")
 				}

@@ -16,14 +16,14 @@ try {
 	}
 
 	stage("Workspace Cleanup") {
-		node(label: "frontend") {
+		node(label: "lightweight") {
 			cleanWs()
 			SharedWorkspace.cleanup(this)
 		}
 	}
 
 	stage("Stuck slurm slaves/jobs") {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			jenlibCleanSlurmNodes()
 		}
 	}

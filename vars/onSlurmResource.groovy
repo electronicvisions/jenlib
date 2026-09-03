@@ -38,7 +38,7 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	SlurmSwarmSlave slave = new SlurmSwarmSlave(this, isAsicJenkins() ? configAsic : configVisions, slurmArgsInternal)
 
 	// Slurm controller has to be accessed from a frontend
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "slurm_frontend") {
 		slave.startSlave()
 		jesh("stat ${WORKSPACE} > /dev/null")  // Flush NFS attribute cache
 	}
@@ -50,12 +50,12 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 		}
 	} finally {
 		// Slurm controller has to be accessed from a frontend
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "slurm_frontend") {
 			slave.stopSlave()
 		}
 
 		// Archive slurm slave logs
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			archiveArtifacts(allowEmptyArchive: true, artifacts: "slurm-${slave.jobID}.*")
 		}
 	}

@@ -5,13 +5,13 @@ import org.jenkinsci.plugins.workflow.libs.LibraryStep
 
 try {
 	stage('Cleanup') {
-		node(label: "frontend") {
+		node(label: "lightweight") {
 			cleanWs()
 		}
 	}
 
 	stage('Load Library') {
-		node(label: "frontend") {
+		node(label: "internet") {
 			/**
 			 * Temporary sandbox branch for gerrit changesets
 			 */
@@ -104,12 +104,12 @@ try {
 
 } catch (Throwable t) {
 	notifyFailure(mattermostChannel: "#softies")
-	node(label: "frontend") {
+	node(label: "lightweight") {
 		cleanWs()
 	}
 	throw t
 } finally {
-	node(label: "frontend") {
+	node(label: "lightweight") {
 		cleanWs()
 	}
 }
@@ -248,7 +248,7 @@ void testShellManipulator() {
 			}
 		}
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			parallel(parallelStages)
 		}
 	}
@@ -292,7 +292,7 @@ void testCreateEnumeratedDirectory() {
 		String baseDirectory = UUID.randomUUID().toString()
 		String incrementedDirectory = UUID.randomUUID().toString()
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			String firstResult = createEnumeratedDirectory("${WORKSPACE}/${baseDirectory}/${incrementedDirectory}")
 			String secondResult = createEnumeratedDirectory("${WORKSPACE}/${baseDirectory}/${incrementedDirectory}")
 
@@ -314,7 +314,7 @@ void testCreateDeploymentDirectory() {
 	stage('testCreateDeploymentDirectory') {
 		String deploymentRoot = UUID.randomUUID().toString()
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			final String result = createDeploymentDirectory("${WORKSPACE}/${deploymentRoot}")
 			assert result.contains(deploymentRoot): "'${result}' does not contain '${deploymentRoot}'."
 			assert (jesh(script: "[ -d '${result}' ]", returnStatus: true) == 0): "'${result}' is not a directory."
@@ -349,7 +349,7 @@ void testSetJobDescription() {
 
 void testJesh() {
 	stage('testJesh') {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			// Basic functionality
 			assert (jesh(script: "hostname", returnStdout: true) == sh(script: "hostname", returnStdout: true))
 
@@ -370,7 +370,7 @@ void testJesh() {
 void testPipelineFromMarkdown() {
 	stage("testPipelineFromMarkdown") {
 		String tempFilePath = ""
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			tempFilePath = "${WORKSPACE}/${UUID.randomUUID().toString()}"
 			writeFile(file: tempFilePath,
 			          text: libraryResource("org/electronicvisions/MarkdownScriptExtractorTest.md"))
@@ -390,7 +390,7 @@ void testPipelineFromMarkdown() {
 void testIsWeekend() {
 	stage('testIsWeekend') {
 		boolean bashIsWeekend = null
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			bashIsWeekend = jesh(script: "[[ \$(date +%u) -lt 6 ]]", returnStatus: true)
 		}
 		boolean jenlibIsWeekend = isWeekend()
@@ -410,7 +410,7 @@ void testWithCcache() {
 	stage('testWithCcache') {
 		withCcache() {
 			inSingularity(app: "visionary-wafer") {
-				runOnSlave(label: "frontend && singularity") {
+				runOnSlave(label: "apptainer") {
 					jesh(script: "ln -s \$(which gcc) ccache")
 					ccacheVersion = jesh(script: "./ccache --version | head -n1", returnStdout: true)
 					jesh(script: "rm -f ccache")
@@ -478,7 +478,7 @@ void testRemoveAllBuildParameters() {
 
 void testCheckPatternInFile() {
 	stage('testCheckPatternInFile') {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			String testFile = UUID.randomUUID().toString()
 			writeFile(file: testFile, text: "foo\tbar")
 
@@ -500,7 +500,7 @@ void testCheckPatternInFile() {
 
 void testCheckPatternNotInFile() {
 	stage('testCheckPatternNotInFile') {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			String testFile = UUID.randomUUID().toString()
 			writeFile(file: testFile, text: "foo\tbar")
 
@@ -536,14 +536,14 @@ void testInSingularity() {
 	stage('testInSingularity') {
 		// No node needed for block declaration
 		inSingularity {
-			runOnSlave(label: "frontend && singularity") {
+			runOnSlave(label: "apptainer") {
 				// jesh-shell steps are executed in containers
 				String containerEnv = jesh(script: "env", returnStdout: true)
 				assert (containerEnv.contains("SINGULARITY_CONTAINER"))
 			}
 		}
 
-		runOnSlave(label: "frontend && singularity") {
+		runOnSlave(label: "apptainer") {
 			// Clearing the environment works
 			String shellEnv = jesh(script: "env", returnStdout: true)
 			assert (!shellEnv.contains("SINGULARITY_CONTAINER"))
@@ -588,7 +588,7 @@ void testInSingularity() {
 
 void testInVirtualenv() {
 	stage('testInVirtualenv') {
-		runOnSlave(label: "singularity") {
+		runOnSlave(label: "apptainer") {
 			inSingularity(app: "dls") {
 				String venvPath = UUID.randomUUID().toString()
 				jesh("python -m venv ${venvPath}")
@@ -703,7 +703,7 @@ Change-Id: 12345678
 void testGetDefaultContainerPath() {
 	stage("testGetDefaultContainerPath") {
 		String defaultPathExpected = null
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			defaultPathExpected = jesh(script: "readlink -f /containers/stable/latest",
 			                           returnStdout: true).trim()
 		}
@@ -718,7 +718,7 @@ void testGetDefaultContainerPath() {
 
 void testGetContainerApps() {
 	stage("testGetContainerApps") {
-		runOnSlave(label: "frontend && singularity") {
+		runOnSlave(label: "apptainer") {
 			assert getContainerApps().contains("visionary-dls")
 			assert getContainerApps(getDefaultContainerPath()).contains("visionary-dls")
 		}
@@ -747,7 +747,7 @@ void testGetHxTestResource() {
 
 void testDeployDocumentationRemote() {
 	stage("testDeployDocumentationRemote") {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "internet") {
 			String groupId = isAsicJenkins() ? "s5" : "f9"
 			repositoryUrl = "ssh://hudson@brainscales-r.kip.uni-heidelberg.de:29418/jenlib"
 			upstreamBranch = "sandbox/hudson/deploy_documentation_test_${groupId}"
@@ -774,92 +774,76 @@ void testDeployDocumentationRemote() {
 
 void testWithWaf() {
 	stage('testWithWaf') {
-		List<String> requiredModules = []
-		if (isAsicJenkins()) {
-			requiredModules.add("python")
-			requiredModules.add("git")
-		}
+		withWaf() {
+			runOnSlave(label: "lightweight") {
+				stdout = jesh(returnStdout: true, script: "waf --help")
+				assert (stdout.contains("waf [commands] [options]"))
+			}
 
-		withModules(modules: requiredModules) {
+			// nested withWaf
 			withWaf() {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "lightweight") {
 					stdout = jesh(returnStdout: true, script: "waf --help")
 					assert (stdout.contains("waf [commands] [options]"))
 				}
+			}
 
-				// nested withWaf
-				withWaf() {
-					runOnSlave(label: "frontend") {
+			inSingularity {
+				runOnSlave(label: "apptainer") {
+					stdout_singularity = jesh(returnStdout: true, script: "waf --help")
+				}
+			}
+			assert (stdout_singularity.contains("waf [commands] [options]"))
+		}
+
+		// multiple parallel branches
+		Map parallelStages = [:]
+		for (int i = 0; i < 3; i++) {
+			final int localIterator = i
+			parallelStages[localIterator] = {
+				sleep(localIterator * 10) // build sequentially
+				withWaf {
+					runOnSlave(label: "lightweight") {
 						stdout = jesh(returnStdout: true, script: "waf --help")
 						assert (stdout.contains("waf [commands] [options]"))
 					}
-				}
-
-				inSingularity {
-					runOnSlave(label: "frontend && singularity") {
-						stdout_singularity = jesh(returnStdout: true, script: "waf --help")
-					}
-				}
-				assert (stdout_singularity.contains("waf [commands] [options]"))
-			}
-
-			// multiple parallel branches
-			Map parallelStages = [:]
-			for (int i = 0; i < 3; i++) {
-				final int localIterator = i
-				parallelStages[localIterator] = {
-					sleep(localIterator * 10) // build sequentially
-					withWaf {
-						runOnSlave(label: "frontend") {
-							stdout = jesh(returnStdout: true, script: "waf --help")
-							assert (stdout.contains("waf [commands] [options]"))
-						}
-						sleep(30) // stay in withWaf during the other builds
-					}
+					sleep(30) // stay in withWaf during the other builds
 				}
 			}
-			parallel(parallelStages)
 		}
+		parallel(parallelStages)
 	}
 }
 
 void testWafSetup() {
 	stage("testWafSetup") {
-		List<String> requiredModules = []
-		if (isAsicJenkins()) {
-			requiredModules.add("python")
-			requiredModules.add("git")
+		wafSetup(projects: ["jenlib-minimalwaftest"])
+
+		// Multiple projects
+		wafSetup(projects: ["jenlib-minimalwaftest", "code-format"])
+
+		// Setup in subfolder
+		runOnSlave(label: "lightweight") {
+			String subfolder = UUID.randomUUID().toString()
+			dir(subfolder) {
+				wafSetup(projects: ["jenlib-minimalwaftest"])
+			}
+			assert fileExists("${subfolder}/wscript")
 		}
 
-		withModules(modules: requiredModules) {
-			wafSetup(projects: ["jenlib-minimalwaftest"])
-
-			// Multiple projects
-			wafSetup(projects: ["jenlib-minimalwaftest", "code-format"])
-
-			// Setup in subfolder
-			runOnSlave(label: "frontend") {
-				String subfolder = UUID.randomUUID().toString()
-				dir(subfolder) {
-					wafSetup(projects: ["jenlib-minimalwaftest"])
-				}
-				assert fileExists("${subfolder}/wscript")
-			}
-
-			// Unsupported command line options
-			assertBuildResult("FAILURE") {
-				wafSetup()
-			}
-			assertBuildResult("FAILURE") {
-				wafSetup(projects: "jenlib-minimalwaftest")
-			}
+		// Unsupported command line options
+		assertBuildResult("FAILURE") {
+			wafSetup()
+		}
+		assertBuildResult("FAILURE") {
+			wafSetup(projects: "jenlib-minimalwaftest")
 		}
 	}
 }
 
 void testCheckClangFormat() {
 	stage('testCheckClangFormat') {
-		runOnSlave(label: "frontend && singularity") {
+		runOnSlave(label: "apptainer") {
 			dir("good_repo") {
 				jesh "git init"
 				jesh "echo initial > initial && git add ."
@@ -970,7 +954,7 @@ void testWafDefaultPipeline() {
 		                   notificationChannel: "#jenkins-trashbin",
 						   enableCcache: true,
 						   buildRunner: {
-						       runOnSlave(label: "frontend && singularity") {
+						       runOnSlave(label: "apptainer") {
 						           jesh(script: "ln -s \$(which gcc) ccache")
 						           ccacheVersion = jesh(script: "./ccache --version | head -n1", returnStdout: true)
 						           jesh(script: "rm -f ccache")
@@ -979,7 +963,7 @@ void testWafDefaultPipeline() {
 						       }
 						   },
 		                   testRunners: [:])
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 	}
@@ -988,7 +972,7 @@ void testWafDefaultPipeline() {
 		wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin")
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -998,7 +982,7 @@ void testWafDefaultPipeline() {
 		                   testRunners: ["batch": onSlurmResource.&call.curry(partition: "batch"),
 		                                 "interactive": onSlurmResource.&call.curry(partition: "interactive")],
 		                   notificationChannel: "#jenkins-trashbin")
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1008,7 +992,7 @@ void testWafDefaultPipeline() {
 		                   testSlurmResource: [[partition: "batch"],
 		                                       [partition: "interactive"]],
 		                   notificationChannel: "#jenkins-trashbin")
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1018,7 +1002,7 @@ void testWafDefaultPipeline() {
 		                   notificationChannel: "#jenkins-trashbin",
 		                   preTestHook: { jesh("hostname") },
 		                   postTestHook: { jesh("hostname") })
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1029,7 +1013,7 @@ void testWafDefaultPipeline() {
 			                   notificationChannel: "#jenkins-trashbin",
 			                   preTestHook: { jesh("rm -rf build/") })
 		}
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1038,7 +1022,7 @@ void testWafDefaultPipeline() {
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   postTestHook: { jesh("hostname") })
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1052,7 +1036,7 @@ void testWafDefaultPipeline() {
 					                   "preTestHook hostname ('${preHookHostname}') did not match current hostname!"
 		                   }
 		)
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1098,7 +1082,7 @@ void testWafDefaultPipeline() {
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableClangFormat: false)
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1107,7 +1091,7 @@ void testWafDefaultPipeline() {
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableClangTidy: true)
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1116,7 +1100,7 @@ void testWafDefaultPipeline() {
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   enableCppcheck: true)
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1125,22 +1109,22 @@ void testWafDefaultPipeline() {
 		                   container: [app: "visionary-dls"],
 		                   notificationChannel: "#jenkins-trashbin",
 		                   testRunners: [:])
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
 		testCcacheIsEnabled()
 	}
-	// test that noop testRunners and buildRunner allows wafDefaultPipeline to run on the ASIC jenkins
-	conditionalStage(name: "testWafDefaultPipeline", skip: !isAsicJenkins()) {
-	    runOnSlave(label: "singularity") {
+	// test that noop testRunners and buildRunner allows wafDefaultPipeline to run without SLURM
+	stage("testWafDefaultPipelineWithoutSLURM") {
+	    runOnSlave(label: "lightweight") {
 			wafDefaultPipeline(projects: ["jenlib-minimalwaftest"],
 							   container: [app: "visionary-dls"],
 							   notificationChannel: "#jenkins-trashbin",
 							   buildRunner: { it() },
 							   testRunners: ["": { it() }])
 		}
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			cleanWs()
 		}
 
@@ -1153,12 +1137,12 @@ void testWithModules() {
 		// Module available on F9 as well as S5 nodes
 		String alwaysAvailableModule = "xilinx"
 
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 		}
 
 		withModules(modules: [alwaysAvailableModule]) {
-			runOnSlave(label: "frontend") {
+			runOnSlave(label: "lightweight") {
 				withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 			}
 		}
@@ -1166,7 +1150,7 @@ void testWithModules() {
 
 		withModules(modules: [alwaysAvailableModule]) {
 			withModules(purge: true, modules: []) {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "lightweight") {
 					purgedModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 				}
 			}
@@ -1174,19 +1158,19 @@ void testWithModules() {
 		assert (noModulePath == purgedModulePath): "$noModulePath should be $purgedModulePath"
 
 		withModules(modules: [], prependModulePath: "foo/bar") {
-			runOnSlave(label: "frontend") {
+			runOnSlave(label: "lightweight") {
 				assert (jesh(script: "echo \$MODULEPATH", returnStdout: true).contains("foo/bar"))
 			}
 		}
 
 		// Test module load in container
 		inSingularity {
-			runOnSlave(label: "frontend && singularity") {
+			runOnSlave(label: "apptainer") {
 				noModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 			}
 
 			withModules(modules: [alwaysAvailableModule]) {
-				runOnSlave(label: "frontend && singularity") {
+				runOnSlave(label: "apptainer") {
 					withModulePath = jesh(script: 'echo $PATH', returnStdout: true)
 				}
 			}
@@ -1196,7 +1180,7 @@ void testWithModules() {
 		// Fail if module load does not succeed
 		// Failure needs to happen upon the first jesh call, since the final environment is not known before.
 		withModules(modules: ["jenlibNonExistingModule"]) {
-			runOnSlave(label: "frontend") {
+			runOnSlave(label: "lightweight") {
 				assertBuildResult("FAILURE") {
 					jesh("exit 0")
 				}
@@ -1221,7 +1205,7 @@ void testWithModules() {
 
 void testGetGerritUsername() {
 	stage("testGetGerritUsername") {
-		runOnSlave(label: "frontend") {
+		runOnSlave(label: "lightweight") {
 			// We expect this to be hudson in the general case
 			assert (getGerritUsername().equals("hudson"))
 
@@ -1258,20 +1242,20 @@ void testOnSlurmResource() {
 		}
 
 		// PWD stays the same
-		runOnSlave(label: "frontend") {
-			frontendPwd = pwd()
+		runOnSlave(label: "lightweight") {
+			parentPwd = pwd()
 			onSlurmResource([:]) {
 				slavePwd = pwd()
-				assert (slavePwd == frontendPwd): "slavePwd: $slavePwd, frontendPwd: $frontendPwd"
+				assert (slavePwd == parentPwd): "slavePwd: $slavePwd, parentPwd: $parentPwd"
 			}
 		}
 
 		// Workspace stays the same
-		runOnSlave(label: "frontend") {
-			frontendWs = WORKSPACE
+		runOnSlave(label: "lightweight") {
+			parentWs = WORKSPACE
 			onSlurmResource([:]) {
 				slaveWs = WORKSPACE
-				assert (slaveWs == frontendWs): "slaveWs: $slaveWs, frontendWs: $frontendWs"
+				assert (slaveWs == parentWs): "slaveWs: $slaveWs, parentWs: $parentWs"
 			}
 		}
 	}
@@ -1281,10 +1265,10 @@ void testRunOnSlave() {
 	stage("testRunOnSlave") {
 		// Raise for bad user options
 		bad_inputs = [[:], [naame: "hel"], [laabel: "frontend"],
-		              [name: "hel", label: "frontend"],
-		              [naame: "hel", label: "frontend"],
-		              [name: "hel", laabel: "frontend"],
-		              [name: "hel", label: "frontend", foo: "bar"]]
+		              [name: "hel", label: "lightweight"],
+		              [naame: "hel", label: "lightweight"],
+		              [name: "hel", laabel: "lightweight"],
+		              [name: "hel", label: "lightweight", foo: "bar"]]
 
 		for (input in bad_inputs) {
 			assertBuildResult("FAILURE") {
@@ -1292,7 +1276,7 @@ void testRunOnSlave() {
 			}
 		}
 
-		runOnSlave(label: "frontend && singularity") {
+		runOnSlave(label: "apptainer") {
 
 			// Make sure we stay on the same executor (same name given)
 			pipeline_executor = env.EXECUTOR_NUMBER
@@ -1301,7 +1285,7 @@ void testRunOnSlave() {
 			}
 
 			// Make sure we stay on the same executor (similar label given)
-			runOnSlave(label: "frontend || singularity") {
+			runOnSlave(label: "lightweight || apptainer") {
 				assert (env.EXECUTOR_NUMBER == pipeline_executor)
 			}
 
@@ -1315,7 +1299,7 @@ void testRunOnSlave() {
 			// Directory switching around runOnSlave has an effect
 			String targetDir = UUID.randomUUID().toString()
 			dir(targetDir) {
-				runOnSlave(label: "frontend") {
+				runOnSlave(label: "lightweight") {
 					assert (pwd().contains(targetDir)): "Switching directories to ${targetDir} was not succesful."
 				}
 			}
@@ -1327,7 +1311,7 @@ void testRunOnSlave() {
 			  * assertBuildResult("FAILURE") {
 			  * 	node {
 			  * 		ws(pwd()) {
-			  * 			runOnSlave(label: "frontend") {
+			  * 			runOnSlave(label: "lightweight") {
 			  * 				jesh("hostname")
 			  * 			}
 			  * 		}
@@ -1346,7 +1330,7 @@ void testConfigureHxCubeBitfile() {
 
 		// Should not run without hardware allocation
 		assertBuildResult("FAILURE") {
-			runOnSlave(label: "frontend") {
+			runOnSlave(label: "lightweight") {
 				configureHxCubeBitfile()
 			}
 		}
@@ -1363,7 +1347,7 @@ void testFillTemplate() {
 
 void testDeployModule() {
 	stage('testDeployModule') {
-		runOnSlave(label: "frontend && singularity") {
+		runOnSlave(label: "apptainer") {
 			jesh "mkdir -p $WORKSPACE/source"
 			jesh "mkdir -p $WORKSPACE/source/bin"
 			jesh "mkdir -p $WORKSPACE/source/lib"

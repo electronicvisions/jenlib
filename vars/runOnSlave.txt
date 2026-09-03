@@ -17,7 +17,7 @@ The parameter <b>target_node</b> takes the target node definition: one of 'name'
 <p>
 Intended usage:
 <pre>
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "lightweight") {
 		jesh "hostname"
 	}
 </pre>

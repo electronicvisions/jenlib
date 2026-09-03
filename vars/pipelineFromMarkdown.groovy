@@ -29,7 +29,7 @@ def call(Map<String, Object> options) {
 
 	boolean concatenateBlocks = options.get("concatenateBlocks", true)
 
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "internet && apptainer") {
 		MarkdownScriptExtractor extractor = new MarkdownScriptExtractor(this, markdownFilePath)
 
 		List<String> shellBlocks = extractor.getBlocks(blockType)

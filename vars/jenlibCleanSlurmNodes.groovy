@@ -132,7 +132,7 @@ static List<SlurmQueueItem> getJobsWaitingforSlurm() {
  * @return True if the job is still known to the slurm queue (i.e. not dead for long)
  */
 boolean jobRemovedFromQueue(int jobId) {
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "slurm_frontend") {
 		boolean queueStateNotAvailable = jesh(script: "scontrol show jobid ${jobId}",
 		                                      returnStatus: true)
 		return queueStateNotAvailable
@@ -162,7 +162,7 @@ def call() {
 	// drop idle slurm computers
 	for (SlurmComputer computer : getIdleSlurmComputers(60)) {
 		println("[Jenlib] Removing long-idling slave with job ID $computer.slurmId")
-		node("frontend") {
+		node("slurm_frontend") {
 			jesh("scancel $computer.slurmId")
 		}
 	}

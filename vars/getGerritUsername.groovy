@@ -2,7 +2,7 @@
  * Return the username to be used for logging into gerrit.
  */
 String call() {
-	return runOnSlave(label: "frontend") {
+	return runOnSlave(label: "lightweight") {
 		String gitCommand
 
 		// Local git config

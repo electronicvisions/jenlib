@@ -33,7 +33,7 @@ void call(Map<String, Object> options = [:]) {
 		}
 	}
 
-	runOnSlave(label: "frontend") {
+	runOnSlave(label: "internet") {
 		String tmpDir = Paths.get(steps.pwd(tmp: true), "jenkins_docu_" + randomUUID().toString()).toString()
 
 		upstreamBranch = options.get("upstreamBranch")
