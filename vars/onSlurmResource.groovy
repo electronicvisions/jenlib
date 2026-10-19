@@ -18,7 +18,7 @@ def call(LinkedHashMap<String, String> slurm_args, Closure content) {
 	Map<String, String> slurmArgsInternal = slurm_args.clone()
 
 	SwarmSlaveConfig commonConfig = new SwarmSlaveConfig()
-	commonConfig.javaHome = "/wang/environment/software/jessie/jdk/21.0.6+8"
+	commonConfig.javaHome = "/wang/environment/software/jessie/jdk/25.0.4.1"
 	commonConfig.loggingConfig = "/jenkins/home/vis_jenkins/swarm_integration/logging.properties"
 	commonConfig.jenkinsWebPort = 8080
 	commonConfig.jenkinsWebProtocol = SwarmSlaveConfig.WebProtocol.HTTP
