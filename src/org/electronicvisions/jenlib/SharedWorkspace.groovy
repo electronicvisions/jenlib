@@ -66,15 +66,22 @@ class SharedWorkspace {
 	 * @return Workspace directory
 	 */
 	private static File build2File(steps) {
-		String projectName = steps.currentBuild.rawBuild.getParent().getDisplayName()
-		assert (!projectName.contains(".")): "Jenkins project name must not contain '.'!"
-		String identifier = steps.currentBuild.rawBuild.getExternalizableId()
-		String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(identifier.getBytes())
+		final String identifier = steps.currentBuild.rawBuild.getExternalizableId()
+		final String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(identifier.getBytes())
 
-		// We prepend the encoded id by the project name for readability
-		// Id-delimiting '.'s are not part of the base64url alphabet
+		// We prepend the encoded id by the project name for readability, with some sanitization:
+		//    '/' might create a new hierarchy
+		//    '.' is our delimiter for the base64 part
+		//    ':' triggers a Singularity bug, where colons in bind paths lead to unintended behavior
+		final String projectName = steps.currentBuild.rawBuild.getParent().getDisplayName()
+		final String projectNameSanitized = projectName
+				.replace("/", "_")
+				.replace(".", "_")
+				.replace(":", "_")
+
+		// Id-delimiting '.' s are not part of the base64url alphabet
 		// Append an arbitrary character "x", some tools don't like folders ending with "."
-		String workspaceName = projectName + "." + encodedId + "." + "x"
+		final String workspaceName = projectNameSanitized + "." + encodedId + "." + "x"
 		return new File(getWorkspaceRoot(steps), workspaceName)
 	}
 

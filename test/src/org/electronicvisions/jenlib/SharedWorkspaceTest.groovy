@@ -4,9 +4,10 @@ package org.electronicvisions.jenlib
 class SharedWorkspaceTest extends GroovyTestCase {
 	static class MockedBuild {
 		static Object rawBuild = MockedBuild
+		static String displayName = null
 
 		static String getDisplayName() {
-			return "specialproject"
+			return displayName
 		}
 
 		static Object getParent() {
@@ -33,6 +34,8 @@ class SharedWorkspaceTest extends GroovyTestCase {
 	}
 
 	void setUp() {
+		MockedBuild.displayName = "specialproject"
+
 		// Make sure the original build getter works, this will always be null in
 		// unittest environments, so we can't test much here.
 		SharedWorkspace.getBuild("foobar#42")
@@ -96,6 +99,14 @@ class SharedWorkspaceTest extends GroovyTestCase {
 		MockedPipelineScript pipeline = new MockedPipelineScript(false)
 		File workspace = new File(SharedWorkspace.getWorkspace(pipeline))
 		assertEquals("specialproject.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.x",
+		             workspace.getName())
+	}
+
+	void testGetWorkspaceSanitizesProjectName() {
+		MockedBuild.displayName = "feature/special.project:variant"
+		MockedPipelineScript pipeline = new MockedPipelineScript(false)
+		File workspace = new File(SharedWorkspace.getWorkspace(pipeline))
+		assertEquals("feature_special_project_variant.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.x",
 		             workspace.getName())
 	}
 
