@@ -610,25 +610,31 @@ void testInVirtualenv() {
 
 void testGetDefaultFixturePath() {
 	stage("testGetDefaultFixturePath") {
-		String canonicalDefault = "/lib"
-		String commitKey = "SomeKey"
+		final String canonicalDefault = "/${UUID.randomUUID().toString()}"
+		final String commitKey = UUID.randomUUID().toString()
 
 		// Default without key commit message
 		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64('')}"]) {
-			assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
-			                             commitKey: commitKey,
-			                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
+			def actual = getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+			                                   commitKey: commitKey,
+			                                   parameterName: "UNUSED_NO_KEY")
+
+			assert actual == canonicalDefault:
+					"FAILED: Default without key commit message. Expected: '${canonicalDefault}', Actual: '${actual}'"
 		}
 
 		// Result does not change within the same build
-		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64(commitKey + ': /usr/lib')}"]) {
-			assert getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
-			                             commitKey: commitKey,
-			                             parameterName: "UNUSED_NO_KEY") == canonicalDefault
+		withEnv(["GERRIT_CHANGE_COMMIT_MESSAGE=${encodeBase64(commitKey + ': /' + UUID.randomUUID().toString())}"]) {
+			def actual = getDefaultFixturePath(defaultPathCanonical: canonicalDefault,
+			                                   commitKey: commitKey,
+			                                   parameterName: "UNUSED_NO_KEY")
+
+			assert actual == canonicalDefault:
+					"FAILED: Result does not change within the same build. Expected: '${canonicalDefault}', Actual: '${actual}'"
 		}
 
 		// Special key specified in commit message
-		String pathCustomImage = "/bin"
+		final String pathCustomImage = "/${UUID.randomUUID().toString()}"
 
 		// NOTE; additional white-space in the commit-messages is intended
 		List<String> commitMessagesSuccess = [
@@ -691,7 +697,7 @@ Change-Id: 12345678
 
 			assertBuildResult("FAILURE") {
 				withEnv(['GERRIT_CHANGE_COMMIT_MESSAGE=' + encodedFakeCommitMessage]) {
-					getDefaultFixturePath(defaultPathCanonical: "/lib",
+					getDefaultFixturePath(defaultPathCanonical: "/${UUID.randomUUID().toString()}",
 					                      commitKey: commitKey,
 					                      parameterName: "UNUSED_${i + commitMessagesSuccess.size()}")
 				}
