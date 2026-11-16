@@ -17,7 +17,7 @@ try {
 			 */
 			String tmp_branch_name = "sandbox/hudson/tmp_" + UUID.randomUUID().toString()
 
-			if (GERRIT_HOST.length() > 0) {
+			if (env.GERRIT_HOST?.length() > 0) {
 				/**
 				 * Workaround for JENKINS-50433
 				 * Jenkins' Shared library git checkout plugin always adds '-t -h' to 'git ls-remote'.
@@ -28,9 +28,9 @@ try {
 				 */
 				try {
 					dir("jenlib_tmp") {
-						git url: "ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib.git"
+						git url: "ssh://hudson@${env.GERRIT_HOST}:${env.GERRIT_PORT}/jenlib.git"
 
-						sh "git fetch ssh://hudson@${GERRIT_HOST}:${GERRIT_PORT}/jenlib ${GERRIT_REFSPEC} && git checkout FETCH_HEAD"
+						sh "git fetch ssh://hudson@${env.GERRIT_HOST}:${env.GERRIT_PORT}/jenlib ${env.GERRIT_REFSPEC} && git checkout FETCH_HEAD"
 						sh "git checkout -b ${tmp_branch_name}"
 						sh "git push --no-thin -u origin ${tmp_branch_name}"
 					}
