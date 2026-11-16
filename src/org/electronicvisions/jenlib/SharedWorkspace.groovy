@@ -69,15 +69,9 @@ class SharedWorkspace {
 		final String identifier = steps.currentBuild.rawBuild.getExternalizableId()
 		final String encodedId = Base64.getUrlEncoder().withoutPadding().encodeToString(identifier.getBytes())
 
-		// We prepend the encoded id by the project name for readability, with some sanitization:
-		//    '/' might create a new hierarchy
-		//    '.' is our delimiter for the base64 part
-		//    ':' triggers a Singularity bug, where colons in bind paths lead to unintended behavior
+		// We prepend the encoded id by the project name for readability, sanitized by only allowing alphanumeric chars
 		final String projectName = steps.currentBuild.rawBuild.getParent().getDisplayName()
-		final String projectNameSanitized = projectName
-				.replace("/", "_")
-				.replace(".", "_")
-				.replace(":", "_")
+		final String projectNameSanitized = projectName.replaceAll("[^A-Za-z0-9]", "_")
 
 		// Id-delimiting '.' s are not part of the base64url alphabet
 		// Append an arbitrary character "x", some tools don't like folders ending with "."

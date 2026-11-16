@@ -103,10 +103,10 @@ class SharedWorkspaceTest extends GroovyTestCase {
 	}
 
 	void testGetWorkspaceSanitizesProjectName() {
-		MockedBuild.displayName = "feature/special.project:variant"
+		MockedBuild.displayName = "feature/special.project:variant (test)-1"
 		MockedPipelineScript pipeline = new MockedPipelineScript(false)
 		File workspace = new File(SharedWorkspace.getWorkspace(pipeline))
-		assertEquals("feature_special_project_variant.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.x",
+		assertEquals("feature_special_project_variant__test__1.c29tZS9uZXN0ZWQvc3BlY2lhbHByb2plY3QjMTIz.x",
 		             workspace.getName())
 	}
 
