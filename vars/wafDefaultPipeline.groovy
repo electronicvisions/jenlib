@@ -262,9 +262,7 @@ def call(Map<String, Object> options = [:]) {
 			conditionalStage(name: "Test clang-tidy", skip: !enableClangTidy) {
 				buildRunner {
 					inSingularity(containerOptions) {
-						// Issue #3979: Script should be installed in PATH.
-						// (mis-)use PYTHONHOME to get the app's root directory
-						jesh("python \$PYTHONHOME/share/clang/run-clang-tidy.py -j8 -p . &> clang-tidy.txt || true")
+						jesh("run-clang-tidy -j8 -p . &> clang-tidy.txt || true")
 					}
 				}
 			}
